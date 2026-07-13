@@ -1,0 +1,2903 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="ASP.NET Core সম্পূর্ণ কোর্স বাংলায় — বিগিনার থেকে Mid/Senior, ইউরোপের জব মার্কেট পর্যন্ত">
+<title>ASP.NET Core সম্পূর্ণ কোর্স — বাংলায় A-Z</title>
+<style>
+:root{
+  --bg:#F5F6FB; --surface:#FFFFFF; --surface2:#FAFAFE; --ink:#171A26; --muted:#5B6172; --line:#E4E6F1;
+  --accent:#6C47FF; --accent2:#3E8EF7; --accent-ink:#5A38E6;
+  --accent-soft:#EFEAFF; --teal-c:#0E9384; --teal-soft:#E2F5F1;
+  --amber:#B77B16; --amber-soft:#FBF2DF; --red:#C7443A; --red-soft:#FCEAE7;
+  --code-bg:#14172A; --code-ink:#DCE0F2; --code-cap:#1D2138; --code-cap-ink:#98A0C6; --code-line:#262B47;
+  --kw:#93A7FF; --str:#7EDBA8; --com:#68719C; --num:#EFB56A; --typ:#72CBEE;
+  --grad:linear-gradient(120deg,#6C47FF 0%,#3E8EF7 60%,#0E9384 120%);
+  --sidebar-w:302px;
+  --shadow:0 1px 2px rgba(23,26,38,.05),0 10px 32px -8px rgba(23,26,38,.09);
+  --glow1:rgba(108,71,255,.14); --glow2:rgba(14,147,132,.12);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0D0F18; --surface:#151827; --surface2:#181C2E; --ink:#E7E9F5; --muted:#99A0B8; --line:#252A40;
+    --accent:#A18BFF; --accent2:#6FB0FF; --accent-ink:#B4A2FF;
+    --accent-soft:#251F42; --teal-c:#3ED4BE; --teal-soft:#12302C;
+    --amber:#E5AC4F; --amber-soft:#31281530; --red:#F08A80; --red-soft:#3A201E;
+    --code-bg:#0B0E1C; --code-ink:#DCE0F2; --code-cap:#131730; --code-cap-ink:#8A92BC; --code-line:#1F2440;
+    --grad:linear-gradient(120deg,#A18BFF 0%,#6FB0FF 60%,#3ED4BE 120%);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 36px -8px rgba(0,0,0,.5);
+    --glow1:rgba(120,90,255,.16); --glow2:rgba(62,212,190,.10);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D0F18; --surface:#151827; --surface2:#181C2E; --ink:#E7E9F5; --muted:#99A0B8; --line:#252A40;
+  --accent:#A18BFF; --accent2:#6FB0FF; --accent-ink:#B4A2FF;
+  --accent-soft:#251F42; --teal-c:#3ED4BE; --teal-soft:#12302C;
+  --amber:#E5AC4F; --amber-soft:#31281530; --red:#F08A80; --red-soft:#3A201E;
+  --code-bg:#0B0E1C; --code-ink:#DCE0F2; --code-cap:#131730; --code-cap-ink:#8A92BC; --code-line:#1F2440;
+  --grad:linear-gradient(120deg,#A18BFF 0%,#6FB0FF 60%,#3ED4BE 120%);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 36px -8px rgba(0,0,0,.5);
+  --glow1:rgba(120,90,255,.16); --glow2:rgba(62,212,190,.10);
+}
+:root[data-theme="light"]{
+  --bg:#F5F6FB; --surface:#FFFFFF; --surface2:#FAFAFE; --ink:#171A26; --muted:#5B6172; --line:#E4E6F1;
+  --accent:#6C47FF; --accent2:#3E8EF7; --accent-ink:#5A38E6;
+  --accent-soft:#EFEAFF; --teal-c:#0E9384; --teal-soft:#E2F5F1;
+  --amber:#B77B16; --amber-soft:#FBF2DF; --red:#C7443A; --red-soft:#FCEAE7;
+  --code-bg:#14172A; --code-ink:#DCE0F2; --code-cap:#1D2138; --code-cap-ink:#98A0C6; --code-line:#262B47;
+  --kw:#93A7FF; --str:#7EDBA8; --com:#68719C; --num:#EFB56A; --typ:#72CBEE;
+  --grad:linear-gradient(120deg,#6C47FF 0%,#3E8EF7 60%,#0E9384 120%);
+  --shadow:0 1px 2px rgba(23,26,38,.05),0 10px 32px -8px rgba(23,26,38,.09);
+  --glow1:rgba(108,71,255,.14); --glow2:rgba(14,147,132,.12);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:'Noto Sans Bengali','Nirmala UI','Hind Siliguri','Bangla MN','Vrinda',system-ui,sans-serif;
+  font-size:17px; line-height:1.85;
+  background-image:radial-gradient(900px 480px at 85% -80px,var(--glow1),transparent 65%),
+                   radial-gradient(700px 420px at -10% 12%,var(--glow2),transparent 60%);
+  background-repeat:no-repeat;
+}
+code,pre,kbd{font-family:'Cascadia Code','Cascadia Mono',Consolas,'JetBrains Mono',monospace}
+
+/* ---------- scroll progress ---------- */
+#progress{position:fixed; top:0; left:0; height:3px; width:0; background:var(--grad); z-index:100; border-radius:0 3px 3px 0}
+
+/* ---------- layout ---------- */
+.wrap{display:flex; min-height:100vh}
+.sidebar{
+  width:var(--sidebar-w); flex-shrink:0; position:sticky; top:0; height:100vh;
+  overflow-y:auto; scrollbar-width:thin;
+  background:color-mix(in srgb,var(--surface) 82%,transparent);
+  -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+  border-right:1px solid var(--line); padding:24px 18px 44px;
+}
+main{flex:1; min-width:0; padding:0 clamp(18px,5vw,76px) 100px}
+.content{max-width:830px; margin:0 auto}
+
+/* ---------- sidebar ---------- */
+.brand{display:flex; align-items:center; gap:11px; margin-bottom:6px}
+.brand-badge{
+  width:40px; height:40px; border-radius:12px; background:var(--grad); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px;
+  font-family:Consolas,monospace; flex-shrink:0; box-shadow:0 4px 14px -2px var(--glow1);
+}
+.brand h1{font-size:16.5px; line-height:1.35; margin:0; font-weight:800; letter-spacing:-.01em}
+.brand p{margin:2px 0 0; font-size:12px; color:var(--muted)}
+.nav-search{
+  width:100%; margin:16px 0 8px; padding:9px 14px; font:inherit; font-size:14px;
+  border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink);
+  transition:border-color .15s, box-shadow .15s;
+}
+.nav-search:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+.nav-part{font-size:11px; letter-spacing:.11em; text-transform:uppercase; color:var(--muted); margin:20px 6px 6px; font-weight:700; display:flex; align-items:center; gap:8px}
+.nav-part::after{content:""; flex:1; height:1px; background:var(--line)}
+nav ul{list-style:none; margin:0; padding:0}
+nav a{
+  display:flex; gap:10px; align-items:baseline; padding:6px 11px; border-radius:9px;
+  color:var(--ink); text-decoration:none; font-size:14px; line-height:1.55;
+  transition:background .12s,color .12s;
+}
+nav a .n{color:var(--muted); font-size:11.5px; font-variant-numeric:tabular-nums; min-width:21px; font-family:Consolas,monospace}
+nav a:hover{background:var(--accent-soft)}
+nav a.active{background:var(--accent-soft); color:var(--accent-ink); font-weight:700}
+nav a.active .n{color:var(--accent-ink)}
+nav li.hidden{display:none}
+
+/* ---------- hero ---------- */
+.hero{padding:76px 0 40px; margin-bottom:26px; position:relative}
+.hero .eyebrow{
+  display:inline-flex; align-items:center; gap:8px;
+  color:var(--accent-ink); font-weight:700; font-size:13px; letter-spacing:.1em; text-transform:uppercase;
+  background:var(--accent-soft); padding:6px 16px; border-radius:999px;
+}
+.hero .eyebrow::before{content:""; width:7px; height:7px; border-radius:50%; background:var(--grad)}
+.hero h2{
+  font-size:clamp(30px,4.8vw,46px); line-height:1.3; margin:20px 0 16px; text-wrap:balance;
+  font-weight:800; letter-spacing:-.02em;
+  background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent;
+  padding-bottom:.15em;
+}
+.hero p.lead{font-size:18.5px; color:var(--muted); max-width:62ch; margin:0 0 28px}
+.hero-meta{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; max-width:760px}
+.chip{
+  background:var(--surface); border:1px solid var(--line); border-radius:14px;
+  padding:12px 16px; font-size:13.5px; color:var(--muted); line-height:1.6;
+  box-shadow:var(--shadow); display:block;
+}
+.chip b{display:block; color:var(--ink); font-size:19px; font-weight:800; letter-spacing:-.01em}
+
+/* ---------- chapters ---------- */
+.chapter{padding:52px 0 14px; border-bottom:1px solid var(--line)}
+.chapter.reveal{opacity:0; transform:translateY(14px); transition:opacity .5s ease,transform .5s ease}
+.chapter.reveal.in{opacity:1; transform:none}
+.ch-head .ch-num{
+  display:inline-flex; align-items:center; gap:7px;
+  background:var(--accent-soft); color:var(--accent-ink);
+  font-size:12px; font-weight:700; letter-spacing:.09em; padding:4px 14px; border-radius:999px;
+}
+.ch-head h2{font-size:clamp(23px,3vw,31px); margin:14px 0 6px; line-height:1.4; text-wrap:balance; font-weight:800; letter-spacing:-.015em}
+.ch-head .ch-goal{color:var(--muted); font-size:15.5px; margin:0 0 8px; max-width:66ch}
+h3{font-size:20px; margin:38px 0 8px; font-weight:800; line-height:1.5; letter-spacing:-.01em}
+h3::before{content:""; display:inline-block; width:10px; height:10px; border-radius:3px; background:var(--grad); margin-right:10px}
+h4{font-size:17px; margin:26px 0 6px; font-weight:700}
+p{margin:10px 0; max-width:70ch}
+ul,ol{padding-left:26px; max-width:68ch}
+li{margin:5px 0}
+a{color:var(--accent-ink)}
+strong{font-weight:700}
+p code, li code, td code, .inline-code{
+  background:var(--accent-soft); color:var(--accent-ink); font-size:.86em;
+  padding:1.5px 8px; border-radius:7px; white-space:nowrap;
+}
+
+/* ---------- code blocks ---------- */
+figure.code{margin:20px 0; border-radius:14px; overflow:hidden; box-shadow:var(--shadow); border:1px solid var(--code-line); position:relative}
+figure.code figcaption{
+  background:var(--code-cap); color:var(--code-cap-ink); font-size:12.5px;
+  padding:9px 16px; font-family:Consolas,monospace; letter-spacing:.03em;
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  border-bottom:1px solid var(--code-line);
+}
+figure.code figcaption .lang{opacity:.6; font-size:11px; text-transform:uppercase; letter-spacing:.1em}
+figure.code pre{
+  margin:0; background:var(--code-bg); color:var(--code-ink);
+  padding:16px 18px; overflow-x:auto; font-size:13.8px; line-height:1.75; tab-size:4;
+}
+pre .kw{color:var(--kw)} pre .str{color:var(--str)} pre .com{color:var(--com); font-style:italic}
+pre .num{color:var(--num)} pre .typ{color:var(--typ)}
+.copy-btn{
+  background:transparent; border:1px solid var(--code-line); color:var(--code-cap-ink);
+  font:inherit; font-size:11px; padding:3px 12px; border-radius:7px; cursor:pointer;
+  transition:color .12s,border-color .12s;
+}
+.copy-btn:hover{color:#fff; border-color:var(--code-cap-ink)}
+
+/* ---------- callouts ---------- */
+.callout{
+  display:flex; gap:12px; margin:20px 0; padding:15px 19px; border-radius:14px;
+  font-size:15.5px; border:1px solid var(--line); background:var(--surface); box-shadow:var(--shadow);
+  border-left:4px solid var(--accent);
+}
+.callout p{margin:4px 0}
+.callout .co-label{font-weight:800; font-size:12.5px; letter-spacing:.07em; text-transform:uppercase; display:block; margin-bottom:2px}
+.callout.tip{border-left-color:var(--teal-c)} .callout.tip .co-label{color:var(--teal-c)}
+.callout.warn{border-left-color:var(--amber)} .callout.warn .co-label{color:var(--amber)}
+.callout.danger{border-left-color:var(--red)} .callout.danger .co-label{color:var(--red)}
+.callout.note{border-left-color:var(--accent)} .callout.note .co-label{color:var(--accent-ink)}
+
+/* ---------- tables ---------- */
+.tbl-wrap{overflow-x:auto; margin:20px 0; border:1px solid var(--line); border-radius:14px; background:var(--surface); box-shadow:var(--shadow)}
+table{border-collapse:collapse; width:100%; font-size:14.8px; min-width:560px}
+th,td{text-align:left; padding:11px 16px; border-bottom:1px solid var(--line); vertical-align:top}
+th{font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); background:var(--surface2)}
+tr:last-child td{border-bottom:none}
+td{font-variant-numeric:tabular-nums}
+
+/* ---------- steps ---------- */
+.steps{counter-reset:step; list-style:none; padding:0}
+.steps>li{counter-increment:step; position:relative; padding:0 0 6px 48px; margin:16px 0}
+.steps>li::before{
+  content:counter(step); position:absolute; left:0; top:2px;
+  width:31px; height:31px; border-radius:10px; background:var(--grad); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px;
+  box-shadow:0 3px 10px -2px var(--glow1);
+}
+.footer{padding:48px 0 22px; color:var(--muted); font-size:14px}
+.footer .grad-line{height:3px; background:var(--grad); border-radius:3px; margin-bottom:26px; opacity:.6}
+.menu-btn{display:none}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  .chapter.reveal{opacity:1; transform:none; transition:none}
+}
+@media (max-width: 900px){
+  .sidebar{
+    position:fixed; z-index:50; left:0; top:0; transform:translateX(-100%);
+    transition:transform .25s ease; width:min(85vw,320px); box-shadow:var(--shadow);
+    background:var(--surface);
+  }
+  .sidebar.open{transform:translateX(0)}
+  .menu-btn{
+    display:flex; position:fixed; z-index:60; bottom:20px; right:20px;
+    width:54px; height:54px; border-radius:16px; border:none; background:var(--grad);
+    color:#fff; font-size:22px; align-items:center; justify-content:center; cursor:pointer;
+    box-shadow:0 6px 20px rgba(0,0,0,.35);
+  }
+  main{padding:0 20px 70px}
+  .hero{padding:44px 0 30px}
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<div class="wrap">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-badge">.N</div>
+    <div>
+      <h1>ASP.NET Core কোর্স</h1>
+      <p>বাংলায় • .NET 8/10 • A → Z</p>
+    </div>
+  </div>
+  <input class="nav-search" id="navSearch" type="search" placeholder="অধ্যায় খুঁজুন…" aria-label="অধ্যায় খুঁজুন">
+  <nav aria-label="অধ্যায় তালিকা">
+    <p class="nav-part">পর্ব ১ · ভিত্তি</p>
+    <ul>
+      <li><a href="#ch01"><span class="n">01</span>ভূমিকা: ASP.NET Core কী ও কেন</a></li>
+      <li><a href="#ch02"><span class="n">02</span>পরিবেশ সেটআপ (.NET SDK)</a></li>
+      <li><a href="#ch03"><span class="n">03</span>C# — জরুরি বেসিক</a></li>
+      <li><a href="#ch04"><span class="n">04</span>প্রথম ওয়েব অ্যাপ</a></li>
+    </ul>
+    <p class="nav-part">পর্ব ২ · কোর কনসেপ্ট</p>
+    <ul>
+      <li><a href="#ch05"><span class="n">05</span>Middleware ও Pipeline</a></li>
+      <li><a href="#ch06"><span class="n">06</span>Routing</a></li>
+      <li><a href="#ch07"><span class="n">07</span>Dependency Injection</a></li>
+      <li><a href="#ch08"><span class="n">08</span>Configuration ও Options</a></li>
+      <li><a href="#ch09"><span class="n">09</span>Logging</a></li>
+    </ul>
+    <p class="nav-part">পর্ব ৩ · অ্যাপ বানানো</p>
+    <ul>
+      <li><a href="#ch10"><span class="n">10</span>Minimal API — সম্পূর্ণ CRUD</a></li>
+      <li><a href="#ch11"><span class="n">11</span>MVC — Controller ও View</a></li>
+      <li><a href="#ch12"><span class="n">12</span>Razor Pages</a></li>
+      <li><a href="#ch13"><span class="n">13</span>Model Binding ও Validation</a></li>
+      <li><a href="#ch14"><span class="n">14</span>Entity Framework Core</a></li>
+      <li><a href="#ch15"><span class="n">15</span>প্রফেশনাল REST Web API</a></li>
+    </ul>
+    <p class="nav-part">পর্ব ৪ · প্রোডাকশন স্কিল</p>
+    <ul>
+      <li><a href="#ch16"><span class="n">16</span>Authentication ও Authorization</a></li>
+      <li><a href="#ch17"><span class="n">17</span>Error Handling</a></li>
+      <li><a href="#ch18"><span class="n">18</span>Caching ও Performance</a></li>
+      <li><a href="#ch19"><span class="n">19</span>Background Service ও SignalR</a></li>
+      <li><a href="#ch20"><span class="n">20</span>Testing (xUnit)</a></li>
+      <li><a href="#ch21"><span class="n">21</span>Security Best Practices</a></li>
+      <li><a href="#ch22"><span class="n">22</span>Deployment — Docker ও CI/CD</a></li>
+      <li><a href="#ch23"><span class="n">23</span>Clean Architecture ও SOLID</a></li>
+    </ul>
+    <p class="nav-part">পর্ব ৫ · ক্যারিয়ার</p>
+    <ul>
+      <li><a href="#ch24"><span class="n">24</span>ইউরোপের জব মার্কেট গাইড</a></li>
+      <li><a href="#ch25"><span class="n">25</span>রোডম্যাপ ও পোর্টফোলিও প্রজেক্ট</a></li>
+    </ul>
+    <p class="nav-part">পর্ব ৬ · অভিজ্ঞদের জন্য (3+ YOE)</p>
+    <ul>
+      <li><a href="#ch26"><span class="n">26</span>Advanced C# ও .NET Runtime</a></li>
+      <li><a href="#ch27"><span class="n">27</span>Advanced EF Core ও ডেটা প্যাটার্ন</a></li>
+      <li><a href="#ch28"><span class="n">28</span>Distributed Systems ও Messaging</a></li>
+      <li><a href="#ch29"><span class="n">29</span>Observability — OpenTelemetry</a></li>
+      <li><a href="#ch30"><span class="n">30</span>System Design ইন্টারভিউ</a></li>
+      <li><a href="#ch31"><span class="n">31</span>Mid/Senior পজিশনিং ও নেগোসিয়েশন</a></li>
+    </ul>
+  </nav>
+</aside>
+
+<button class="menu-btn" id="menuBtn" aria-label="মেনু খুলুন">☰</button>
+
+<main>
+<div class="content">
+
+<header class="hero">
+  <p class="eyebrow">সম্পূর্ণ বাংলা কোর্স · .NET 8 LTS → .NET 10</p>
+  <h2>ASP.NET Core — শূন্য থেকে ইউরোপের চাকরি পর্যন্ত</h2>
+  <p class="lead">এই পেজটি একটি সম্পূর্ণ, ধারাবাহিক কারিকুলাম। প্রতিটি অধ্যায় আগেরটার ওপর দাঁড়িয়ে — তাই ওপর থেকে নিচে পড়ুন, প্রতিটি কোড নিজে টাইপ করে চালান। আর <strong>৩+ বছরের অভিজ্ঞ ইঞ্জিনিয়ার</strong> হলে পর্ব ১–৫ দ্রুত ঝালিয়ে নিয়ে সোজা চলে যান <a href="#ch26">পর্ব ৬-এ</a> — runtime internals, distributed systems, observability, system design ও mid/senior লেভেলের ইন্টারভিউ-নেগোসিয়েশন সেখানে।</p>
+  <div class="hero-meta">
+    <span class="chip"><b>৩১টি</b> অধ্যায়</span>
+    <span class="chip"><b>১২০+</b> কোড উদাহরণ</span>
+    <span class="chip"><b>Junior → Senior</b> দুই ট্র্যাক</span>
+    <span class="chip"><b>~৪–৬ মাস</b> বিগিনার (দিনে ২ ঘণ্টা)</span>
+    <span class="chip"><b>৮–১০ সপ্তাহ</b> অভিজ্ঞ ফাস্ট-ট্র্যাক</span>
+  </div>
+</header>
+
+<!-- ================= CH 01 ================= -->
+<section class="chapter" id="ch01">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ০১</span>
+    <h2>ভূমিকা: ASP.NET Core কী এবং কেন শিখবেন</h2>
+    <p class="ch-goal">এই অধ্যায় শেষে জানবেন: ASP.NET Core কী, .NET-এর ভার্সনগুলো কীভাবে কাজ করে, আর কেন এটা ইউরোপে চাকরির জন্য অন্যতম সেরা টেক স্ট্যাক।</p>
+  </header>
+
+  <h3>১.১ ASP.NET Core আসলে কী?</h3>
+  <p><strong>ASP.NET Core</strong> হলো Microsoft-এর তৈরি একটি <strong>ওপেন সোর্স, ক্রস-প্ল্যাটফর্ম ওয়েব ফ্রেমওয়ার্ক</strong> — অর্থাৎ এটা দিয়ে বানানো অ্যাপ Windows, Linux, macOS সব জায়গায় চলে। এটা দিয়ে আপনি বানাতে পারবেন:</p>
+  <ul>
+    <li><strong>Web API</strong> — মোবাইল অ্যাপ বা React/Angular ফ্রন্টএন্ডের জন্য ব্যাকএন্ড (ইউরোপে সবচেয়ে বেশি চাহিদা এটারই)</li>
+    <li><strong>ওয়েবসাইট</strong> — MVC বা Razor Pages দিয়ে সার্ভার-রেন্ডার্ড সাইট</li>
+    <li><strong>রিয়েল-টাইম অ্যাপ</strong> — SignalR দিয়ে চ্যাট, লাইভ নোটিফিকেশন</li>
+    <li><strong>Microservices</strong> — বড় সিস্টেমকে ছোট ছোট সার্ভিসে ভাগ করা আর্কিটেকচার</li>
+    <li><strong>Blazor</strong> — C# দিয়েই ইন্টারঅ্যাকটিভ ফ্রন্টএন্ড</li>
+  </ul>
+  <p>ভাষা হিসেবে ব্যবহার হয় <strong>C#</strong> (উচ্চারণ: সি-শার্প) — একটি আধুনিক, টাইপ-সেফ, খুবই গোছানো ভাষা। পুরনো <span class="inline-code">ASP.NET Framework</span> (শুধু Windows-এ চলত) আর নতুন <span class="inline-code">ASP.NET Core</span> এক জিনিস নয় — আমরা শিখব শুধু নতুনটা।</p>
+
+  <h3>১.২ .NET-এর ভার্সন বোঝা</h3>
+  <p>Microsoft প্রতি বছর নভেম্বরে নতুন .NET রিলিজ করে। জোড় সংখ্যার ভার্সন হয় <strong>LTS (Long Term Support)</strong> — ৩ বছর সাপোর্ট পায়, কোম্পানিগুলো এগুলোই ব্যবহার করে।</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ভার্সন</th><th>ধরন</th><th>রিলিজ</th><th>মন্তব্য</th></tr></thead>
+    <tbody>
+      <tr><td>.NET 8</td><td><strong>LTS</strong></td><td>নভেম্বর ২০২৩</td><td>এখনো ইন্ডাস্ট্রিতে সবচেয়ে বেশি ব্যবহৃত</td></tr>
+      <tr><td>.NET 9</td><td>STS</td><td>নভেম্বর ২০২৪</td><td>১৮ মাস সাপোর্ট</td></tr>
+      <tr><td>.NET 10</td><td><strong>LTS</strong></td><td>নভেম্বর ২০২৫</td><td>সর্বশেষ LTS — নতুন প্রজেক্টে এটাই নিন</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout tip"><div><span class="co-label">ভালো খবর</span><p>.NET 8, 9, 10 — কোড প্রায় একই। এই কোর্সে যা শিখবেন তা সব ভার্সনে কাজ করবে। ইন্টারভিউতে বলবেন: "আমি .NET 8+ এ কাজ করি" — এটাই যথেষ্ট।</p></div></div>
+
+  <h3>১.৩ কেন ইউরোপের জন্য .NET?</h3>
+  <ul>
+    <li><strong>এন্টারপ্রাইজের ভাষা:</strong> জার্মানি, নেদারল্যান্ডস, নর্ডিক দেশগুলোর ব্যাংক, ইনস্যুরেন্স, লজিস্টিকস, ম্যানুফ্যাকচারিং কোম্পানির বিশাল অংশ .NET-এ চলে। এসব কোম্পানি স্থিতিশীল, বেতন ভালো, ভিসা স্পনসর করে।</li>
+    <li><strong>প্রতিযোগিতা তুলনামূলক কম:</strong> JavaScript/Python-এ প্রার্থীর ভিড় বেশি; অভিজ্ঞ .NET ডেভেলপারের সাপ্লাই কম, চাহিদা ধারাবাহিক।</li>
+    <li><strong>একটা স্কিলে অনেক দরজা:</strong> C# জানলে ব্যাকএন্ড, ক্লাউড (Azure), ডেস্কটপ, এমনকি গেম (Unity) — সব খোলা।</li>
+    <li><strong>Azure-এর সাথে জুটি:</strong> ইউরোপের অনেক কোম্পানি Microsoft Azure ক্লাউড ব্যবহার করে; .NET + Azure জানা প্রার্থী তারা সবসময় খোঁজে।</li>
+  </ul>
+
+  <h3>১.৪ এই কোর্স কীভাবে পড়বেন</h3>
+  <ol class="steps">
+    <li><strong>ক্রমানুসারে পড়ুন।</strong> প্রতিটি অধ্যায় আগের অধ্যায়ের জ্ঞান ধরে নেয়।</li>
+    <li><strong>প্রতিটি কোড নিজে টাইপ করুন।</strong> কপি-পেস্ট করলে হাত শিখবে না। এরর আসবে — সেটাই শেখা।</li>
+    <li><strong>প্রতি পর্ব শেষে ছোট প্রজেক্ট করুন।</strong> অধ্যায় ২৫-এ প্রজেক্ট আইডিয়া দেওয়া আছে।</li>
+    <li><strong>ইংরেজি টার্মগুলো ইংরেজিতেই মনে রাখুন।</strong> ইন্টারভিউ ইংরেজিতে হবে — তাই আমি ব্যাখ্যা বাংলায় দিলেও টেকনিক্যাল শব্দ ইংরেজিতে রেখেছি।</li>
+  </ol>
+</section>
+
+<!-- ================= CH 02 ================= -->
+<section class="chapter" id="ch02">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ০২</span>
+    <h2>পরিবেশ সেটআপ: .NET SDK, এডিটর, CLI</h2>
+    <p class="ch-goal">এই অধ্যায় শেষে আপনার কম্পিউটারে .NET চলবে এবং আপনি টার্মিনাল থেকে প্রজেক্ট বানাতে পারবেন।</p>
+  </header>
+
+  <h3>২.১ .NET SDK ইনস্টল</h3>
+  <ol class="steps">
+    <li><a href="https://dotnet.microsoft.com/download" rel="noopener">dotnet.microsoft.com/download</a> থেকে <strong>.NET SDK</strong> (Runtime নয়, SDK!) ডাউনলোড করে ইনস্টল করুন। LTS ভার্সনটা নিন।</li>
+    <li>টার্মিনাল (Windows-এ PowerShell) খুলে যাচাই করুন:</li>
+  </ol>
+  <figure class="code"><figcaption>টার্মিনাল<span class="lang">shell</span></figcaption><pre><code class="lang-sh">dotnet --version
+# আউটপুট এরকম কিছু: 10.0.100</code></pre></figure>
+
+  <h3>২.২ এডিটর</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>এডিটর</th><th>কার জন্য</th><th>দাম</th></tr></thead>
+    <tbody>
+      <tr><td><strong>VS Code + C# Dev Kit এক্সটেনশন</strong></td><td>শুরুর জন্য সেরা — হালকা, সব OS-এ চলে</td><td>ফ্রি</td></tr>
+      <tr><td>Visual Studio 2022+ (Community)</td><td>Windows-এ পূর্ণাঙ্গ IDE, ডিবাগিং সবচেয়ে সহজ</td><td>ফ্রি (Community)</td></tr>
+      <tr><td>JetBrains Rider</td><td>ইউরোপের অনেক কোম্পানিতে জনপ্রিয়</td><td>পেইড (নন-কমার্শিয়াল ফ্রি)</td></tr>
+    </tbody>
+  </table></div>
+  <p>এই কোর্সের জন্য <strong>VS Code + C# Dev Kit</strong> যথেষ্ট। VS Code-এর Extensions ট্যাবে গিয়ে "C# Dev Kit" সার্চ করে ইনস্টল করুন।</p>
+
+  <h3>২.৩ dotnet CLI — আপনার প্রধান হাতিয়ার</h3>
+  <p>.NET-এর সব কাজ টার্মিনাল থেকে <span class="inline-code">dotnet</span> কমান্ড দিয়ে হয়। সবচেয়ে দরকারিগুলো:</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>কমান্ড</th><th>কাজ</th></tr></thead>
+    <tbody>
+      <tr><td><code>dotnet new list</code></td><td>কী কী প্রজেক্ট টেমপ্লেট আছে দেখায়</td></tr>
+      <tr><td><code>dotnet new console -n MyApp</code></td><td>নতুন কনসোল প্রজেক্ট বানায়</td></tr>
+      <tr><td><code>dotnet new web -n MyApi</code></td><td>খালি ওয়েব প্রজেক্ট বানায়</td></tr>
+      <tr><td><code>dotnet run</code></td><td>প্রজেক্ট চালায়</td></tr>
+      <tr><td><code>dotnet watch</code></td><td>চালায় + কোড বদলালে অটো-রিলোড (hot reload)</td></tr>
+      <tr><td><code>dotnet build</code></td><td>কম্পাইল করে, এরর চেক করে</td></tr>
+      <tr><td><code>dotnet add package X</code></td><td>NuGet প্যাকেজ (লাইব্রেরি) যোগ করে</td></tr>
+      <tr><td><code>dotnet test</code></td><td>টেস্ট চালায়</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>২.৪ প্রথম প্রোগ্রাম — Hello World</h3>
+  <figure class="code"><figcaption>টার্মিনাল<span class="lang">shell</span></figcaption><pre><code class="lang-sh">dotnet new console -n HelloBangla
+cd HelloBangla
+dotnet run
+# আউটপুট: Hello, World!</code></pre></figure>
+  <p>প্রজেক্ট ফোল্ডারে দুটো গুরুত্বপূর্ণ ফাইল পাবেন:</p>
+  <ul>
+    <li><span class="inline-code">Program.cs</span> — আপনার কোড। এখান থেকেই প্রোগ্রাম শুরু হয়।</li>
+    <li><span class="inline-code">HelloBangla.csproj</span> — প্রজেক্টের সেটিংস: কোন .NET ভার্সন, কোন কোন প্যাকেজ লাগবে ইত্যাদি।</li>
+  </ul>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// এক লাইনের প্রোগ্রাম — একে বলে "top-level statements"
+Console.WriteLine("Hello, World!");
+Console.WriteLine("আমি ASP.NET Core শিখছি!");</code></pre></figure>
+  <div class="callout note"><div><span class="co-label">জেনে রাখুন</span><p>আগে C#-এ <span class="inline-code">Main</span> মেথডসহ অনেক boilerplate লিখতে হতো। আধুনিক .NET-এ ফাইলের ওপরে সরাসরি কোড লেখা যায় — কম্পাইলার নিজেই <span class="inline-code">Main</span> বানিয়ে নেয়।</p></div></div>
+</section>
+
+<!-- ================= CH 03 ================= -->
+<section class="chapter" id="ch03">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ০৩</span>
+    <h2>C# — ওয়েব ডেভেলপমেন্টের জন্য জরুরি বেসিক</h2>
+    <p class="ch-goal">ASP.NET Core শেখার আগে C#-এর যে অংশগুলো অবশ্যই লাগবে — টাইপ, ক্লাস, ইন্টারফেস, async/await, LINQ — সব এক জায়গায়।</p>
+  </header>
+
+  <div class="callout warn"><div><span class="co-label">গুরুত্বপূর্ণ</span><p>C# একদম নতুন হলে এই অধ্যায়টা ২–৩ সপ্তাহ সময় নিয়ে প্র্যাকটিস করুন। ফ্রেমওয়ার্ক শেখা সহজ, কিন্তু ভাষার ভিত দুর্বল হলে সামনে সব কঠিন লাগবে। ইন্টারভিউতেও C# ফান্ডামেন্টাল প্রশ্ন আসবেই।</p></div></div>
+
+  <h3>৩.১ ভ্যারিয়েবল ও টাইপ</h3>
+  <p>C# একটি <strong>statically typed</strong> ভাষা — প্রতিটি ভ্যারিয়েবলের টাইপ কম্পাইলের সময়ই নির্ধারিত। এতে ভুল আগেই ধরা পড়ে।</p>
+  <figure class="code"><figcaption>Types.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">int age = 25;                    // পূর্ণসংখ্যা
+double price = 99.99;            // দশমিক সংখ্যা
+decimal salary = 55000.50m;      // টাকা-পয়সার হিসাবে decimal ব্যবহার করুন
+bool isActive = true;            // সত্য/মিথ্যা
+string name = "Tusher";          // টেক্সট
+
+// var লিখলে কম্পাইলার টাইপ অনুমান করে (টাইপ কিন্তু fixed-ই থাকে)
+var city = "Dhaka";              // এটি string
+
+// String interpolation — $ চিহ্ন দিয়ে ভেতরে ভ্যারিয়েবল বসানো
+Console.WriteLine($"{name} এর বয়স {age} বছর");</code></pre></figure>
+
+  <h3>৩.২ Nullable — null থেকে বাঁচার ব্যবস্থা</h3>
+  <p>আধুনিক C#-এ কোনো ভ্যারিয়েবল <span class="inline-code">null</span> হতে পারবে কি না তা টাইপেই বলে দিতে হয়। টাইপের পরে <span class="inline-code">?</span> মানে "এটা null হতে পারে"।</p>
+  <figure class="code"><figcaption>Nullable.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">string name = "Rahim";       // কখনো null হবে না
+string? nickname = null;     // null হতে পারে — ব্যবহারের আগে চেক করতে হবে
+
+if (nickname is not null)
+{
+    Console.WriteLine(nickname.Length);
+}
+
+// ?? মানে: বামপাশ null হলে ডানপাশেরটা নাও
+string display = nickname ?? "নাম নেই";
+
+// ?. মানে: null হলে কল না করে null ফেরত দাও
+int? len = nickname?.Length;</code></pre></figure>
+
+  <h3>৩.৩ Collection — List ও Dictionary</h3>
+  <figure class="code"><figcaption>Collections.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// List — একই টাইপের অনেকগুলো জিনিসের তালিকা
+List&lt;string&gt; cities = new() { "Berlin", "Amsterdam", "Warsaw" };
+cities.Add("Stockholm");
+Console.WriteLine(cities.Count);      // 4
+Console.WriteLine(cities[0]);         // Berlin
+
+foreach (var city in cities)
+{
+    Console.WriteLine(city);
+}
+
+// Dictionary — key দিয়ে value খোঁজা
+Dictionary&lt;string, int&gt; population = new()
+{
+    ["Berlin"] = 3_700_000,
+    ["Amsterdam"] = 900_000
+};
+Console.WriteLine(population["Berlin"]);</code></pre></figure>
+
+  <h3>৩.৪ ক্লাস, প্রপার্টি, কনস্ট্রাক্টর</h3>
+  <p>ক্লাস হলো নিজের বানানো টাইপ — ডেটা (property) আর আচরণ (method) একসাথে।</p>
+  <figure class="code"><figcaption>Product.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public class Product
+{
+    // Property — get/set সহ ডেটা রাখার জায়গা
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+
+    // Method — আচরণ
+    public decimal PriceWithVat(decimal vatRate = 0.19m)
+        => Price * (1 + vatRate);
+}
+
+// ব্যবহার — object initializer syntax
+var laptop = new Product { Id = 1, Name = "Laptop", Price = 1200m };
+Console.WriteLine(laptop.PriceWithVat());   // 1428.00</code></pre></figure>
+
+  <h3>৩.৫ Record — ডেটা বহনের জন্য শর্টকাট</h3>
+  <p>API-তে ডেটা আদান-প্রদানের (DTO) জন্য <span class="inline-code">record</span> খুব ব্যবহৃত হয় — এক লাইনে immutable (অপরিবর্তনীয়) টাইপ:</p>
+  <figure class="code"><figcaption>Dtos.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public record ProductDto(int Id, string Name, decimal Price);
+
+var dto = new ProductDto(1, "Laptop", 1200m);
+Console.WriteLine(dto.Name);
+// record ভ্যালু দিয়ে তুলনা হয়:
+var dto2 = new ProductDto(1, "Laptop", 1200m);
+Console.WriteLine(dto == dto2);   // True</code></pre></figure>
+
+  <h3>৩.৬ Interface — চুক্তি (contract)</h3>
+  <p>Interface বলে দেয় "কী কী method থাকতে হবে", কিন্তু কীভাবে কাজ করবে তা বলে না। ASP.NET Core-এর Dependency Injection (অধ্যায় ৭) পুরোটাই interface-এর ওপর দাঁড়িয়ে — তাই এটা ভালো করে বুঝুন।</p>
+  <figure class="code"><figcaption>IEmailService.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public interface IEmailService
+{
+    void Send(string to, string subject, string body);
+}
+
+// একটি বাস্তবায়ন (implementation)
+public class SmtpEmailService : IEmailService
+{
+    public void Send(string to, string subject, string body)
+    {
+        Console.WriteLine($"SMTP দিয়ে {to} কে মেইল পাঠানো হলো");
+    }
+}
+
+// আরেকটি বাস্তবায়ন — টেস্টের জন্য
+public class FakeEmailService : IEmailService
+{
+    public void Send(string to, string subject, string body)
+    {
+        Console.WriteLine("কিছুই পাঠাইনি — এটা টেস্ট");
+    }
+}</code></pre></figure>
+  <p>সুবিধা: যে কোড <span class="inline-code">IEmailService</span> ব্যবহার করে, সে জানেও না ভেতরে SMTP নাকি Fake — ফলে বাস্তবায়ন বদলানো ও টেস্ট করা সহজ।</p>
+
+  <h3>৩.৭ async/await — অপেক্ষার সঠিক উপায়</h3>
+  <p>ওয়েব সার্ভারে একসাথে হাজারো রিকোয়েস্ট আসে। ডাটাবেস বা অন্য API-র উত্তরের জন্য অপেক্ষা করার সময় থ্রেডকে আটকে না রেখে ছেড়ে দেওয়াই <strong>async programming</strong>। ASP.NET Core-এ ডাটাবেস/নেটওয়ার্কের প্রায় সব কাজ async হয়।</p>
+  <figure class="code"><figcaption>AsyncDemo.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// নিয়ম ১: async মেথড Task (বা Task&lt;T&gt;) রিটার্ন করে
+// নিয়ম ২: ভেতরে await দিয়ে অপেক্ষা করা হয়
+// নিয়ম ৩: নাম শেষে Async লাগানো কনভেনশন
+
+public async Task&lt;string&gt; DownloadTitleAsync()
+{
+    using var http = new HttpClient();
+    // await = "কাজ শেষ হওয়া পর্যন্ত থ্রেড আটকে রেখো না"
+    string html = await http.GetStringAsync("https://example.com");
+    return html.Substring(0, 50);
+}
+
+// ব্যবহার:
+string title = await DownloadTitleAsync();
+Console.WriteLine(title);</code></pre></figure>
+  <div class="callout danger"><div><span class="co-label">ইন্টারভিউ প্রশ্ন</span><p>"<span class="inline-code">.Result</span> বা <span class="inline-code">.Wait()</span> কেন ব্যবহার করবেন না?" — উত্তর: এগুলো থ্রেড block করে, deadlock ঘটাতে পারে এবং সার্ভারের scalability নষ্ট করে। সবসময় <span class="inline-code">await</span> ব্যবহার করুন।</p></div></div>
+
+  <h3>৩.৮ LINQ — ডেটা নিয়ে খেলার ভাষা</h3>
+  <p><strong>LINQ</strong> (Language Integrated Query) দিয়ে যেকোনো তালিকা ফিল্টার, সর্ট, ট্রান্সফর্ম করা যায়। Entity Framework-ও (অধ্যায় ১৪) এই একই সিনট্যাক্সে ডাটাবেস কোয়েরি করে — তাই LINQ ভালো জানা মানে অর্ধেক EF শেখা হয়ে যাওয়া।</p>
+  <figure class="code"><figcaption>LinqDemo.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">var products = new List&lt;Product&gt;
+{
+    new() { Id = 1, Name = "Laptop",   Price = 1200m },
+    new() { Id = 2, Name = "Mouse",    Price = 25m },
+    new() { Id = 3, Name = "Monitor",  Price = 300m },
+    new() { Id = 4, Name = "Keyboard", Price = 80m },
+};
+
+// Where = ফিল্টার
+var expensive = products.Where(p => p.Price > 100).ToList();
+
+// Select = রূপান্তর (শুধু নামগুলো নাও)
+var names = products.Select(p => p.Name).ToList();
+
+// OrderBy = সাজানো
+var sorted = products.OrderByDescending(p => p.Price).ToList();
+
+// চেইন করে একসাথে:
+var result = products
+    .Where(p => p.Price > 50)
+    .OrderBy(p => p.Name)
+    .Select(p => $"{p.Name}: €{p.Price}")
+    .ToList();
+
+// আরও দরকারি: First, FirstOrDefault, Any, Count, Sum
+var cheapest = products.OrderBy(p => p.Price).First();
+bool anyFree  = products.Any(p => p.Price == 0);
+decimal total = products.Sum(p => p.Price);</code></pre></figure>
+  <p>এখানে <span class="inline-code">p =&gt; p.Price &gt; 100</span> হলো <strong>lambda expression</strong> — ছোট্ট নামহীন ফাংশন: "p নামের ইনপুট নাও, <span class="inline-code">p.Price &gt; 100</span> ফেরত দাও"।</p>
+
+  <div class="callout tip"><div><span class="co-label">প্র্যাকটিস</span><p>এই অধ্যায়ের প্রতিটি কোড একটি কনসোল প্রজেক্টে চালিয়ে দেখুন। তারপর নিজে বানান: একটি <span class="inline-code">Student</span> ক্লাস, ১০ জনের List, LINQ দিয়ে GPA অনুযায়ী সর্ট করে টপ ৩ জন বের করুন।</p></div></div>
+</section>
+<!-- ================= CH 04 ================= -->
+<section class="chapter" id="ch04">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ০৪</span>
+    <h2>প্রথম ওয়েব অ্যাপ — Program.cs লাইন ধরে ধরে</h2>
+    <p class="ch-goal">একটি ওয়েব প্রজেক্ট বানাবেন, ব্রাউজারে চালাবেন, এবং Program.cs-এর প্রতিটি লাইন কী করে তা বুঝবেন।</p>
+  </header>
+
+  <h3>৪.১ প্রজেক্ট তৈরি ও চালানো</h3>
+  <figure class="code"><figcaption>টার্মিনাল<span class="lang">shell</span></figcaption><pre><code class="lang-sh">dotnet new web -n MyFirstApi
+cd MyFirstApi
+dotnet watch
+# ব্রাউজারে খুলবে: http://localhost:5xxx → "Hello World!" দেখাবে</code></pre></figure>
+  <p><span class="inline-code">dotnet watch</span> দিয়ে চালালে কোড বদলানো মাত্র অ্যাপ নিজে নিজে রিফ্রেশ হয় — ডেভেলপমেন্টে সবসময় এটাই ব্যবহার করুন।</p>
+
+  <h3>৪.২ Program.cs — হৃদপিণ্ড</h3>
+  <p>টেমপ্লেট যে ফাইলটা দিয়েছে, সেটা মাত্র ৪-৫ লাইন। কিন্তু এই ক'লাইনেই পুরো ASP.NET Core-এর গল্প লুকিয়ে আছে:</p>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// ধাপ ১: builder — অ্যাপ বানানোর প্রস্তুতি
+// এখানে সার্ভিস রেজিস্টার হয় (DI), কনফিগারেশন লোড হয়
+var builder = WebApplication.CreateBuilder(args);
+
+// ধাপ ২: app — চালু অ্যাপ্লিকেশন অবজেক্ট
+var app = builder.Build();
+
+// ধাপ ৩: endpoint — কোন URL-এ কী উত্তর যাবে
+app.MapGet("/", () => "Hello World!");
+
+// ধাপ ৪: সার্ভার চালু — এখানে এসে অ্যাপ রিকোয়েস্টের অপেক্ষায় থাকে
+app.Run();</code></pre></figure>
+  <p>মনে রাখার সূত্র — Program.cs-এর জীবন দুই ভাগে চলে:</p>
+  <ul>
+    <li><span class="inline-code">builder.Services.Add...()</span> — <strong>Build-এর আগে:</strong> "অ্যাপে কী কী জিনিস (service) লাগবে" তার তালিকা</li>
+    <li><span class="inline-code">app.Use...() / app.Map...()</span> — <strong>Build-এর পরে:</strong> "রিকোয়েস্ট এলে কী কী ধাপে প্রসেস হবে" তার পাইপলাইন</li>
+  </ul>
+
+  <h3>৪.৩ আরও কিছু endpoint যোগ করি</h3>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+app.MapGet("/", () => "স্বাগতম!");
+
+// টেক্সটের বদলে অবজেক্ট রিটার্ন করলে অটোমেটিক JSON হয়ে যায়
+app.MapGet("/about", () => new { Name = "MyFirstApi", Version = "1.0" });
+
+// URL থেকে প্যারামিটার নেওয়া
+app.MapGet("/hello/{name}", (string name) => $"হ্যালো, {name}!");
+
+app.Run();</code></pre></figure>
+  <p>ব্রাউজারে <span class="inline-code">/hello/Tusher</span> খুললে দেখবেন: <em>হ্যালো, Tusher!</em> — আর <span class="inline-code">/about</span> দেবে JSON: <span class="inline-code">{"name":"MyFirstApi","version":"1.0"}</span></p>
+
+  <h3>৪.৪ প্রজেক্টের বাকি ফাইলগুলো</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ফাইল</th><th>কাজ</th></tr></thead>
+    <tbody>
+      <tr><td><code>Program.cs</code></td><td>অ্যাপের entry point — সার্ভিস + pipeline</td></tr>
+      <tr><td><code>appsettings.json</code></td><td>কনফিগারেশন: connection string, লগ লেভেল ইত্যাদি</td></tr>
+      <tr><td><code>appsettings.Development.json</code></td><td>শুধু ডেভেলপমেন্টে প্রযোজ্য সেটিংস (এটা মূলটার ওপর চাপে)</td></tr>
+      <tr><td><code>Properties/launchSettings.json</code></td><td>লোকালে চালানোর সময় কোন পোর্ট, কোন environment — শুধু আপনার মেশিনে প্রযোজ্য</td></tr>
+      <tr><td><code>MyFirstApi.csproj</code></td><td>টার্গেট ফ্রেমওয়ার্ক ও NuGet প্যাকেজের তালিকা</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout note"><div><span class="co-label">Environment ধারণা</span><p>ASP.NET Core তিনটা স্ট্যান্ডার্ড environment চেনে: <strong>Development</strong>, <strong>Staging</strong>, <strong>Production</strong>। <span class="inline-code">ASPNETCORE_ENVIRONMENT</span> ভ্যারিয়েবল দিয়ে ঠিক হয় কোনটা চলছে। কোডে চেক: <span class="inline-code">app.Environment.IsDevelopment()</span></p></div></div>
+</section>
+
+<!-- ================= CH 05 ================= -->
+<section class="chapter" id="ch05">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ০৫</span>
+    <h2>Middleware ও Request Pipeline</h2>
+    <p class="ch-goal">রিকোয়েস্ট সার্ভারে ঢোকার পর রেসপন্স হয়ে বের হওয়া পর্যন্ত কোন কোন ধাপ পার হয় — এই pipeline-ই ASP.NET Core-এর মূল কাঠামো। ইন্টারভিউর অতি প্রিয় টপিক।</p>
+  </header>
+
+  <h3>৫.১ Pipeline কী?</h3>
+  <p>প্রতিটি HTTP রিকোয়েস্ট একটার পর একটা <strong>middleware</strong>-এর ভেতর দিয়ে যায়। প্রতিটি middleware তিনটা কাজের যেকোনোটা করতে পারে: রিকোয়েস্ট দেখে <strong>কিছু করা</strong>, <strong>পরেরটার কাছে পাঠানো</strong>, অথবা <strong>এখানেই থামিয়ে রেসপন্স দিয়ে দেওয়া</strong> (short-circuit)।</p>
+  <figure class="code"><figcaption>pipeline — ধারণা<span class="lang">diagram</span></figcaption><pre><code>Request ──▶ [Exception Handler] ──▶ [HTTPS Redirect] ──▶ [Static Files]
+                                                              │
+             ফাইল পাওয়া গেলে এখানেই রেসপন্স ◀────────────────┘ না পেলে ▼
+            [Routing] ──▶ [CORS] ──▶ [Authentication] ──▶ [Authorization]
+                                                              │
+Response ◀── (উল্টো পথে প্রতিটির ভেতর দিয়ে ফেরত) ◀── [Endpoint] ◀┘</code></pre></figure>
+
+  <h3>৫.২ নিজের middleware — app.Use</h3>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+// Inline middleware: context = রিকোয়েস্ট/রেসপন্সের সব তথ্য, next = পরের ধাপ
+app.Use(async (context, next) =>
+{
+    Console.WriteLine($"➡ আসছে: {context.Request.Method} {context.Request.Path}");
+    await next();   // পরের middleware-কে ডাকো
+    Console.WriteLine($"⬅ যাচ্ছে: স্ট্যাটাস {context.Response.StatusCode}");
+});
+
+// Short-circuit-এর উদাহরণ: রক্ষণাবেক্ষণ মোড
+app.Use(async (context, next) =>
+{
+    bool maintenance = false;
+    if (maintenance)
+    {
+        context.Response.StatusCode = 503;
+        await context.Response.WriteAsync("সাইট রক্ষণাবেক্ষণে আছে");
+        return;   // next() ডাকিনি — পাইপলাইন এখানেই শেষ
+    }
+    await next();
+});
+
+app.MapGet("/", () => "Hello!");
+app.Run();</code></pre></figure>
+
+  <h3>৫.৩ ক্লাস হিসেবে middleware (প্রফেশনাল স্টাইল)</h3>
+  <figure class="code"><figcaption>RequestTimingMiddleware.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public class RequestTimingMiddleware
+{
+    private readonly RequestDelegate _next;
+    private readonly ILogger&lt;RequestTimingMiddleware&gt; _logger;
+
+    public RequestTimingMiddleware(RequestDelegate next,
+        ILogger&lt;RequestTimingMiddleware&gt; logger)
+    {
+        _next = next;
+        _logger = logger;
+    }
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        await _next(context);
+        sw.Stop();
+        _logger.LogInformation("{Path} সময় নিলো {Ms} ms",
+            context.Request.Path, sw.ElapsedMilliseconds);
+    }
+}
+
+// Program.cs-এ রেজিস্টার:
+app.UseMiddleware&lt;RequestTimingMiddleware&gt;();</code></pre></figure>
+
+  <h3>৫.৪ Order matters — ক্রমই সব</h3>
+  <div class="callout danger"><div><span class="co-label">ইন্টারভিউ প্রশ্ন</span><p>"Middleware-এর order কেন গুরুত্বপূর্ণ?" — কারণ যেটা আগে রেজিস্টার হয় সেটা আগে চলে। যেমন <span class="inline-code">UseAuthentication()</span> অবশ্যই <span class="inline-code">UseAuthorization()</span>-এর <strong>আগে</strong> হতে হবে — আগে জানতে হবে ইউজার কে (authentication), তারপর সিদ্ধান্ত হবে তার অনুমতি আছে কি না (authorization)।</p></div></div>
+  <p>একটি সাধারণ প্রোডাকশন অ্যাপের সঠিক ক্রম:</p>
+  <figure class="code"><figcaption>Program.cs — প্রচলিত ক্রম<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">app.UseExceptionHandler("/error");  // ১. সবার আগে — নিচের যেকোনো এররের জাল
+app.UseHttpsRedirection();          // ২. http → https
+app.UseStaticFiles();               // ৩. css/js/ছবি — দ্রুত সার্ভ, বাকিদের ছোঁয় না
+app.UseRouting();                   // ৪. কোন endpoint-এ যাবে তা নির্ধারণ
+app.UseCors();                      // ৫. cross-origin নিয়ম
+app.UseAuthentication();            // ৬. তুমি কে?
+app.UseAuthorization();             // ৭. তোমার কি অনুমতি আছে?
+app.MapControllers();               // ৮. গন্তব্য (endpoints)</code></pre></figure>
+</section>
+
+<!-- ================= CH 06 ================= -->
+<section class="chapter" id="ch06">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ০৬</span>
+    <h2>Routing — কোন URL কোন কোডে যাবে</h2>
+    <p class="ch-goal">Route template, প্যারামিটার, constraint — URL ডিজাইনের পুরো ব্যাকরণ।</p>
+  </header>
+
+  <h3>৬.১ HTTP method অনুযায়ী ম্যাপিং</h3>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">app.MapGet("/products", () => "সব প্রোডাক্টের তালিকা");      // পড়া
+app.MapPost("/products", () => "নতুন প্রোডাক্ট তৈরি");        // তৈরি
+app.MapPut("/products/{id}", (int id) => $"{id} আপডেট");     // পুরো আপডেট
+app.MapDelete("/products/{id}", (int id) => $"{id} ডিলিট");  // মুছে ফেলা</code></pre></figure>
+
+  <h3>৬.২ Route প্যারামিটার ও constraint</h3>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// {id:int} মানে: id অবশ্যই সংখ্যা হতে হবে, নাহলে 404
+app.MapGet("/products/{id:int}", (int id) => $"প্রোডাক্ট #{id}");
+
+// একাধিক প্যারামিটার + constraint
+app.MapGet("/blog/{year:int:min(2000)}/{slug}",
+    (int year, string slug) => $"{year} সালের পোস্ট: {slug}");
+
+// Optional প্যারামিটার (? চিহ্ন) — ডিফল্ট মানসহ
+app.MapGet("/page/{number:int?}", (int? number) => $"পৃষ্ঠা {number ?? 1}");
+
+// Query string: /search?q=laptop&amp;page=2
+app.MapGet("/search", (string q, int page = 1) =>
+    $"'{q}' খোঁজা হচ্ছে, পৃষ্ঠা {page}");</code></pre></figure>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Constraint</th><th>অর্থ</th></tr></thead>
+    <tbody>
+      <tr><td><code>{id:int}</code></td><td>পূর্ণসংখ্যা</td></tr>
+      <tr><td><code>{id:guid}</code></td><td>GUID (যেমন: 0f8fad5b-…)</td></tr>
+      <tr><td><code>{name:alpha}</code></td><td>শুধু অক্ষর</td></tr>
+      <tr><td><code>{age:range(18,99)}</code></td><td>১৮ থেকে ৯৯-এর মধ্যে</td></tr>
+      <tr><td><code>{slug:minlength(3)}</code></td><td>কমপক্ষে ৩ অক্ষর</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>৬.৩ Route Group — একই prefix-এর রুটগুলো গুছিয়ে রাখা</h3>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">var products = app.MapGroup("/api/products");
+
+products.MapGet("/", () => "GET /api/products");
+products.MapGet("/{id:int}", (int id) => $"GET /api/products/{id}");
+products.MapPost("/", () => "POST /api/products");
+// গ্রুপে একসাথে নিয়মও বসানো যায়: products.RequireAuthorization();</code></pre></figure>
+
+  <div class="callout tip"><div><span class="co-label">REST URL ডিজাইনের নিয়ম</span><p>রিসোর্সের নাম <strong>বহুবচনে</strong> (<span class="inline-code">/products</span>, <span class="inline-code">/users</span>), ক্রিয়া URL-এ নয় (<span class="inline-code">/getProducts</span> ❌) — ক্রিয়া বোঝায় HTTP method-ই। এটা ইন্টারভিউতে API ডিজাইন প্রশ্নের মূল উত্তর।</p></div></div>
+</section>
+
+<!-- ================= CH 07 ================= -->
+<section class="chapter" id="ch07">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ০৭</span>
+    <h2>Dependency Injection — ASP.NET Core-এর মেরুদণ্ড</h2>
+    <p class="ch-goal">DI কী, কেন, এবং তিনটি lifetime (Singleton, Scoped, Transient) — যেকোনো .NET ইন্টারভিউতে এই প্রশ্ন ১০০% আসবে।</p>
+  </header>
+
+  <h3>৭.১ সমস্যাটা কী ছিল?</h3>
+  <p>ধরুন <span class="inline-code">OrderService</span>-এর ভেতরে দরকার <span class="inline-code">EmailService</span>। সরাসরি <span class="inline-code">new EmailService()</span> লিখলে দুটো ক্লাস শক্তভাবে জোড়া লেগে যায় (tight coupling) — টেস্ট করা যায় না, বাস্তবায়ন বদলানো যায় না।</p>
+  <p><strong>Dependency Injection (DI)</strong>-এর সমাধান: ক্লাস নিজে dependency বানাবে না, <strong>constructor-এ চেয়ে নেবে</strong>। কে বানিয়ে দেবে? ASP.NET Core-এর বিল্ট-ইন <strong>DI Container</strong>।</p>
+  <figure class="code"><figcaption>OrderService.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public class OrderService
+{
+    private readonly IEmailService _email;
+
+    // Constructor injection: "আমার একটা IEmailService লাগবে"
+    // — কোনটা, কীভাবে বানানো হবে তা জানার দরকার নেই
+    public OrderService(IEmailService email)
+    {
+        _email = email;
+    }
+
+    public void PlaceOrder(string customerEmail)
+    {
+        // ... অর্ডার প্রসেস ...
+        _email.Send(customerEmail, "অর্ডার কনফার্ম", "ধন্যবাদ!");
+    }
+}</code></pre></figure>
+
+  <h3>৭.২ Container-এ রেজিস্টার করা</h3>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">var builder = WebApplication.CreateBuilder(args);
+
+// "কেউ IEmailService চাইলে SmtpEmailService বানিয়ে দিও"
+builder.Services.AddScoped&lt;IEmailService, SmtpEmailService&gt;();
+builder.Services.AddScoped&lt;OrderService&gt;();
+
+var app = builder.Build();
+
+// Endpoint-এও injection হয় — প্যারামিটারে চাইলেই পাওয়া যায়
+app.MapPost("/order", (OrderService orders) =>
+{
+    orders.PlaceOrder("customer@mail.com");
+    return Results.Ok("অর্ডার হয়েছে");
+});
+
+app.Run();</code></pre></figure>
+
+  <h3>৭.৩ তিনটি Lifetime — সবচেয়ে জরুরি টেবিল</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Lifetime</th><th>কতবার তৈরি হয়</th><th>কখন ব্যবহার</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Transient</strong></td><td>যতবার চাওয়া হয় ততবার নতুন</td><td>হালকা, stateless সার্ভিস</td></tr>
+      <tr><td><strong>Scoped</strong></td><td>প্রতি HTTP রিকোয়েস্টে একবার</td><td>বেশিরভাগ ক্ষেত্রে এটাই; DbContext সবসময় Scoped</td></tr>
+      <tr><td><strong>Singleton</strong></td><td>পুরো অ্যাপে মাত্র একবার</td><td>ক্যাশ, কনফিগ — সবার জন্য শেয়ার্ড জিনিস</td></tr>
+    </tbody>
+  </table></div>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">builder.Services.AddTransient&lt;IMyService, MyService&gt;();  // প্রতিবার নতুন
+builder.Services.AddScoped&lt;IMyService, MyService&gt;();     // প্রতি রিকোয়েস্টে এক
+builder.Services.AddSingleton&lt;IMyService, MyService&gt;();  // সারাজীবনে এক</code></pre></figure>
+
+  <div class="callout danger"><div><span class="co-label">ইন্টারভিউ ফাঁদ</span><p>"Singleton সার্ভিসের ভেতরে Scoped সার্ভিস inject করলে কী হয়?" — সমস্যা! Singleton একবারই তৈরি হয়, তাই তার ভেতরের Scoped জিনিসটাও আটকে যায় — প্রতি রিকোয়েস্টে নতুন হয় না (captive dependency)। .NET ডেভেলপমেন্টে এটা রানটাইমে exception ছোড়ে। সমাধান: <span class="inline-code">IServiceScopeFactory</span> দিয়ে ভেতরে scope বানিয়ে নেওয়া।</p></div></div>
+
+  <h3>৭.৪ চোখে দেখা পরীক্ষা</h3>
+  <p>তিন lifetime-এর পার্থক্য নিজের চোখে দেখতে এই ছোট্ট পরীক্ষাটা চালান — প্রতিটি সার্ভিস জন্মের সময় একটা random ID নেয়:</p>
+  <figure class="code"><figcaption>Program.cs — lifetime পরীক্ষা<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public interface ITransientSvc { Guid Id { get; } }
+public interface IScopedSvc    { Guid Id { get; } }
+public interface ISingletonSvc { Guid Id { get; } }
+public class Svc : ITransientSvc, IScopedSvc, ISingletonSvc
+{
+    public Guid Id { get; } = Guid.NewGuid();
+}
+
+builder.Services.AddTransient&lt;ITransientSvc, Svc&gt;();
+builder.Services.AddScoped&lt;IScopedSvc, Svc&gt;();
+builder.Services.AddSingleton&lt;ISingletonSvc, Svc&gt;();
+
+app.MapGet("/test", (ITransientSvc t1, ITransientSvc t2,
+                     IScopedSvc s1, IScopedSvc s2,
+                     ISingletonSvc g1) => new
+{
+    Transient1 = t1.Id, Transient2 = t2.Id,  // দুটো আলাদা!
+    Scoped1 = s1.Id,    Scoped2 = s2.Id,     // একই রিকোয়েস্টে একই
+    Singleton = g1.Id                         // রিফ্রেশ করলেও একই
+});</code></pre></figure>
+  <p>পেজ রিফ্রেশ করুন কয়েকবার: Transient দুটো সবসময় আলাদা, Scoped দুটো এক রিকোয়েস্টে একই কিন্তু রিফ্রেশে বদলায়, Singleton কখনোই বদলায় না।</p>
+</section>
+<!-- ================= CH 08 ================= -->
+<section class="chapter" id="ch08">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ০৮</span>
+    <h2>Configuration ও Options Pattern</h2>
+    <p class="ch-goal">সেটিংস কোথায় রাখবেন, কীভাবে পড়বেন, আর গোপন তথ্য (পাসওয়ার্ড, API key) কীভাবে কোডের বাইরে রাখবেন।</p>
+  </header>
+
+  <h3>৮.১ কনফিগারেশনের উৎস ও অগ্রাধিকার</h3>
+  <p>ASP.NET Core নিচের উৎসগুলো থেকে সেটিংস পড়ে — <strong>পরেরটা আগেরটাকে overwrite করে</strong>:</p>
+  <ol>
+    <li><span class="inline-code">appsettings.json</span> — সবার জন্য কমন</li>
+    <li><span class="inline-code">appsettings.{Environment}.json</span> — যেমন Development</li>
+    <li>User Secrets (শুধু ডেভেলপমেন্টে)</li>
+    <li>Environment variables — <strong>প্রোডাকশনে এটাই মূল</strong></li>
+    <li>Command line arguments</li>
+  </ol>
+  <figure class="code"><figcaption>appsettings.json<span class="lang">JSON</span></figcaption><pre><code class="lang-json">{
+  "ConnectionStrings": {
+    "Default": "Host=localhost;Database=shopdb;Username=app;Password=dev123"
+  },
+  "Smtp": {
+    "Host": "smtp.example.com",
+    "Port": 587,
+    "From": "noreply@example.com"
+  }
+}</code></pre></figure>
+
+  <h3>৮.২ সরাসরি পড়া — IConfiguration</h3>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">var builder = WebApplication.CreateBuilder(args);
+
+// নেস্টেড key-তে ঢুকতে : ব্যবহার হয়
+string? smtpHost = builder.Configuration["Smtp:Host"];
+int port = builder.Configuration.GetValue&lt;int&gt;("Smtp:Port");
+
+// Connection string-এর জন্য বিশেষ শর্টকাট
+string? conn = builder.Configuration.GetConnectionString("Default");</code></pre></figure>
+
+  <h3>৮.৩ Options Pattern — প্রফেশনাল উপায়</h3>
+  <p>জায়গায় জায়গায় string key লেখা ভুলের জন্ম দেয়। প্রফেশনাল কোডে সেটিংসকে একটা ক্লাসে bind করা হয় — একে বলে <strong>Options pattern</strong>:</p>
+  <figure class="code"><figcaption>SmtpOptions.cs + Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public class SmtpOptions
+{
+    public const string SectionName = "Smtp";
+    public string Host { get; set; } = string.Empty;
+    public int Port { get; set; }
+    public string From { get; set; } = string.Empty;
+}
+
+// Program.cs — bind করা:
+builder.Services.Configure&lt;SmtpOptions&gt;(
+    builder.Configuration.GetSection(SmtpOptions.SectionName));
+
+// যেকোনো সার্ভিসে IOptions&lt;T&gt; দিয়ে নেওয়া:
+public class SmtpEmailService : IEmailService
+{
+    private readonly SmtpOptions _opts;
+    public SmtpEmailService(IOptions&lt;SmtpOptions&gt; opts) => _opts = opts.Value;
+
+    public void Send(string to, string subject, string body)
+        => Console.WriteLine($"{_opts.Host}:{_opts.Port} দিয়ে পাঠাচ্ছি...");
+}</code></pre></figure>
+
+  <h3>৮.৪ গোপন তথ্য — কখনোই Git-এ নয়</h3>
+  <div class="callout danger"><div><span class="co-label">সিকিউরিটি নিয়ম</span><p>পাসওয়ার্ড, API key, connection string-এর আসল মান <strong>কখনো appsettings.json-এ রেখে Git-এ push করবেন না</strong>। GitHub-এ ফাঁস হওয়া credential ইউরোপের কোম্পানিতে রীতিমতো disqualifying ভুল ধরা হয়।</p></div></div>
+  <figure class="code"><figcaption>টার্মিনাল — User Secrets (ডেভেলপমেন্টে)<span class="lang">shell</span></figcaption><pre><code class="lang-sh">dotnet user-secrets init
+dotnet user-secrets set "ConnectionStrings:Default" "Host=...;Password=আসল-পাসওয়ার্ড"
+# এগুলো প্রজেক্ট ফোল্ডারের বাইরে আপনার profile-এ জমা হয় — Git-এ যায় না</code></pre></figure>
+  <p>প্রোডাকশনে ব্যবহার হয় environment variable (নেস্টিং বোঝাতে দুটো underscore): <span class="inline-code">ConnectionStrings__Default=...</span> — অথবা Azure Key Vault / AWS Secrets Manager-এর মতো secret store।</p>
+</section>
+
+<!-- ================= CH 09 ================= -->
+<section class="chapter" id="ch09">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ০৯</span>
+    <h2>Logging — প্রোডাকশনে চোখ-কান</h2>
+    <p class="ch-goal">ILogger দিয়ে structured logging — প্রোডাকশনে সমস্যা খুঁজে বের করার একমাত্র উপায়।</p>
+  </header>
+
+  <h3>৯.১ ILogger ব্যবহার</h3>
+  <p>Logging বিল্ট-ইন — শুধু constructor-এ <span class="inline-code">ILogger&lt;T&gt;</span> চেয়ে নিন (T = নিজের ক্লাস, এটা লগে category হিসেবে দেখায়):</p>
+  <figure class="code"><figcaption>OrderService.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public class OrderService
+{
+    private readonly ILogger&lt;OrderService&gt; _logger;
+    public OrderService(ILogger&lt;OrderService&gt; logger) => _logger = logger;
+
+    public void PlaceOrder(int orderId, decimal amount)
+    {
+        // Structured logging: {} placeholder — string interpolation নয়!
+        _logger.LogInformation("অর্ডার {OrderId} তৈরি হলো, পরিমাণ {Amount}",
+            orderId, amount);
+
+        try { /* ... */ }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "অর্ডার {OrderId} ব্যর্থ", orderId);
+            throw;
+        }
+    }
+}</code></pre></figure>
+  <div class="callout warn"><div><span class="co-label">কেন $"..." নয়?</span><p><span class="inline-code">LogInformation($"অর্ডার {orderId}")</span> লিখলে লগ শুধু টেক্সট হয়ে যায়। <span class="inline-code">{OrderId}</span> placeholder ব্যবহার করলে মানটা আলাদা ফিল্ড হিসেবে জমা হয় — পরে লগ সিস্টেমে "OrderId=1042-এর সব লগ দেখাও" বলে সার্চ করা যায়। একে বলে <strong>structured logging</strong> — ইন্টারভিউতে জিজ্ঞেস করে।</p></div></div>
+
+  <h3>৯.২ Log level</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Level</th><th>কখন</th></tr></thead>
+    <tbody>
+      <tr><td><code>Trace / Debug</code></td><td>ডেভেলপমেন্টে খুঁটিনাটি — প্রোডাকশনে বন্ধ থাকে</td></tr>
+      <tr><td><code>Information</code></td><td>স্বাভাবিক ঘটনা: "অর্ডার তৈরি হলো"</td></tr>
+      <tr><td><code>Warning</code></td><td>অস্বাভাবিক কিন্তু অ্যাপ চলছে: "রিট্রাই লাগলো"</td></tr>
+      <tr><td><code>Error</code></td><td>একটা অপারেশন ব্যর্থ</td></tr>
+      <tr><td><code>Critical</code></td><td>পুরো অ্যাপ বিপদে: ডাটাবেসই নেই</td></tr>
+    </tbody>
+  </table></div>
+  <p>কোন level থেকে লগ দেখা যাবে তা <span class="inline-code">appsettings.json</span>-এর <span class="inline-code">Logging:LogLevel</span> সেকশনে ঠিক হয়।</p>
+
+  <h3>৯.৩ ইন্ডাস্ট্রিতে: Serilog</h3>
+  <p>বাস্তব প্রজেক্টে প্রায় সবাই <strong>Serilog</strong> ব্যবহার করে — ফাইল, কনসোল, Seq, Elasticsearch — যেখানে খুশি লগ পাঠানো যায়:</p>
+  <figure class="code"><figcaption>টার্মিনাল + Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// dotnet add package Serilog.AspNetCore
+
+using Serilog;
+
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("logs/app-.log", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+// ব্যস — ILogger&lt;T&gt; আগের মতোই ব্যবহার করবেন, পেছনে Serilog কাজ করবে</code></pre></figure>
+  <p>বড় কোম্পানিতে লগ যায় কেন্দ্রীয় সিস্টেমে (Grafana/Loki, ELK, Application Insights) — CV-তে "structured logging with Serilog" লেখাটা ভালো সিগন্যাল।</p>
+</section>
+
+<!-- ================= CH 10 ================= -->
+<section class="chapter" id="ch10">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ১০</span>
+    <h2>Minimal API — প্রথম সম্পূর্ণ CRUD</h2>
+    <p class="ch-goal">এতদিনের সব জ্ঞান একসাথে করে একটি পূর্ণাঙ্গ Todo API — Create, Read, Update, Delete।</p>
+  </header>
+
+  <h3>১০.১ পুরো অ্যাপ এক ফাইলে</h3>
+  <p>আপাতত ডেটা রাখব মেমোরিতে (অধ্যায় ১৪-তে আসল ডাটাবেস আসবে)। নতুন প্রজেক্ট বানিয়ে (<span class="inline-code">dotnet new web -n TodoApi</span>) পুরোটা লিখুন:</p>
+  <figure class="code"><figcaption>Program.cs — সম্পূর্ণ Todo API<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSingleton&lt;TodoStore&gt;();
+var app = builder.Build();
+
+var todos = app.MapGroup("/api/todos");
+
+// READ — সবগুলো
+todos.MapGet("/", (TodoStore store) => Results.Ok(store.GetAll()));
+
+// READ — একটা (না পেলে 404)
+todos.MapGet("/{id:int}", (int id, TodoStore store) =>
+    store.Get(id) is Todo todo
+        ? Results.Ok(todo)
+        : Results.NotFound());
+
+// CREATE — 201 Created + নতুন রিসোর্সের ঠিকানা
+todos.MapPost("/", (CreateTodoDto dto, TodoStore store) =>
+{
+    if (string.IsNullOrWhiteSpace(dto.Title))
+        return Results.BadRequest(new { error = "Title লাগবেই" });
+
+    var todo = store.Add(dto.Title);
+    return Results.Created($"/api/todos/{todo.Id}", todo);
+});
+
+// UPDATE
+todos.MapPut("/{id:int}", (int id, UpdateTodoDto dto, TodoStore store) =>
+    store.Update(id, dto.Title, dto.IsDone)
+        ? Results.NoContent()
+        : Results.NotFound());
+
+// DELETE
+todos.MapDelete("/{id:int}", (int id, TodoStore store) =>
+    store.Delete(id) ? Results.NoContent() : Results.NotFound());
+
+app.Run();
+
+// ---------- মডেল ও স্টোর ----------
+public record Todo(int Id, string Title, bool IsDone);
+public record CreateTodoDto(string Title);
+public record UpdateTodoDto(string Title, bool IsDone);
+
+public class TodoStore
+{
+    private readonly Dictionary&lt;int, Todo&gt; _items = new();
+    private int _nextId = 1;
+
+    public IEnumerable&lt;Todo&gt; GetAll() => _items.Values;
+    public Todo? Get(int id) => _items.GetValueOrDefault(id);
+
+    public Todo Add(string title)
+    {
+        var todo = new Todo(_nextId++, title, false);
+        _items[todo.Id] = todo;
+        return todo;
+    }
+
+    public bool Update(int id, string title, bool isDone)
+    {
+        if (!_items.ContainsKey(id)) return false;
+        _items[id] = new Todo(id, title, isDone);
+        return true;
+    }
+
+    public bool Delete(int id) => _items.Remove(id);
+}</code></pre></figure>
+
+  <h3>১০.২ টেস্ট করা</h3>
+  <p>GET ব্রাউজারেই হয়, কিন্তু POST/PUT/DELETE-এর জন্য টুল লাগবে। অপশন: VS Code-এর <strong>REST Client</strong> এক্সটেনশন (<span class="inline-code">.http</span> ফাইল), Postman, বা curl:</p>
+  <figure class="code"><figcaption>todos.http — REST Client দিয়ে<span class="lang">http</span></figcaption><pre><code>POST http://localhost:5000/api/todos
+Content-Type: application/json
+
+{ "title": "ASP.NET Core শেখা" }
+
+###
+GET http://localhost:5000/api/todos
+
+###
+PUT http://localhost:5000/api/todos/1
+Content-Type: application/json
+
+{ "title": "ASP.NET Core শেখা", "isDone": true }
+
+###
+DELETE http://localhost:5000/api/todos/1</code></pre></figure>
+
+  <h3>১০.৩ Results — সঠিক স্ট্যাটাস কোড</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>মেথড</th><th>স্ট্যাটাস</th><th>কখন</th></tr></thead>
+    <tbody>
+      <tr><td><code>Results.Ok(data)</code></td><td>200</td><td>সফল, ডেটাসহ</td></tr>
+      <tr><td><code>Results.Created(url, data)</code></td><td>201</td><td>নতুন কিছু তৈরি হলো</td></tr>
+      <tr><td><code>Results.NoContent()</code></td><td>204</td><td>সফল, ফেরত দেওয়ার কিছু নেই (update/delete)</td></tr>
+      <tr><td><code>Results.BadRequest(err)</code></td><td>400</td><td>ক্লায়েন্টের ইনপুট ভুল</td></tr>
+      <tr><td><code>Results.NotFound()</code></td><td>404</td><td>রিসোর্স নেই</td></tr>
+      <tr><td><code>Results.Unauthorized()</code></td><td>401</td><td>লগইন নেই</td></tr>
+      <tr><td><code>Results.Forbid()</code></td><td>403</td><td>লগইন আছে, অনুমতি নেই</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout tip"><div><span class="co-label">প্র্যাকটিস</span><p>এই API-তে নিজে যোগ করুন: (১) <span class="inline-code">GET /api/todos?done=true</span> — ফিল্টার, (২) <span class="inline-code">PATCH /api/todos/{id}/toggle</span> — done উল্টে দেওয়া। LINQ-এর <span class="inline-code">Where</span> কাজে লাগবে।</p></div></div>
+</section>
+
+<!-- ================= CH 11 ================= -->
+<section class="chapter" id="ch11">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ১১</span>
+    <h2>MVC — Controller, View, Razor</h2>
+    <p class="ch-goal">বড় প্রজেক্ট গোছানোর ক্লাসিক প্যাটার্ন — ইউরোপের বহু কোম্পানির লিগ্যাসি ও বর্তমান কোডবেস এই কাঠামোতে।</p>
+  </header>
+
+  <h3>১১.১ MVC মানে কী?</h3>
+  <ul>
+    <li><strong>Model</strong> — ডেটা ও বিজনেস লজিক (Product, OrderService)</li>
+    <li><strong>View</strong> — ইউজার যা দেখে (HTML টেমপ্লেট)</li>
+    <li><strong>Controller</strong> — রিকোয়েস্ট নেয়, Model-কে কাজ করায়, View বেছে দেয়</li>
+  </ul>
+  <figure class="code"><figcaption>টার্মিনাল<span class="lang">shell</span></figcaption><pre><code class="lang-sh">dotnet new mvc -n MyShop
+cd MyShop &amp;&amp; dotnet watch</code></pre></figure>
+  <p>ফোল্ডার কাঠামো: <span class="inline-code">Controllers/</span>, <span class="inline-code">Models/</span>, <span class="inline-code">Views/</span>, আর স্ট্যাটিক ফাইলের জন্য <span class="inline-code">wwwroot/</span>।</p>
+
+  <h3>১১.২ Controller ও Action</h3>
+  <figure class="code"><figcaption>Controllers/ProductsController.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public class ProductsController : Controller
+{
+    private readonly IProductService _products;
+    public ProductsController(IProductService products) => _products = products;
+
+    // GET /Products         → রুট নিয়ম: /{controller}/{action}/{id?}
+    public IActionResult Index()
+    {
+        var list = _products.GetAll();
+        return View(list);            // Views/Products/Index.cshtml খুঁজবে
+    }
+
+    // GET /Products/Details/5
+    public IActionResult Details(int id)
+    {
+        var product = _products.Get(id);
+        if (product is null) return NotFound();
+        return View(product);
+    }
+}</code></pre></figure>
+
+  <h3>১১.৩ Razor View — C# মেশানো HTML</h3>
+  <figure class="code"><figcaption>Views/Products/Index.cshtml<span class="lang">Razor</span></figcaption><pre><code>@model List&lt;Product&gt;
+
+&lt;h1&gt;আমাদের প্রোডাক্ট (@Model.Count টি)&lt;/h1&gt;
+
+&lt;ul&gt;
+@foreach (var p in Model)
+{
+    &lt;li&gt;
+        &lt;a asp-action="Details" asp-route-id="@p.Id"&gt;@p.Name&lt;/a&gt;
+        — €@p.Price
+        @if (p.Price &gt; 500)
+        {
+            &lt;span class="badge"&gt;প্রিমিয়াম&lt;/span&gt;
+        }
+    &lt;/li&gt;
+}
+&lt;/ul&gt;</code></pre></figure>
+  <p>Razor-এর নিয়ম সহজ: <span class="inline-code">@</span> দিয়ে C# শুরু হয়। <span class="inline-code">@model</span> বলে দেয় এই View কোন টাইপের ডেটা পাবে। <span class="inline-code">asp-action</span>-এর মতো <strong>Tag Helper</strong> লিংক/ফর্ম বানিয়ে দেয়।</p>
+
+  <h3>১১.৪ Layout — সব পেজের কমন কাঠামো</h3>
+  <figure class="code"><figcaption>Views/Shared/_Layout.cshtml (সংক্ষেপিত)<span class="lang">Razor</span></figcaption><pre><code>&lt;html&gt;
+&lt;head&gt;&lt;title&gt;@ViewData["Title"] — MyShop&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+    &lt;nav&gt;...সব পেজের কমন মেনু...&lt;/nav&gt;
+    &lt;main&gt;
+        @RenderBody()   @* প্রতিটি পেজের নিজস্ব কনটেন্ট এখানে বসে *@
+    &lt;/main&gt;
+    &lt;footer&gt;© 2026 MyShop&lt;/footer&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre></figure>
+
+  <h3>১১.৫ ফর্ম — POST ও ViewModel</h3>
+  <figure class="code"><figcaption>Create action + View<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// ViewModel: ফর্মের জন্য আলাদা ক্লাস — Entity সরাসরি View-তে না দেওয়াই ভালো
+public class CreateProductVm
+{
+    [Required(ErrorMessage = "নাম দিতে হবে")]
+    public string Name { get; set; } = string.Empty;
+
+    [Range(0.01, 100000)]
+    public decimal Price { get; set; }
+}
+
+[HttpGet]
+public IActionResult Create() => View();
+
+[HttpPost]
+[ValidateAntiForgeryToken]   // CSRF সুরক্ষা — অধ্যায় ২১-এ বিস্তারিত
+public IActionResult Create(CreateProductVm vm)
+{
+    if (!ModelState.IsValid) return View(vm);  // ভুল থাকলে ফর্মে ফেরত
+    _products.Add(vm.Name, vm.Price);
+    return RedirectToAction(nameof(Index));    // PRG প্যাটার্ন
+}</code></pre></figure>
+  <div class="callout note"><div><span class="co-label">PRG প্যাটার্ন</span><p>Post → Redirect → Get: ফর্ম সফল হলে সরাসরি HTML না দেখিয়ে redirect করা হয়, যাতে ব্রাউজারে রিফ্রেশ দিলে ফর্ম আবার জমা না পড়ে। ছোট জিনিস, কিন্তু ইন্টারভিউতে বললে ভালো ধারণা দেয়।</p></div></div>
+</section>
+<!-- ================= CH 12 ================= -->
+<section class="chapter" id="ch12">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ১২</span>
+    <h2>Razor Pages — পেজভিত্তিক সহজ পথ</h2>
+    <p class="ch-goal">সার্ভার-রেন্ডার্ড সাইটের জন্য MVC-র সরল বিকল্প — কখন কোনটা বেছে নেবেন তাও জানবেন।</p>
+  </header>
+
+  <h3>১২.১ ধারণা: এক পেজ = এক ফাইল-জোড়া</h3>
+  <p>Razor Pages-এ প্রতিটি পেজের থাকে দুটো ফাইল: <span class="inline-code">.cshtml</span> (HTML) আর <span class="inline-code">.cshtml.cs</span> (লজিক — একে বলে <strong>PageModel</strong>)। Controller-এর মতো এক ক্লাসে দশটা action জমা হয় না — প্রতিটা পেজ স্বয়ংসম্পূর্ণ।</p>
+  <figure class="code"><figcaption>Pages/Contact.cshtml<span class="lang">Razor</span></figcaption><pre><code>@page
+@model ContactModel
+
+&lt;h1&gt;যোগাযোগ&lt;/h1&gt;
+&lt;form method="post"&gt;
+    &lt;input asp-for="Email" placeholder="আপনার ইমেইল" /&gt;
+    &lt;span asp-validation-for="Email"&gt;&lt;/span&gt;
+    &lt;textarea asp-for="Message"&gt;&lt;/textarea&gt;
+    &lt;button type="submit"&gt;পাঠান&lt;/button&gt;
+&lt;/form&gt;
+@if (Model.Sent) { &lt;p&gt;ধন্যবাদ! বার্তা পৌঁছেছে।&lt;/p&gt; }</code></pre></figure>
+  <figure class="code"><figcaption>Pages/Contact.cshtml.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public class ContactModel : PageModel
+{
+    [BindProperty, Required, EmailAddress]
+    public string Email { get; set; } = string.Empty;
+
+    [BindProperty, Required, MinLength(10)]
+    public string Message { get; set; } = string.Empty;
+
+    public bool Sent { get; private set; }
+
+    public void OnGet() { }              // GET রিকোয়েস্টে চলে
+
+    public IActionResult OnPost()        // POST রিকোয়েস্টে চলে
+    {
+        if (!ModelState.IsValid) return Page();
+        // ... মেইল পাঠানো ...
+        Sent = true;
+        return Page();
+    }
+}</code></pre></figure>
+  <p><span class="inline-code">OnGet</span>, <span class="inline-code">OnPost</span> — এদের বলে <strong>handler</strong>। <span class="inline-code">[BindProperty]</span> ফর্মের ডেটা প্রপার্টিতে বসিয়ে দেয়।</p>
+
+  <h3>১২.২ MVC নাকি Razor Pages নাকি API?</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>পরিস্থিতি</th><th>বেছে নিন</th></tr></thead>
+    <tbody>
+      <tr><td>React/Angular/মোবাইল অ্যাপের ব্যাকএন্ড</td><td><strong>Web API</strong> (Minimal API বা API Controller)</td></tr>
+      <tr><td>সার্ভার-রেন্ডার্ড সাইট, পেজকেন্দ্রিক (ফর্ম, অ্যাডমিন প্যানেল)</td><td><strong>Razor Pages</strong></td></tr>
+      <tr><td>বড় সার্ভার-রেন্ডার্ড অ্যাপ, জটিল রাউটিং, পুরনো টিম-কনভেনশন</td><td><strong>MVC</strong></td></tr>
+      <tr><td>C# দিয়েই SPA-র মতো ইন্টারঅ্যাকটিভ UI</td><td><strong>Blazor</strong></td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout tip"><div><span class="co-label">জবের বাস্তবতা</span><p>ইউরোপের জব পোস্টিংয়ের সিংহভাগ চায় <strong>Web API + React/Angular</strong> — তাই এই কোর্সের মূল ফোকাস API। MVC/Razor Pages জানা দরকার লিগ্যাসি প্রজেক্ট বোঝার জন্য।</p></div></div>
+</section>
+
+<!-- ================= CH 13 ================= -->
+<section class="chapter" id="ch13">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ১৩</span>
+    <h2>Model Binding ও Validation</h2>
+    <p class="ch-goal">রিকোয়েস্টের ডেটা কীভাবে C# অবজেক্ট হয়, আর ভুল ইনপুট কীভাবে ভদ্রভাবে ফেরত পাঠাতে হয়।</p>
+  </header>
+
+  <h3>১৩.১ ডেটা কোথা থেকে আসে?</h3>
+  <p><strong>Model binding</strong> হলো ASP.NET Core-এর সেই জাদু যা URL, query string, header, body থেকে ডেটা তুলে আপনার মেথডের প্যারামিটারে বসিয়ে দেয়:</p>
+  <figure class="code"><figcaption>Binding-এর উৎস<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">app.MapPost("/api/orders/{id:int}", (
+    int id,                          // ← route থেকে
+    [FromQuery] string? coupon,      // ← ?coupon=SAVE10 থেকে
+    [FromHeader(Name = "X-Api-Key")] string apiKey,  // ← header থেকে
+    CreateOrderDto dto               // ← JSON body থেকে (জটিল টাইপ = অটো body)
+) => Results.Ok(new { id, coupon, dto }));
+
+public record CreateOrderDto(string Product, int Quantity);</code></pre></figure>
+  <p>সাধারণ নিয়ম: <strong>সরল টাইপ</strong> (int, string) আসে route/query থেকে; <strong>জটিল টাইপ</strong> (class/record) আসে JSON body থেকে। সন্দেহ হলে <span class="inline-code">[FromBody]</span>, <span class="inline-code">[FromQuery]</span> দিয়ে স্পষ্ট করে দিন।</p>
+
+  <h3>১৩.২ Data Annotation দিয়ে validation</h3>
+  <figure class="code"><figcaption>RegisterDto.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public class RegisterDto
+{
+    [Required(ErrorMessage = "ইমেইল দিতে হবে")]
+    [EmailAddress(ErrorMessage = "সঠিক ইমেইল দিন")]
+    public string Email { get; set; } = string.Empty;
+
+    [Required, StringLength(100, MinimumLength = 8,
+        ErrorMessage = "পাসওয়ার্ড ৮-১০০ অক্ষরের হতে হবে")]
+    public string Password { get; set; } = string.Empty;
+
+    [Range(18, 120, ErrorMessage = "বয়স ১৮+ হতে হবে")]
+    public int Age { get; set; }
+
+    [Url] public string? Website { get; set; }
+}</code></pre></figure>
+  <p>API Controller-এ (<span class="inline-code">[ApiController]</span> attribute থাকলে) validation ব্যর্থ হলে <strong>অটোমেটিক 400</strong> যায় — আপনাকে কিছু করতে হয় না। Minimal API-তে (.NET 10-এ বিল্ট-ইন validation এসেছে; আগের ভার্সনে নিজে বা লাইব্রেরি দিয়ে চেক করতে হয়)।</p>
+
+  <h3>১৩.৩ FluentValidation — জটিল নিয়মের জন্য</h3>
+  <p>ইন্ডাস্ট্রিতে খুব জনপ্রিয় লাইব্রেরি — নিয়মগুলো আলাদা ক্লাসে, পড়তে ভাষার মতো:</p>
+  <figure class="code"><figcaption>RegisterDtoValidator.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// dotnet add package FluentValidation
+
+public class RegisterDtoValidator : AbstractValidator&lt;RegisterDto&gt;
+{
+    public RegisterDtoValidator()
+    {
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
+        RuleFor(x => x.Password).MinimumLength(8)
+            .Matches("[0-9]").WithMessage("অন্তত একটি সংখ্যা লাগবে");
+        RuleFor(x => x.Age).InclusiveBetween(18, 120);
+    }
+}</code></pre></figure>
+
+  <div class="callout danger"><div><span class="co-label">মূল নীতি</span><p><strong>ক্লায়েন্টকে কখনো বিশ্বাস করবেন না।</strong> ফ্রন্টএন্ডে যত সুন্দর validation-ই থাকুক, সার্ভারে আবার চেক করতেই হবে — কারণ যে কেউ Postman/curl দিয়ে সরাসরি API-তে যা খুশি পাঠাতে পারে।</p></div></div>
+</section>
+
+<!-- ================= CH 14 ================= -->
+<section class="chapter" id="ch14">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ১৪</span>
+    <h2>Entity Framework Core — ডাটাবেসের সাথে কথা</h2>
+    <p class="ch-goal">EF Core দিয়ে ডাটাবেস ডিজাইন, migration, CRUD, রিলেশনশিপ — ব্যাকএন্ড ডেভেলপারের রুটি-রুজি।</p>
+  </header>
+
+  <h3>১৪.১ ORM কী, EF Core কী?</h3>
+  <p><strong>EF Core</strong> একটি <strong>ORM</strong> (Object-Relational Mapper): C# ক্লাস ↔ ডাটাবেস টেবিলের মধ্যে অনুবাদক। আপনি LINQ লেখেন, EF সেটাকে SQL বানিয়ে চালায়। SQL জানতে হবে না — এমন নয়! SQL অবশ্যই শিখবেন (ইন্টারভিউতে লাগবে), কিন্তু দৈনন্দিন কাজ EF-তেই হয়।</p>
+  <p>ডাটাবেস হিসেবে নেব <strong>PostgreSQL</strong> — ফ্রি, শক্তিশালী, এবং ইউরোপের কোম্পানিতে খুবই প্রচলিত (SQL Server-ও শিখে রাখা ভালো — কোড প্রায় একই, শুধু প্যাকেজ আলাদা)।</p>
+  <figure class="code"><figcaption>টার্মিনাল — প্যাকেজ ইনস্টল<span class="lang">shell</span></figcaption><pre><code class="lang-sh">dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL
+dotnet add package Microsoft.EntityFrameworkCore.Design
+dotnet tool install --global dotnet-ef   # migration চালানোর টুল</code></pre></figure>
+
+  <h3>১৪.২ Entity ও DbContext</h3>
+  <figure class="code"><figcaption>Models + Data/ShopDbContext.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// Entity — একেকটা ক্লাস = একেকটা টেবিল
+public class Category
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public List&lt;Product&gt; Products { get; set; } = new();  // 1-to-many
+}
+
+public class Product
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public int CategoryId { get; set; }        // foreign key
+    public Category? Category { get; set; }    // navigation property
+}
+
+// DbContext — ডাটাবেসের গেটওয়ে
+public class ShopDbContext : DbContext
+{
+    public ShopDbContext(DbContextOptions&lt;ShopDbContext&gt; options)
+        : base(options) { }
+
+    public DbSet&lt;Product&gt; Products => Set&lt;Product&gt;();
+    public DbSet&lt;Category&gt; Categories => Set&lt;Category&gt;();
+
+    protected override void OnModelCreating(ModelBuilder mb)
+    {
+        mb.Entity&lt;Product&gt;()
+          .Property(p => p.Price).HasPrecision(10, 2);
+        mb.Entity&lt;Product&gt;()
+          .HasIndex(p => p.Name);
+    }
+}</code></pre></figure>
+  <figure class="code"><figcaption>Program.cs — রেজিস্টার<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">builder.Services.AddDbContext&lt;ShopDbContext&gt;(opt =>
+    opt.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+// AddDbContext ডিফল্টে Scoped — প্রতি রিকোয়েস্টে একটাই DbContext</code></pre></figure>
+
+  <h3>১৪.৩ Migration — স্কিমার ভার্সন কন্ট্রোল</h3>
+  <p>Entity বদলালেই ডাটাবেস নিজে নিজে বদলায় না। <strong>Migration</strong> হলো "ডাটাবেসে কী কী বদল করতে হবে" তার রেকর্ড — Git-এ commit-এর মতো:</p>
+  <figure class="code"><figcaption>টার্মিনাল<span class="lang">shell</span></figcaption><pre><code class="lang-sh"># ধাপ ১: বদলগুলো ধরে migration ফাইল বানাও
+dotnet ef migrations add InitialCreate
+
+# ধাপ ২: ডাটাবেসে প্রয়োগ করো
+dotnet ef database update
+
+# পরে Entity বদলালে আবার: add NewChangeName → update</code></pre></figure>
+
+  <h3>১৪.৪ CRUD — async-এ</h3>
+  <figure class="code"><figcaption>ProductService.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public class ProductService
+{
+    private readonly ShopDbContext _db;
+    public ProductService(ShopDbContext db) => _db = db;
+
+    // CREATE
+    public async Task&lt;Product&gt; CreateAsync(string name, decimal price, int catId)
+    {
+        var product = new Product { Name = name, Price = price, CategoryId = catId };
+        _db.Products.Add(product);
+        await _db.SaveChangesAsync();   // এই মুহূর্তেই SQL চলে
+        return product;
+    }
+
+    // READ — তালিকা (পড়ার কাজে AsNoTracking = দ্রুত)
+    public Task&lt;List&lt;Product&gt;&gt; GetAllAsync() =>
+        _db.Products.AsNoTracking()
+            .OrderBy(p => p.Name)
+            .ToListAsync();
+
+    // READ — একটা
+    public Task&lt;Product?&gt; GetAsync(int id) =>
+        _db.Products.FirstOrDefaultAsync(p => p.Id == id);
+
+    // UPDATE — আগে আনো, বদলাও, সেভ করো (EF নিজেই বদল ট্র্যাক করে)
+    public async Task&lt;bool&gt; UpdatePriceAsync(int id, decimal newPrice)
+    {
+        var product = await _db.Products.FindAsync(id);
+        if (product is null) return false;
+        product.Price = newPrice;
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
+    // DELETE
+    public async Task&lt;bool&gt; DeleteAsync(int id)
+    {
+        var product = await _db.Products.FindAsync(id);
+        if (product is null) return false;
+        _db.Products.Remove(product);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+}</code></pre></figure>
+
+  <h3>১৪.৫ রিলেশনশিপ ও Include</h3>
+  <figure class="code"><figcaption>Queries.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// Eager loading: প্রোডাক্টের সাথে ক্যাটাগরিও আনো (SQL JOIN হয়)
+var withCategory = await _db.Products
+    .Include(p => p.Category)
+    .ToListAsync();
+
+// ফিল্টার + রিলেশন + প্রজেকশন — বাস্তব কোয়েরি যেমন হয়
+var report = await _db.Products
+    .Where(p => p.Price > 100)
+    .Select(p => new ProductDto(p.Id, p.Name, p.Price))  // দরকারি কলামই শুধু
+    .ToListAsync();
+
+// গ্রুপিং: প্রতি ক্যাটাগরিতে কয়টা প্রোডাক্ট
+var counts = await _db.Products
+    .GroupBy(p => p.Category!.Name)
+    .Select(g => new { Category = g.Key, Count = g.Count() })
+    .ToListAsync();</code></pre></figure>
+
+  <div class="callout danger"><div><span class="co-label">ইন্টারভিউ প্রশ্ন: N+1 problem</span><p>লুপের ভেতরে প্রতিটা প্রোডাক্টের Category আলাদা করে আনলে ১টা কোয়েরির বদলে N+1টা কোয়েরি চলে — পারফরম্যান্স ধ্বংস। সমাধান: <span class="inline-code">Include()</span> বা <span class="inline-code">Select()</span> দিয়ে এক কোয়েরিতে সব আনা। আরও জানুন: <span class="inline-code">AsNoTracking</span> (পড়ার কাজে ট্র্যাকিং বন্ধ = দ্রুত) — এ দুটো EF-এর সবচেয়ে কমন ইন্টারভিউ প্রশ্ন।</p></div></div>
+
+  <div class="callout note"><div><span class="co-label">Dapper-ও চিনে রাখুন</span><p>কিছু কোম্পানি (বিশেষত পারফরম্যান্স-স্পর্শকাতর জায়গায়) EF-এর বদলে <strong>Dapper</strong> ব্যবহার করে — হাতে লেখা SQL চালানোর হালকা লাইব্রেরি। জব পোস্টিংয়ে দুটোর নামই দেখবেন; EF ভালো জানলে Dapper একদিনেই শেখা যায়।</p></div></div>
+</section>
+
+<!-- ================= CH 15 ================= -->
+<section class="chapter" id="ch15">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ১৫</span>
+    <h2>প্রফেশনাল REST Web API</h2>
+    <p class="ch-goal">Controller-ভিত্তিক API, DTO, OpenAPI/Swagger, pagination — যে মানের API ইউরোপের কোম্পানি আশা করে।</p>
+  </header>
+
+  <h3>১৫.১ API Controller</h3>
+  <p>বড় API-তে Minimal API-র বদলে অনেক টিম Controller ব্যবহার করে (দুটোই জানতে হবে):</p>
+  <figure class="code"><figcaption>Controllers/ProductsController.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">[ApiController]                     // অটো validation, অটো 400, ProblemDetails
+[Route("api/[controller]")]         // → /api/products
+public class ProductsController : ControllerBase
+{
+    private readonly ProductService _service;
+    public ProductsController(ProductService service) => _service = service;
+
+    [HttpGet]
+    public async Task&lt;ActionResult&lt;List&lt;ProductDto&gt;&gt;&gt; GetAll()
+        => Ok(await _service.GetAllDtoAsync());
+
+    [HttpGet("{id:int}")]
+    public async Task&lt;ActionResult&lt;ProductDto&gt;&gt; Get(int id)
+    {
+        var dto = await _service.GetDtoAsync(id);
+        return dto is null ? NotFound() : Ok(dto);
+    }
+
+    [HttpPost]
+    public async Task&lt;ActionResult&lt;ProductDto&gt;&gt; Create(CreateProductDto input)
+    {
+        var created = await _service.CreateAsync(input);
+        return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task&lt;IActionResult&gt; Delete(int id)
+        => await _service.DeleteAsync(id) ? NoContent() : NotFound();
+}</code></pre></figure>
+
+  <h3>১৫.২ DTO — Entity কখনো সরাসরি বাইরে নয়</h3>
+  <p>Entity-তে থাকে ডাটাবেসের সব কলাম — যার অনেক কিছু (খরচের দাম, internal flag) ক্লায়েন্টের দেখার কথা না। তাই বাইরে যায় <strong>DTO</strong> (Data Transfer Object):</p>
+  <figure class="code"><figcaption>Dtos/ProductDtos.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public record ProductDto(int Id, string Name, decimal Price, string Category);
+public record CreateProductDto(string Name, decimal Price, int CategoryId);
+
+// Entity → DTO ম্যাপিং (হাতে, বা Mapster/AutoMapper লাইব্রেরিতে)
+var dtos = await _db.Products
+    .Select(p => new ProductDto(p.Id, p.Name, p.Price, p.Category!.Name))
+    .ToListAsync();</code></pre></figure>
+  <ul>
+    <li><strong>সিকিউরিটি:</strong> ভুল করে গোপন ফিল্ড ফাঁস হয় না; ক্লায়েন্ট বাড়তি ফিল্ড পাঠিয়ে আপডেটও করতে পারে না (over-posting রোধ)</li>
+    <li><strong>স্থিতিশীলতা:</strong> ডাটাবেস বদলালেও API-র চুক্তি (contract) অটুট থাকে</li>
+  </ul>
+
+  <h3>১৫.৩ OpenAPI / Swagger — API-র নিজের ডকুমেন্টেশন</h3>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// .NET 9+ এ বিল্ট-ইন:
+builder.Services.AddOpenApi();
+// ...
+app.MapOpenApi();                       // /openapi/v1.json
+
+// ইন্টারঅ্যাকটিভ UI চাইলে (Swashbuckle বা Scalar প্যাকেজ):
+// dotnet add package Scalar.AspNetCore
+app.MapScalarApiReference();            // /scalar — সুন্দর টেস্টিং UI</code></pre></figure>
+  <p>এতে ফ্রন্টএন্ড টিম এক লিংকেই দেখে নেয় কোন endpoint কী নেয়, কী দেয় — টিমওয়ার্কের ভাষা।</p>
+
+  <h3>১৫.৪ Pagination, ফিল্টার, সর্ট</h3>
+  <p>দশ লাখ রেকর্ড কখনোই একসাথে পাঠাবেন না — যেকোনো তালিকা endpoint-এ pagination বাধ্যতামূলক:</p>
+  <figure class="code"><figcaption>GET /api/products?page=2&amp;pageSize=20&amp;search=lap<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public record PagedResult&lt;T&gt;(List&lt;T&gt; Items, int Page, int PageSize, int Total);
+
+[HttpGet]
+public async Task&lt;PagedResult&lt;ProductDto&gt;&gt; GetAll(
+    string? search, int page = 1, int pageSize = 20)
+{
+    pageSize = Math.Min(pageSize, 100);   // অপব্যবহার ঠেকান
+
+    var query = _db.Products.AsNoTracking();
+
+    if (!string.IsNullOrWhiteSpace(search))
+        query = query.Where(p => p.Name.Contains(search));
+
+    int total = await query.CountAsync();
+
+    var items = await query
+        .OrderBy(p => p.Name)
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .Select(p => new ProductDto(p.Id, p.Name, p.Price, p.Category!.Name))
+        .ToListAsync();
+
+    return new(items, page, pageSize, total);
+}</code></pre></figure>
+
+  <div class="callout tip"><div><span class="co-label">মাইলফলক প্রজেক্ট</span><p>এই পর্যন্ত শিখে বানান: <strong>Bookstore API</strong> — Book + Author entity (1-to-many), PostgreSQL + EF Core, DTO, pagination + সার্চ, Swagger। এটাই হবে আপনার পোর্টফোলিওর প্রথম পাথর — অধ্যায় ১৬-২২ এর ওপর এটাকেই ধাপে ধাপে প্রোডাকশন-মানে নিয়ে যাব।</p></div></div>
+</section>
+<!-- ================= CH 16 ================= -->
+<section class="chapter" id="ch16">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ১৬</span>
+    <h2>Authentication ও Authorization</h2>
+    <p class="ch-goal">তুমি কে (authentication) আর তোমার কী করার অনুমতি আছে (authorization) — JWT, Identity, role ও policy।</p>
+  </header>
+
+  <h3>১৬.১ দুটো শব্দের পার্থক্য (ইন্টারভিউর প্রথম প্রশ্ন)</h3>
+  <ul>
+    <li><strong>Authentication (AuthN):</strong> "তুমি কে?" — লগইন, পরিচয় যাচাই → ব্যর্থ হলে <strong>401</strong></li>
+    <li><strong>Authorization (AuthZ):</strong> "তোমার কি এই কাজের অনুমতি আছে?" → ব্যর্থ হলে <strong>403</strong></li>
+  </ul>
+
+  <h3>১৬.২ API-র জন্য JWT — কীভাবে কাজ করে</h3>
+  <ol class="steps">
+    <li>ইউজার email/password দিয়ে <span class="inline-code">POST /login</span> করে</li>
+    <li>সার্ভার যাচাই করে একটা <strong>JWT (JSON Web Token)</strong> বানিয়ে দেয় — সাইন করা একটা টোকেন, ভেতরে ইউজারের তথ্য (<strong>claims</strong>: id, email, role)</li>
+    <li>ক্লায়েন্ট প্রতিটি রিকোয়েস্টে header পাঠায়: <span class="inline-code">Authorization: Bearer &lt;token&gt;</span></li>
+    <li>সার্ভার শুধু <strong>সিগনেচার যাচাই</strong> করে — ডাটাবেসে যেতে হয় না, তাই দ্রুত ও stateless</li>
+  </ol>
+  <figure class="code"><figcaption>Program.cs — JWT সেটআপ<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        };
+    });
+builder.Services.AddAuthorization();
+
+var app = builder.Build();
+app.UseAuthentication();   // ক্রম মনে আছে তো? AuthN আগে,
+app.UseAuthorization();    // AuthZ পরে</code></pre></figure>
+  <figure class="code"><figcaption>টোকেন বানানো — login endpoint<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">app.MapPost("/api/auth/login", (LoginDto dto, IConfiguration cfg) =>
+{
+    // বাস্তবে: ডাটাবেস থেকে ইউজার এনে hash যাচাই করবেন (Identity নিচে)
+    if (dto.Email != "admin@shop.com" || dto.Password != "P@ss12345")
+        return Results.Unauthorized();
+
+    var claims = new[]
+    {
+        new Claim(ClaimTypes.Name, dto.Email),
+        new Claim(ClaimTypes.Role, "Admin"),
+    };
+
+    var key = new SymmetricSecurityKey(
+        Encoding.UTF8.GetBytes(cfg["Jwt:Key"]!));
+    var token = new JwtSecurityToken(
+        issuer: cfg["Jwt:Issuer"],
+        audience: cfg["Jwt:Audience"],
+        claims: claims,
+        expires: DateTime.UtcNow.AddMinutes(30),   // ছোট আয়ু!
+        signingCredentials: new SigningCredentials(
+            key, SecurityAlgorithms.HmacSha256));
+
+    return Results.Ok(new
+    {
+        token = new JwtSecurityTokenHandler().WriteToken(token)
+    });
+});
+
+public record LoginDto(string Email, string Password);</code></pre></figure>
+
+  <h3>১৬.৩ Endpoint রক্ষা করা</h3>
+  <figure class="code"><figcaption>Authorization প্রয়োগ<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// Minimal API:
+app.MapGet("/api/profile", (ClaimsPrincipal user) =>
+    $"স্বাগতম, {user.Identity?.Name}")
+    .RequireAuthorization();
+
+// শুধু Admin role:
+app.MapDelete("/api/products/{id:int}", (int id) => Results.NoContent())
+    .RequireAuthorization(p => p.RequireRole("Admin"));
+
+// Controller-এ:
+[Authorize]                          // লগইন লাগবে
+public class OrdersController : ControllerBase
+{
+    [AllowAnonymous]                 // এটা সবার জন্য খোলা
+    [HttpGet("public")] public IActionResult Public() => Ok();
+
+    [Authorize(Roles = "Admin")]     // শুধু Admin
+    [HttpDelete("{id}")] public IActionResult Delete(int id) => NoContent();
+}</code></pre></figure>
+
+  <h3>১৬.৪ Policy — নিয়মভিত্তিক authorization</h3>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AtLeast18", policy =>
+        policy.RequireAssertion(ctx =>
+            int.TryParse(ctx.User.FindFirstValue("age"), out int age)
+            &amp;&amp; age >= 18));
+});
+
+app.MapGet("/api/adult-content", () => "...")
+   .RequireAuthorization("AtLeast18");</code></pre></figure>
+
+  <h3>১৬.৫ ASP.NET Core Identity — ইউজার ব্যবস্থাপনা রেডিমেড</h3>
+  <p>ইউজার টেবিল, password hashing, লকআউট, email confirmation, 2FA — সব নিজে বানানো বিপজ্জনক। <strong>Identity</strong> এসব রেডিমেড দেয়:</p>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore
+
+builder.Services.AddIdentityCore&lt;AppUser&gt;(opt =>
+{
+    opt.Password.RequiredLength = 8;
+    opt.User.RequireUniqueEmail = true;
+    opt.Lockout.MaxFailedAccessAttempts = 5;
+})
+.AddEntityFrameworkStores&lt;ShopDbContext&gt;();
+
+public class AppUser : IdentityUser { public string? FullName { get; set; } }
+
+// তারপর UserManager&lt;AppUser&gt; inject করে:
+// await userManager.CreateAsync(user, password);   ← hashing অটো
+// await userManager.CheckPasswordAsync(user, password);</code></pre></figure>
+
+  <div class="callout note"><div><span class="co-label">ইউরোপে যা শুনবেন</span><p>বড় কোম্পানিতে লগইন প্রায়ই নিজের সার্ভারে হয় না — হয় <strong>OpenID Connect</strong> প্রোভাইডারে: <strong>Keycloak</strong> (ইউরোপে খুব জনপ্রিয়, ওপেন সোর্স), <strong>Microsoft Entra ID</strong> (Azure AD), Auth0। ধারণাটা জানুন: আপনার API শুধু টোকেন যাচাই করে, ইস্যু করে ওই প্রোভাইডার। Refresh token ধারণাটাও শিখুন — access token-এর আয়ু ছোট রেখে নতুন টোকেন নেওয়ার কৌশল।</p></div></div>
+</section>
+
+<!-- ================= CH 17 ================= -->
+<section class="chapter" id="ch17">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ১৭</span>
+    <h2>Error Handling — সুন্দরভাবে ব্যর্থ হওয়া</h2>
+    <p class="ch-goal">Exception কখনো stack trace-সহ ক্লায়েন্টে যাবে না; যাবে স্ট্যান্ডার্ড ProblemDetails।</p>
+  </header>
+
+  <h3>১৭.১ Global exception handler</h3>
+  <figure class="code"><figcaption>GlobalExceptionHandler.cs (.NET 8+ IExceptionHandler)<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public class GlobalExceptionHandler : IExceptionHandler
+{
+    private readonly ILogger&lt;GlobalExceptionHandler&gt; _logger;
+    public GlobalExceptionHandler(ILogger&lt;GlobalExceptionHandler&gt; logger)
+        => _logger = logger;
+
+    public async ValueTask&lt;bool&gt; TryHandleAsync(
+        HttpContext context, Exception ex, CancellationToken ct)
+    {
+        _logger.LogError(ex, "Unhandled exception at {Path}",
+            context.Request.Path);
+
+        var (status, title) = ex switch
+        {
+            KeyNotFoundException   => (404, "রিসোর্স পাওয়া যায়নি"),
+            UnauthorizedAccessException => (403, "অনুমতি নেই"),
+            _ => (500, "সার্ভারে সমস্যা হয়েছে")
+        };
+
+        context.Response.StatusCode = status;
+        await context.Response.WriteAsJsonAsync(new ProblemDetails
+        {
+            Status = status,
+            Title = title,
+            Instance = context.Request.Path
+        }, ct);
+        return true;   // হ্যান্ডেল করা হয়ে গেছে
+    }
+}
+
+// Program.cs:
+builder.Services.AddExceptionHandler&lt;GlobalExceptionHandler&gt;();
+builder.Services.AddProblemDetails();
+// pipeline-এর একদম শুরুতে:
+app.UseExceptionHandler();</code></pre></figure>
+
+  <h3>১৭.২ ProblemDetails — এররের আন্তর্জাতিক ফরম্যাট</h3>
+  <p>RFC 9457 স্ট্যান্ডার্ড — প্রতিটি এররের একই আকৃতি, ফলে ফ্রন্টএন্ড এক নিয়মে সব এরর দেখাতে পারে:</p>
+  <figure class="code"><figcaption>এরকম JSON যায়<span class="lang">JSON</span></figcaption><pre><code class="lang-json">{
+  "status": 404,
+  "title": "রিসোর্স পাওয়া যায়নি",
+  "instance": "/api/products/999"
+}</code></pre></figure>
+  <div class="callout warn"><div><span class="co-label">দুটো নীতি</span><p>১) <strong>Exception হলো ব্যতিক্রমের জন্য</strong> — "প্রোডাক্ট পাওয়া যায়নি" স্বাভাবিক ঘটনা, সেটার জন্য <span class="inline-code">null</span>/Result ফেরত দিন, exception ছুড়বেন না। ২) <strong>ক্লায়েন্টকে কখনো stack trace দেখাবেন না</strong> — ওটা attacker-এর জন্য ম্যাপ; বিস্তারিত যাবে লগে, ক্লায়েন্টে যাবে ভদ্র বার্তা।</p></div></div>
+</section>
+
+<!-- ================= CH 18 ================= -->
+<section class="chapter" id="ch18">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ১৮</span>
+    <h2>Caching, Performance ও Rate Limiting</h2>
+    <p class="ch-goal">একই কাজ বারবার না করা — মেমোরি ক্যাশ, Redis, output cache, আর অপব্যবহার ঠেকানোর rate limiter।</p>
+  </header>
+
+  <h3>১৮.১ IMemoryCache — এক সার্ভারের ক্যাশ</h3>
+  <figure class="code"><figcaption>CategoryService.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">builder.Services.AddMemoryCache();
+
+public class CategoryService
+{
+    private readonly IMemoryCache _cache;
+    private readonly ShopDbContext _db;
+    public CategoryService(IMemoryCache cache, ShopDbContext db)
+        { _cache = cache; _db = db; }
+
+    public async Task&lt;List&lt;Category&gt;&gt; GetAllAsync()
+    {
+        return (await _cache.GetOrCreateAsync("categories:all", async entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+            return await _db.Categories.AsNoTracking().ToListAsync();
+        }))!;
+    }
+}</code></pre></figure>
+
+  <h3>১৮.২ Distributed cache — Redis</h3>
+  <p>একাধিক সার্ভার (বা কনটেইনার) চললে মেমোরি ক্যাশ যথেষ্ট নয় — সবাই মিলে শেয়ার করে <strong>Redis</strong>:</p>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// dotnet add package Microsoft.Extensions.Caching.StackExchangeRedis
+builder.Services.AddStackExchangeRedisCache(opt =>
+    opt.Configuration = builder.Configuration.GetConnectionString("Redis"));
+
+// .NET 9+ এ আরও ভালো: HybridCache — মেমোরি + Redis দুই স্তর একসাথে,
+// cache stampede (একসাথে হাজার রিকোয়েস্টে ক্যাশ ফাঁকা) সমস্যাও সামলায়</code></pre></figure>
+
+  <h3>১৮.৩ Output caching — পুরো রেসপন্স ক্যাশ</h3>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">builder.Services.AddOutputCache();
+app.UseOutputCache();
+
+app.MapGet("/api/categories", GetCategories)
+   .CacheOutput(p => p.Expire(TimeSpan.FromMinutes(5)));</code></pre></figure>
+
+  <h3>১৮.৪ Rate limiting — বিল্ট-ইন</h3>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = 429;   // Too Many Requests
+    options.AddFixedWindowLimiter("api", limiter =>
+    {
+        limiter.PermitLimit = 100;                    // ১ মিনিটে সর্বোচ্চ ১০০
+        limiter.Window = TimeSpan.FromMinutes(1);
+    });
+});
+app.UseRateLimiter();
+app.MapGet("/api/products", GetProducts).RequireRateLimiting("api");</code></pre></figure>
+
+  <div class="callout tip"><div><span class="co-label">ক্যাশের দুই কঠিন প্রশ্ন</span><p>১) <strong>Invalidation:</strong> ডেটা বদলালে ক্যাশ বাসি হয়ে যায় — লেখার সময় <span class="inline-code">_cache.Remove("key")</span> করুন, আর সবসময় মেয়াদ (expiration) দিন। ২) <strong>কী ক্যাশ করবেন:</strong> যা ঘনঘন পড়া হয় কিন্তু কম বদলায় (ক্যাটাগরি, সেটিংস) — ইউজার-নির্দিষ্ট বা ঘনঘন বদলানো ডেটা নয়।</p></div></div>
+</section>
+
+<!-- ================= CH 19 ================= -->
+<section class="chapter" id="ch19">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ১৯</span>
+    <h2>Background Service ও SignalR</h2>
+    <p class="ch-goal">রিকোয়েস্টের বাইরে চলা কাজ (মেইল পাঠানো, রাতের রিপোর্ট) আর রিয়েল-টাইম যোগাযোগ।</p>
+  </header>
+
+  <h3>১৯.১ BackgroundService</h3>
+  <p>ইউজারকে ২০ সেকেন্ড বসিয়ে রেখে মেইল পাঠাবেন না — কাজটা queue-তে ফেলে সাথে সাথে উত্তর দিন, পেছনে একটা worker কাজটা করুক:</p>
+  <figure class="code"><figcaption>EmailWorker.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// Queue — Channel হলো .NET-এর থ্রেড-সেফ ইন-মেমরি পাইপ
+public class EmailQueue
+{
+    private readonly Channel&lt;string&gt; _channel =
+        Channel.CreateUnbounded&lt;string&gt;();
+    public ValueTask QueueAsync(string email) =>
+        _channel.Writer.WriteAsync(email);
+    public IAsyncEnumerable&lt;string&gt; ReadAllAsync(CancellationToken ct) =>
+        _channel.Reader.ReadAllAsync(ct);
+}
+
+// Worker — অ্যাপ চালু হলে শুরু, বন্ধ হলে থামে
+public class EmailWorker : BackgroundService
+{
+    private readonly EmailQueue _queue;
+    private readonly ILogger&lt;EmailWorker&gt; _logger;
+    public EmailWorker(EmailQueue queue, ILogger&lt;EmailWorker&gt; logger)
+        { _queue = queue; _logger = logger; }
+
+    protected override async Task ExecuteAsync(CancellationToken ct)
+    {
+        await foreach (var email in _queue.ReadAllAsync(ct))
+        {
+            _logger.LogInformation("মেইল পাঠাচ্ছি: {Email}", email);
+            await Task.Delay(2000, ct);   // আসল SMTP কলের জায়গায়
+        }
+    }
+}
+
+// Program.cs:
+builder.Services.AddSingleton&lt;EmailQueue&gt;();
+builder.Services.AddHostedService&lt;EmailWorker&gt;();
+
+// Endpoint সাথে সাথে উত্তর দেয়:
+app.MapPost("/api/newsletter", async (string email, EmailQueue q) =>
+{
+    await q.QueueAsync(email);
+    return Results.Accepted();   // 202 = "নিয়েছি, পরে করব"
+});</code></pre></figure>
+  <div class="callout note"><div><span class="co-label">ইন্ডাস্ট্রিতে</span><p>প্রোডাকশনে ইন-মেমরি queue-র বদলে ব্যবহার হয় <strong>RabbitMQ / Azure Service Bus / Kafka</strong>-র মতো message broker (সার্ভার রিস্টার্টে কাজ হারায় না) — অধ্যায় ২৩-এ ধারণা পাবেন। শিডিউলড কাজের জন্য জনপ্রিয় লাইব্রেরি: <strong>Hangfire</strong>, <strong>Quartz.NET</strong>।</p></div></div>
+
+  <h3>১৯.২ SignalR — রিয়েল-টাইম</h3>
+  <p>সাধারণ HTTP-তে সার্ভার নিজে থেকে ক্লায়েন্টকে কিছু বলতে পারে না। <strong>SignalR</strong> (WebSocket-ভিত্তিক) সেই দরজা খোলে — চ্যাট, লাইভ নোটিফিকেশন, ড্যাশবোর্ড:</p>
+  <figure class="code"><figcaption>ChatHub.cs + Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public class ChatHub : Hub
+{
+    // ক্লায়েন্ট এটা ডাকে; সার্ভার সবাইকে ব্রডকাস্ট করে
+    public async Task SendMessage(string user, string message)
+        => await Clients.All.SendAsync("ReceiveMessage", user, message);
+}
+
+// Program.cs:
+builder.Services.AddSignalR();
+app.MapHub&lt;ChatHub&gt;("/hubs/chat");</code></pre></figure>
+  <figure class="code"><figcaption>chat.js — ব্রাউজার সাইড<span class="lang">JS</span></figcaption><pre><code class="lang-js">const conn = new signalR.HubConnectionBuilder()
+    .withUrl("/hubs/chat")
+    .withAutomaticReconnect()
+    .build();
+
+conn.on("ReceiveMessage", (user, message) => {
+    console.log(`${user}: ${message}`);   // UI-তে দেখান
+});
+
+await conn.start();
+await conn.invoke("SendMessage", "Tusher", "হ্যালো সবাই!");</code></pre></figure>
+</section>
+<!-- ================= CH 20 ================= -->
+<section class="chapter" id="ch20">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ২০</span>
+    <h2>Testing — xUnit, Mock, Integration Test</h2>
+    <p class="ch-goal">ইউরোপের কোম্পানিতে টেস্ট ছাড়া কোড merge হয় না। এই অধ্যায় আপনাকে সেই সংস্কৃতির জন্য তৈরি করবে।</p>
+  </header>
+
+  <h3>২০.১ Unit test — xUnit দিয়ে</h3>
+  <figure class="code"><figcaption>টার্মিনাল — টেস্ট প্রজেক্ট<span class="lang">shell</span></figcaption><pre><code class="lang-sh">dotnet new xunit -n Shop.Tests
+cd Shop.Tests
+dotnet add reference ../Shop.Api/Shop.Api.csproj
+dotnet test</code></pre></figure>
+  <p>টেস্ট লেখা হয় <strong>AAA প্যাটার্নে</strong> — Arrange (সাজাও), Act (চালাও), Assert (যাচাই করো):</p>
+  <figure class="code"><figcaption>PriceCalculatorTests.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public class PriceCalculatorTests
+{
+    [Fact]   // একটা টেস্ট কেস
+    public void PriceWithVat_AddsGermanVat()
+    {
+        // Arrange
+        var product = new Product { Price = 100m };
+
+        // Act
+        var result = product.PriceWithVat(0.19m);
+
+        // Assert
+        Assert.Equal(119m, result);
+    }
+
+    [Theory]  // একই টেস্ট, একাধিক ডেটায়
+    [InlineData(100, 0.19, 119)]
+    [InlineData(200, 0.21, 242)]   // নেদারল্যান্ডসের VAT
+    [InlineData(0,   0.19, 0)]
+    public void PriceWithVat_Works(decimal price, decimal vat, decimal expected)
+    {
+        var product = new Product { Price = price };
+        Assert.Equal(expected, product.PriceWithVat(vat));
+    }
+}</code></pre></figure>
+  <div class="callout tip"><div><span class="co-label">টেস্টের নাম</span><p>কনভেনশন: <span class="inline-code">MethodName_Scenario_ExpectedResult</span> — যেমন <span class="inline-code">Login_WrongPassword_Returns401</span>। নাম পড়েই বোঝা যাবে কী পরীক্ষা হচ্ছে।</p></div></div>
+
+  <h3>২০.২ Mock — dependency নকল করা</h3>
+  <p>OrderService টেস্ট করতে গিয়ে সত্যি মেইল পাঠাতে চান না — interface-এর নকল বাস্তবায়ন দিন। জনপ্রিয় লাইব্রেরি: <strong>NSubstitute</strong> (বা Moq):</p>
+  <figure class="code"><figcaption>OrderServiceTests.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// dotnet add package NSubstitute
+
+[Fact]
+public void PlaceOrder_SendsConfirmationEmail()
+{
+    // Arrange — নকল IEmailService
+    var email = Substitute.For&lt;IEmailService&gt;();
+    var service = new OrderService(email);
+
+    // Act
+    service.PlaceOrder("customer@mail.com");
+
+    // Assert — মেইল পাঠানোর "চেষ্টা" হয়েছিল কি না
+    email.Received(1).Send(
+        "customer@mail.com",
+        Arg.Any&lt;string&gt;(),
+        Arg.Any&lt;string&gt;());
+}</code></pre></figure>
+  <p>এখানেই অধ্যায় ৩ ও ৭-এর ফল: interface + DI দিয়ে কোড লিখেছেন বলেই নকল বসানো গেল — টেস্টেবিলিটিই DI-এর সবচেয়ে বড় পুরস্কার।</p>
+
+  <h3>২০.৩ Integration test — আসল HTTP দিয়ে পুরো অ্যাপ</h3>
+  <figure class="code"><figcaption>TodoApiTests.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// dotnet add package Microsoft.AspNetCore.Mvc.Testing
+
+public class TodoApiTests : IClassFixture&lt;WebApplicationFactory&lt;Program&gt;&gt;
+{
+    private readonly HttpClient _client;
+    public TodoApiTests(WebApplicationFactory&lt;Program&gt; factory)
+        => _client = factory.CreateClient();   // মেমোরিতে পুরো অ্যাপ চালু!
+
+    [Fact]
+    public async Task PostThenGet_ReturnsCreatedTodo()
+    {
+        var response = await _client.PostAsJsonAsync("/api/todos",
+            new { title = "টেস্ট শেখা" });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        var todo = await response.Content.ReadFromJsonAsync&lt;Todo&gt;();
+        Assert.Equal("টেস্ট শেখা", todo!.Title);
+    }
+
+    [Fact]
+    public async Task Get_UnknownId_Returns404()
+    {
+        var response = await _client.GetAsync("/api/todos/99999");
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+}</code></pre></figure>
+  <div class="callout note"><div><span class="co-label">এক ধাপ এগিয়ে</span><p>আসল PostgreSQL-সহ integration test চালাতে ইন্ডাস্ট্রি ব্যবহার করে <strong>Testcontainers</strong> — টেস্টের সময় Docker-এ অস্থায়ী ডাটাবেস তুলে দেয়। CV-তে দারুণ শোনায়। আরেকটা শব্দ জানুন: <strong>TDD</strong> (Test-Driven Development) — আগে টেস্ট, পরে কোড; ইউরোপে অনেক টিম এই চর্চা করে।</p></div></div>
+</section>
+
+<!-- ================= CH 21 ================= -->
+<section class="chapter" id="ch21">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ২১</span>
+    <h2>Security Best Practices</h2>
+    <p class="ch-goal">OWASP-ঘরানার মৌলিক সুরক্ষা — ইউরোপে (GDPR-এর দেশে) সিকিউরিটি-সচেতন ডেভেলপারের মূল্য অনেক বেশি।</p>
+  </header>
+
+  <h3>২১.১ সবচেয়ে কমন দুর্বলতা ও ASP.NET-এ প্রতিরোধ</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>আক্রমণ</th><th>কী হয়</th><th>প্রতিরোধ</th></tr></thead>
+    <tbody>
+      <tr><td><strong>SQL Injection</strong></td><td>ইনপুটে SQL ঢুকিয়ে ডাটাবেস দখল</td><td>EF Core/প্যারামিটারাইজড কোয়েরি ব্যবহার করলে ডিফল্টে সুরক্ষিত; কখনো string দিয়ে SQL জোড়া দেবেন না</td></tr>
+      <tr><td><strong>XSS</strong></td><td>পেজে ক্ষতিকর JavaScript ঢোকানো</td><td>Razor ডিফল্টে সব encode করে; <code>Html.Raw()</code> থেকে দূরে থাকুন</td></tr>
+      <tr><td><strong>CSRF</strong></td><td>অন্য সাইট থেকে ইউজারের হয়ে ফর্ম জমা</td><td>ফর্মে <code>[ValidateAntiForgeryToken]</code>; শুধু-JWT API-তে ঝুঁকি কম</td></tr>
+      <tr><td><strong>Over-posting</strong></td><td>বাড়তি ফিল্ড পাঠিয়ে গোপন প্রপার্টি বদলানো</td><td>Entity নয়, DTO দিয়ে ইনপুট নিন (অধ্যায় ১৫)</td></tr>
+      <tr><td><strong>Secrets ফাঁস</strong></td><td>Git-এ পাসওয়ার্ড/key</td><td>User Secrets, env var, Key Vault (অধ্যায় ৮)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>২১.২ CORS — কোন ফ্রন্টএন্ড API ডাকতে পারবে</h3>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+        policy.WithOrigins("https://myshop.com")   // নির্দিষ্ট ডোমেইন
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
+app.UseCors("Frontend");</code></pre></figure>
+  <div class="callout danger"><div><span class="co-label">ভুল কিন্তু বহুল প্রচলিত</span><p>প্রোডাকশনে <span class="inline-code">AllowAnyOrigin()</span> দেবেন না — "যে কেউ আমার API ব্রাউজার থেকে ডাকতে পারবে" ঘোষণার সমান। ইন্টারভিউতে CORS ব্যাখ্যা করতে বলা হয় প্রায়ই: এটা <strong>ব্রাউজারের</strong> নিরাপত্তা নিয়ম, সার্ভার শুধু বলে দেয় কোন origin-কে অনুমতি দেওয়া হলো।</p></div></div>
+
+  <h3>২১.৩ ছোট কিন্তু জরুরি চেকলিস্ট</h3>
+  <ul>
+    <li><strong>HTTPS সর্বত্র</strong> — <span class="inline-code">UseHttpsRedirection()</span> + প্রোডাকশনে HSTS</li>
+    <li><strong>Password কখনো plain text নয়</strong> — Identity ব্যবহার করুন (ভেতরে PBKDF2); নিজে বানালে BCrypt/Argon2</li>
+    <li><strong>JWT-র key লম্বা ও গোপন</strong> — কমপক্ষে ৩২+ অক্ষর, appsettings-এ নয়</li>
+    <li><strong>Validation সার্ভারে</strong> — অধ্যায় ১৩-র নীতি</li>
+    <li><strong>এররে তথ্য ফাঁস নয়</strong> — অধ্যায় ১৭-র নীতি</li>
+    <li><strong>Dependency আপডেট রাখুন</strong> — <span class="inline-code">dotnet list package --vulnerable</span> চালিয়ে দুর্বল প্যাকেজ দেখুন</li>
+  </ul>
+
+  <h3>২১.৪ GDPR — ইউরোপে কাজের বাড়তি বাস্তবতা</h3>
+  <p>ইউরোপে ব্যক্তিগত ডেটা (নাম, ইমেইল, IP পর্যন্ত!) আইন দিয়ে সুরক্ষিত। ডেভেলপার হিসেবে যা জানা ভালো: যত কম ব্যক্তিগত ডেটা রাখা যায় তত ভালো (data minimization), ইউজার চাইলে ডেটা মুছে দেওয়ার ব্যবস্থা রাখতে হয় (right to erasure), আর ব্যক্তিগত ডেটা লগে লেখা যায় না। ইন্টারভিউতে GDPR-সচেতনতা দেখালে ভালো ছাপ পড়ে।</p>
+</section>
+
+<!-- ================= CH 22 ================= -->
+<section class="chapter" id="ch22">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ২২</span>
+    <h2>Deployment — Docker, CI/CD, ক্লাউড</h2>
+    <p class="ch-goal">"আমার মেশিনে তো চলে" থেকে মুক্তি — কনটেইনার বানানো, অটো টেস্ট-ডিপ্লয় পাইপলাইন, হেলথ চেক।</p>
+  </header>
+
+  <h3>২২.১ Docker-এ প্যাক করা</h3>
+  <p><strong>Docker</strong> অ্যাপ + রানটাইম + সেটিংস সব একটা বাক্সে (image) ভরে দেয় — যে সার্ভারেই চালান, একই আচরণ। ইউরোপের জব পোস্টিংয়ে Docker কার্যত বাধ্যতামূলক স্কিল।</p>
+  <figure class="code"><figcaption>Dockerfile — multi-stage build<span class="lang">docker</span></figcaption><pre><code class="lang-docker"># পর্ব ১: SDK image-এ build (বড়, টুলসহ)
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+COPY *.csproj ./
+RUN dotnet restore              # আলাদা ধাপ = লেয়ার ক্যাশের সুবিধা
+COPY . .
+RUN dotnet publish -c Release -o /app
+
+# পর্ব ২: হালকা runtime image-এ শুধু ফলাফল
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
+WORKDIR /app
+COPY --from=build /app .
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "Shop.Api.dll"]</code></pre></figure>
+  <figure class="code"><figcaption>docker-compose.yml — API + PostgreSQL + Redis একসাথে<span class="lang">yaml</span></figcaption><pre><code class="lang-yaml">services:
+  api:
+    build: .
+    ports: ["8080:8080"]
+    environment:
+      ConnectionStrings__Default: "Host=db;Database=shopdb;Username=app;Password=${DB_PASSWORD}"
+      ConnectionStrings__Redis: "redis:6379"
+    depends_on: [db, redis]
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: shopdb
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes: ["dbdata:/var/lib/postgresql/data"]
+
+  redis:
+    image: redis:7
+
+volumes:
+  dbdata:</code></pre></figure>
+  <figure class="code"><figcaption>টার্মিনাল<span class="lang">shell</span></figcaption><pre><code class="lang-sh">docker compose up --build
+# ব্যস — API, ডাটাবেস, Redis সব একসাথে চালু</code></pre></figure>
+
+  <h3>২২.২ Health check</h3>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">builder.Services.AddHealthChecks()
+    .AddNpgSql(builder.Configuration.GetConnectionString("Default")!);
+
+app.MapHealthChecks("/health");
+// লোড ব্যালান্সার/Kubernetes এই endpoint দেখে ঠিক করে
+// কনটেইনারটা সুস্থ কি না — অসুস্থ হলে ট্রাফিক দেয় না</code></pre></figure>
+
+  <h3>২২.৩ CI/CD — GitHub Actions</h3>
+  <p><strong>CI/CD</strong> মানে: কোড push করলেই অটোমেটিক build → test → deploy। একটা বেসিক পাইপলাইন:</p>
+  <figure class="code"><figcaption>.github/workflows/ci.yml<span class="lang">yaml</span></figcaption><pre><code class="lang-yaml">name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet restore
+      - run: dotnet build --no-restore
+      - run: dotnet test --no-build --verbosity normal
+      # সফল হলে পরের job-এ docker image build ও push</code></pre></figure>
+  <p>এতে pull request-এ টেস্ট ফেল করলে merge আটকে যায় — ইউরোপের প্রতিটি টিম এভাবেই কাজ করে।</p>
+
+  <h3>২২.৪ কোথায় হোস্ট করবেন</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>অপশন</th><th>কেমন</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Azure App Service / Container Apps</strong></td><td>.NET-এর স্বাভাবিক ঘর; ইউরোপের Microsoft-shop কোম্পানিগুলোর পছন্দ — শেখা সবচেয়ে দরকারি</td></tr>
+      <tr><td>AWS (ECS/Elastic Beanstalk)</td><td>বড় অংশের কোম্পানি AWS-এ; ধারণা রাখুন</td></tr>
+      <tr><td>VPS (Hetzner ইত্যাদি) + Docker</td><td>পোর্টফোলিও প্রজেক্ট সস্তায় হোস্ট করার সেরা উপায় (Hetzner খোদ জার্মান!)</td></tr>
+      <tr><td>Kubernetes</td><td>বড় সিস্টেমের কনটেইনার অর্কেস্ট্রেশন — জুনিয়র হিসেবে ধারণা থাকলেই যথেষ্ট</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout note"><div><span class="co-label">Observability</span><p>প্রোডাকশনে অ্যাপ "দেখার" তিন স্তম্ভ: <strong>logs</strong> (অধ্যায় ৯), <strong>metrics</strong>, <strong>traces</strong>। আধুনিক স্ট্যান্ডার্ড <strong>OpenTelemetry</strong> — .NET-এ বিল্ট-ইন সাপোর্ট আছে। শব্দটা জেনে রাখুন, জব পোস্টিংয়ে বাড়ছে।</p></div></div>
+</section>
+
+<!-- ================= CH 23 ================= -->
+<section class="chapter" id="ch23">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ২৩</span>
+    <h2>Clean Architecture, SOLID ও Microservices ধারণা</h2>
+    <p class="ch-goal">কোড গোছানোর সেই নীতিগুলো যা দিয়ে মিড-লেভেল ডেভেলপার চেনা যায় — ইন্টারভিউর সিস্টেম-ডিজাইন অংশের ভিত্তি।</p>
+  </header>
+
+  <h3>২৩.১ SOLID — পাঁচ নীতি, সহজ ভাষায়</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>নীতি</th><th>এক লাইনে</th><th>উদাহরণ</th></tr></thead>
+    <tbody>
+      <tr><td><strong>S</strong> — Single Responsibility</td><td>এক ক্লাসের এক কাজ</td><td>OrderService অর্ডার সামলাবে; মেইল পাঠানো EmailService-এর কাজ</td></tr>
+      <tr><td><strong>O</strong> — Open/Closed</td><td>নতুন ফিচারে নতুন ক্লাস, পুরনো কোড না ভেঙে</td><td>নতুন পেমেন্ট মেথড = IPaymentProvider-এর নতুন implementation</td></tr>
+      <tr><td><strong>L</strong> — Liskov Substitution</td><td>Subclass বসালে আচরণ ভাঙবে না</td><td>যেখানে IEmailService চলে, সেখানে FakeEmailService-ও চলবে</td></tr>
+      <tr><td><strong>I</strong> — Interface Segregation</td><td>বিশাল interface নয়, ছোট ছোট অনেকগুলো</td><td>IReader + IWriter, একটা দৈত্য IRepository নয়</td></tr>
+      <tr><td><strong>D</strong> — Dependency Inversion</td><td>Concrete নয়, abstraction-এর ওপর নির্ভর</td><td>অধ্যায় ৭-এর পুরোটা — interface + DI</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>২৩.২ Clean Architecture — স্তরে স্তরে</h3>
+  <p>মূল কথা: <strong>বিজনেস লজিক কেন্দ্রে, বাইরের জিনিস (DB, ওয়েব) প্রান্তে</strong> — নির্ভরতার তীর সবসময় ভেতরের দিকে। প্রচলিত চার প্রজেক্টের কাঠামো:</p>
+  <figure class="code"><figcaption>Solution structure<span class="lang">text</span></figcaption><pre><code>Shop.sln
+├─ Shop.Domain          # Entity, বিজনেস নিয়ম — কারো ওপর নির্ভর করে না
+├─ Shop.Application     # Use case, interface (IProductRepository), DTO
+├─ Shop.Infrastructure  # EF Core, মেইল, বাইরের API — Application-এর
+│                       # interface-গুলোর বাস্তবায়ন
+└─ Shop.Api             # Controllers/endpoints, Program.cs — সব জোড়া লাগায়</code></pre></figure>
+  <p>লাভ: ডাটাবেস বদলালে Domain/Application ছোঁয়া লাগে না; বিজনেস লজিক DB ছাড়াই টেস্ট করা যায়। জুনিয়র প্রজেক্টে এত ভাগ overkill হতে পারে — তবে <strong>ধারণাটা ইন্টারভিউতে ব্যাখ্যা করতে পারা জরুরি</strong>।</p>
+
+  <h3>২৩.৩ Repository ও CQRS — দুটো বহুশ্রুত প্যাটার্ন</h3>
+  <ul>
+    <li><strong>Repository pattern:</strong> ডেটা-অ্যাক্সেস একটা interface-এর পেছনে (<span class="inline-code">IProductRepository.GetAsync(id)</span>) — বিজনেস লজিক জানে না নিচে EF নাকি Dapper। সমালোচনাও জানুন: EF-এর DbSet নিজেই অনেকটা repository, তাই অনেক টিম বাড়তি স্তর বানায় না।</li>
+    <li><strong>CQRS:</strong> Command (লেখা) আর Query (পড়া) আলাদা পথ। .NET জগতে খুবই প্রচলিত <strong>MediatR</strong> লাইব্রেরিসহ: প্রতিটি অপারেশন = একটা ছোট Handler ক্লাস। বড় কোডবেস পরিষ্কার থাকে।</li>
+  </ul>
+  <figure class="code"><figcaption>MediatR-এর স্বাদ<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public record GetProductQuery(int Id) : IRequest&lt;ProductDto?&gt;;
+
+public class GetProductHandler : IRequestHandler&lt;GetProductQuery, ProductDto?&gt;
+{
+    private readonly ShopDbContext _db;
+    public GetProductHandler(ShopDbContext db) => _db = db;
+
+    public Task&lt;ProductDto?&gt; Handle(GetProductQuery q, CancellationToken ct)
+        => _db.Products
+              .Where(p => p.Id == q.Id)
+              .Select(p => new ProductDto(p.Id, p.Name, p.Price, p.Category!.Name))
+              .FirstOrDefaultAsync(ct);
+}
+
+// Controller পাতলা হয়ে যায়:
+[HttpGet("{id:int}")]
+public async Task&lt;ActionResult&lt;ProductDto&gt;&gt; Get(int id)
+    => await _mediator.Send(new GetProductQuery(id)) is { } dto
+        ? Ok(dto) : NotFound();</code></pre></figure>
+
+  <h3>২৩.৪ Microservices — ধারণাটুকু</h3>
+  <p>এক বিশাল অ্যাপ (monolith)-এর বদলে ছোট ছোট স্বাধীন সার্ভিস — Orders, Payments, Inventory — প্রত্যেকের নিজের ডাটাবেস, নিজের ডিপ্লয়মেন্ট। যোগাযোগ হয় HTTP/gRPC (সরাসরি) বা <strong>message broker</strong> দিয়ে (RabbitMQ, Kafka — "OrderPlaced" ইভেন্ট ছাড়লে যার দরকার সে শোনে)।</p>
+  <div class="callout warn"><div><span class="co-label">জুনিয়র হিসেবে সঠিক অবস্থান</span><p>ইন্টারভিউতে বলুন: "Monolith দিয়ে শুরু করাই ভালো; টিম ও ডোমেইন বড় হলে ভাগ করা যায়। Microservices আনে distributed system-এর জটিলতা — network failure, eventual consistency, observability।" এই সংযত উত্তর মুখস্থ buzzword-এর চেয়ে অনেক বেশি নম্বর পায়।</p></div></div>
+</section>
+<!-- ================= CH 24 ================= -->
+<section class="chapter" id="ch24">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ২৪</span>
+    <h2>ইউরোপের জব মার্কেট — বাস্তব গাইড</h2>
+    <p class="ch-goal">কোন দেশে চাহিদা, কেমন বেতন, ভিসা কীভাবে, CV-তে কী লিখবেন, ইন্টারভিউতে কী আসে।</p>
+  </header>
+
+  <h3>২৪.১ কোন দেশে .NET-এর চাহিদা</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>দেশ</th><th>.NET মার্কেট</th><th>Junior/Mid বেতন (বছরে, মোটামুটি)</th><th>নোট</th></tr></thead>
+    <tbody>
+      <tr><td><strong>জার্মানি</strong></td><td>বিশাল — ব্যাংক, ইনস্যুরেন্স, ম্যানুফ্যাকচারিং, Mittelstand</td><td>€৪৫–৬৫ হাজার</td><td>EU Blue Card-এর সবচেয়ে বড় গন্তব্য; বড় শহরে ইংরেজি টিম প্রচুর</td></tr>
+      <tr><td><strong>নেদারল্যান্ডস</strong></td><td>খুব শক্তিশালী; লজিস্টিকস, ফিনটেক</td><td>€৪৫–৭০ হাজার</td><td>ইংরেজিতে জীবন সবচেয়ে সহজ; ৩০% রুলিং ট্যাক্স সুবিধা</td></tr>
+      <tr><td><strong>নর্ডিক</strong> (সুইডেন, ডেনমার্ক, ফিনল্যান্ড)</td><td>ভালো; এন্টারপ্রাইজ ও প্রোডাক্ট কোম্পানি</td><td>€৪৫–৭০ হাজার</td><td>ওয়ার্ক-লাইফ ব্যালান্সে সেরা; ইংরেজি চলে</td></tr>
+      <tr><td><strong>পোল্যান্ড</strong></td><td>ইউরোপের অন্যতম বড় .NET হাব (আউটসোর্সিং + R&amp;D সেন্টার)</td><td>€২৫–৪৫ হাজার</td><td>ঢোকা তুলনামূলক সহজ, খরচও কম — অনেকের প্রথম ধাপ</td></tr>
+      <tr><td><strong>পর্তুগাল / স্পেন</strong></td><td>ক্রমবর্ধমান টেক হাব (লিসবন, বার্সেলোনা)</td><td>€৩০–৫০ হাজার</td><td>রিমোট-ফ্রেন্ডলি কোম্পানি বেশি</td></tr>
+      <tr><td><strong>সুইজারল্যান্ড</strong></td><td>ব্যাংকিং-ভারী, চাহিদা উঁচু</td><td>CHF ৯০ হাজার+</td><td>সবচেয়ে উঁচু বেতন, ঢোকাও সবচেয়ে কঠিন</td></tr>
+    </tbody>
+  </table></div>
+  <p><em>সংখ্যাগুলো আনুমানিক গড়পড়তা চিত্র — শহর, কোম্পানি ও অভিজ্ঞতায় অনেক হেরফের হয়। আবেদনের আগে levels.fyi, Glassdoor, StepStone-এ বর্তমান রেঞ্জ যাচাই করুন।</em></p>
+
+  <h3>২৪.২ ভিসা — সংক্ষেপে</h3>
+  <ul>
+    <li><strong>EU Blue Card:</strong> ইউরোপে দক্ষ কর্মীর মূল পথ। বিশ্ববিদ্যালয় ডিগ্রি (অথবা জার্মানিতে ৩+ বছরের প্রাসঙ্গিক IT অভিজ্ঞতা দিয়েও সম্ভব) + নির্দিষ্ট বেতনসীমার জব অফার লাগে; IT shortage occupation বলে সীমাটা কমানো। কয়েক বছর পর স্থায়ী বসবাসের পথ খোলে।</li>
+    <li><strong>জব অফারই আসল চাবি:</strong> ভিসার কাগজপত্র কোম্পানি ও আইন সামলে দেয় — আপনার কাজ হলো এমন স্কিল বানানো যে কোম্পানি স্পনসর করতে রাজি হয়। তাই এই কোর্সের ৯০% মনোযোগ স্কিলে।</li>
+    <li>জব পোস্টিংয়ে <em>"visa sponsorship available"</em> / <em>"relocation support"</em> লেখা খুঁজুন — LinkedIn ফিল্টারে relocation.me, EU-startups-ও কাজে লাগে।</li>
+  </ul>
+
+  <h3>২৪.৩ CV ও অনলাইন উপস্থিতি</h3>
+  <ul>
+    <li><strong>CV এক-দুই পৃষ্ঠা, ইংরেজিতে</strong> — ছবি/বয়স/বৈবাহিক অবস্থা লাগে না (জার্মানিতে ছবি প্রচলিত ছিল, এখন ঐচ্ছিক)। ফরম্যাট: নাম-যোগাযোগ → স্কিল → অভিজ্ঞতা/প্রজেক্ট → শিক্ষা।</li>
+    <li><strong>প্রজেক্ট লিখুন ফলাফলসহ:</strong> "Built a REST API with ASP.NET Core 10, PostgreSQL, JWT auth, 85% test coverage, deployed with Docker on Hetzner" — টেক স্ট্যাক + সংখ্যা।</li>
+    <li><strong>GitHub সবুজ রাখুন:</strong> ২-৩টা পরিষ্কার প্রজেক্ট (README, টেস্ট, CI ব্যাজসহ) ২০টা আধখাওয়া রিপোর চেয়ে ভালো।</li>
+    <li><strong>LinkedIn ইংরেজিতে, headline-এ স্ট্যাক:</strong> ".NET Backend Developer — ASP.NET Core · PostgreSQL · Docker · Azure"। Open to Work চালু করুন, recruiter-রা সত্যিই খোঁজে।</li>
+  </ul>
+
+  <h3>২৪.৪ ইন্টারভিউ প্রক্রিয়া — সাধারণ ধাপ</h3>
+  <ol class="steps">
+    <li><strong>Recruiter call (৩০ মিনিট):</strong> পরিচিতি, বেতন প্রত্যাশা, ভিসা অবস্থা — ইংরেজিতে সাবলীল পরিচয় প্র্যাকটিস করুন</li>
+    <li><strong>Technical screen:</strong> লাইভ কোডিং বা take-home প্রজেক্ট (প্রায়ই একটা ছোট CRUD API — এই কোর্সের অধ্যায় ১৫ পর্যন্ত পারলেই যথেষ্ট)</li>
+    <li><strong>Technical deep-dive:</strong> আপনার প্রজেক্ট নিয়ে আলোচনা + নিচের প্রশ্নগুলোর মতো প্রশ্ন</li>
+    <li><strong>Team/culture fit:</strong> আচরণগত প্রশ্ন — STAR পদ্ধতিতে (Situation, Task, Action, Result) গল্প সাজিয়ে রাখুন</li>
+  </ol>
+
+  <h3>২৪.৫ সবচেয়ে কমন টেকনিক্যাল প্রশ্ন (এই কোর্সেই সব আছে)</h3>
+  <ul>
+    <li>DI-এর তিন lifetime-এর পার্থক্য? Captive dependency কী? <em>(অধ্যায় ৭)</em></li>
+    <li>Middleware order কেন গুরুত্বপূর্ণ? <em>(অধ্যায় ৫)</em></li>
+    <li>async/await কীভাবে কাজ করে? কেন <span class="inline-code">.Result</span> বিপজ্জনক? <em>(অধ্যায় ৩)</em></li>
+    <li>EF Core-এ N+1 সমস্যা ও সমাধান? AsNoTracking কখন? <em>(অধ্যায় ১৪)</em></li>
+    <li>JWT কীভাবে কাজ করে? 401 বনাম 403? <em>(অধ্যায় ১৬)</em></li>
+    <li>REST-এর নিয়ম — PUT বনাম PATCH, idempotency মানে কী? <em>(অধ্যায় ৬, ১০)</em></li>
+    <li>Unit test বনাম integration test? Mock কেন লাগে? <em>(অধ্যায় ২০)</em></li>
+    <li>SOLID ব্যাখ্যা করুন নিজের প্রজেক্টের উদাহরণে <em>(অধ্যায় ২৩)</em></li>
+    <li>SQL: JOIN, GROUP BY, index কী — EF-এর বাইরে খালি SQL-ও অনুশীলন করুন</li>
+  </ul>
+  <div class="callout tip"><div><span class="co-label">ভাষা</span><p>টেক ইন্টারভিউ ইংরেজিতেই হবে — B2 মানের ইংরেজি যথেষ্ট। জার্মানির স্থানীয় ভাষা জানা বোনাস (আপনার German কোর্স এখানে দ্বিগুণ কাজে দেবে!) — ছোট কোম্পানি ও দৈনন্দিন জীবনে বড় সুবিধা, তবে বড় শহরের টেক টিমে ইংরেজিই চলে।</p></div></div>
+</section>
+
+<!-- ================= CH 25 ================= -->
+<section class="chapter" id="ch25">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ২৫</span>
+    <h2>৬ মাসের রোডম্যাপ ও পোর্টফোলিও প্রজেক্ট</h2>
+    <p class="ch-goal">পুরো কোর্সটাকে একটা সময়সূচিতে বাঁধা — আর যে প্রজেক্টগুলো আপনাকে ইন্টারভিউ পাইয়ে দেবে।</p>
+  </header>
+
+  <h3>২৫.১ সময়সূচি (দিনে ~২ ঘণ্টা ধরে)</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>মাস</th><th>অধ্যায়</th><th>লক্ষ্য</th></tr></thead>
+    <tbody>
+      <tr><td><strong>মাস ১</strong></td><td>১–৪</td><td>C# ফান্ডামেন্টাল পোক্ত + প্রথম ওয়েব অ্যাপ; প্রতিদিন ছোট কনসোল প্রোগ্রাম</td></tr>
+      <tr><td><strong>মাস ২</strong></td><td>৫–১০</td><td>কোর কনসেপ্ট + Todo API নিজে হাতে; Git-এ সব commit</td></tr>
+      <tr><td><strong>মাস ৩</strong></td><td>১১–১৫</td><td>EF Core + Bookstore API (প্রজেক্ট ১); SQL আলাদা করে অনুশীলন</td></tr>
+      <tr><td><strong>মাস ৪</strong></td><td>১৬–১৯</td><td>Auth, caching, background service — প্রজেক্ট ১-এ যোগ করুন</td></tr>
+      <tr><td><strong>মাস ৫</strong></td><td>২০–২৩</td><td>টেস্ট + Docker + CI/CD; বড় প্রজেক্ট (নিচের ২ বা ৩) শুরু</td></tr>
+      <tr><td><strong>মাস ৬</strong></td><td>২৪–২৫</td><td>প্রজেক্ট শেষ + ডিপ্লয়, CV/LinkedIn/GitHub পালিশ, আবেদন শুরু, মক ইন্টারভিউ</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>২৫.২ পোর্টফোলিও প্রজেক্ট — বাছাই করা ৩টি</h3>
+  <ol class="steps">
+    <li><strong>Bookstore/Inventory API (ভিত্তি):</strong> CRUD + রিলেশনশিপ + pagination + JWT + Swagger + unit/integration test + Dockerfile। README-তে আর্কিটেকচার ডায়াগ্রাম।</li>
+    <li><strong>Event Booking সিস্টেম (মাঝারি):</strong> ইউজার রেজিস্ট্রেশন (Identity), সিট বুকিং-এ concurrency সামলানো, বুকিং কনফার্মেশন মেইল BackgroundService দিয়ে, Redis cache, rate limiting। এটা ইন্টারভিউ আলোচনার সোনার খনি।</li>
+    <li><strong>Live Dashboard (দেখানোর মতো):</strong> SignalR দিয়ে রিয়েল-টাইম অর্ডার/সেন্সর ড্যাশবোর্ড + ছোট একটা JS ফ্রন্টএন্ড, GitHub Actions-এ অটো ডিপ্লয়, /health endpoint, OpenTelemetry লগ। লাইভ লিংক CV-তে দিন।</li>
+  </ol>
+  <p>তিনটাই <strong>ডিপ্লয় করা অবস্থায়</strong> রাখুন (Hetzner/Railway/Azure ফ্রি টিয়ার) — "লাইভ দেখুন" লিংক থাকা প্রার্থী বিরল, আপনি আলাদা হয়ে যাবেন।</p>
+
+  <h3>২৫.৩ এরপর কী শিখবেন (চাকরি পাওয়ার পরেও)</h3>
+  <ul>
+    <li><strong>Azure ফান্ডামেন্টাল</strong> — AZ-900 সার্টিফিকেট সস্তা ও দ্রুত, CV-তে দৃশ্যমান</li>
+    <li><strong>Message broker</strong> হাতে-কলমে: RabbitMQ দিয়ে দুই সার্ভিসের যোগাযোগ</li>
+    <li><strong>gRPC</strong> — সার্ভিস-টু-সার্ভিস দ্রুত যোগাযোগ</li>
+    <li><strong>Blazor</strong> — C#-only ফুল-স্ট্যাক; কিছু কোম্পানি খুব চায়</li>
+    <li><strong>System design</strong> — মিড/সিনিয়র হওয়ার সিঁড়ি</li>
+  </ul>
+
+  <h3>২৫.৪ ফ্রি রিসোর্স</h3>
+  <ul>
+    <li><a href="https://learn.microsoft.com/aspnet/core" rel="noopener">Microsoft Learn — ASP.NET Core docs</a> — অফিসিয়াল, সবসময় হালনাগাদ; এই কোর্সের পরে এটাই আপনার রেফারেন্স</li>
+    <li><a href="https://roadmap.sh/aspnet-core" rel="noopener">roadmap.sh/aspnet-core</a> — ভিজ্যুয়াল রোডম্যাপ, নিজের অগ্রগতি টিক দিন</li>
+    <li><a href="https://learn.microsoft.com/dotnet/csharp" rel="noopener">C# documentation</a> ও <a href="https://exercism.org/tracks/csharp" rel="noopener">Exercism C# track</a> — ভাষা অনুশীলন</li>
+    <li>YouTube: Nick Chapsas, Milan Jovanović, IAmTimCorey — ইন্ডাস্ট্রি-মানের ফ্রি কনটেন্ট</li>
+  </ul>
+
+  <div class="callout tip"><div><span class="co-label">শেষ কথা</span><p>এই পুরো পথের আসল প্রতিদ্বন্দ্বী সিলেবাস নয় — ধারাবাহিকতা। দিনে দুই ঘণ্টা, সপ্তাহে ছয় দিন, ছয় মাস — এটুকু দিতে পারলে ইউরোপের জব মার্কেটে আপনি সত্যিকারের প্রতিযোগী। শুরু করুন আজই: <span class="inline-code">dotnet new console -n HelloBangla</span> 🚀</p></div></div>
+</section>
+
+<!-- ================= CH 26 ================= -->
+<section class="chapter" id="ch26">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ২৬ · অভিজ্ঞ লেভেল</span>
+    <h2>Advanced C# ও .NET Runtime Internals</h2>
+    <p class="ch-goal">Mid/Senior ইন্টারভিউতে "কীভাবে কাজ করে" প্রশ্নগুলো আসে — GC, memory, threading, allocation-free কোড। এখানে সেই গভীরতা।</p>
+  </header>
+
+  <h3>২৬.১ Memory: stack, heap, boxing</h3>
+  <ul>
+    <li><strong>Value type</strong> (int, struct, enum) — মান সরাসরি কপি হয়; লোকাল ভ্যারিয়েবল হলে সাধারণত stack-এ থাকে</li>
+    <li><strong>Reference type</strong> (class, string, array) — অবজেক্ট heap-এ, ভ্যারিয়েবলে থাকে রেফারেন্স</li>
+    <li><strong>Boxing:</strong> value type-কে <span class="inline-code">object</span>-এ ভরলে heap-এ নতুন অবজেক্ট তৈরি হয় — লুপের ভেতরে হলে GC চাপে পড়ে। generic (<span class="inline-code">List&lt;int&gt;</span>) boxing এড়ায় — এটাই generic-এর জন্মের অন্যতম কারণ।</li>
+  </ul>
+  <figure class="code"><figcaption>Boxing — চোখে দেখা<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">int n = 42;
+object boxed = n;          // boxing — heap allocation
+int back = (int)boxed;     // unboxing — cast + কপি
+
+// লুকানো boxing: interface-এ struct
+IComparable c = 42;        // boxing!
+// string.Format/concat-এ value type গেলে আগে boxing হতো;
+// আধুনিক interpolated string handler অনেকটা বাঁচায়</code></pre></figure>
+
+  <h3>২৬.২ Garbage Collector — যা জানা must</h3>
+  <ul>
+    <li><strong>Generational:</strong> Gen0 (নতুন, ঘনঘন collect), Gen1, Gen2 (দীর্ঘজীবী, দামি collect)। "বেশিরভাগ অবজেক্ট অল্পদিন বাঁচে" — এই অনুমানেই ডিজাইন।</li>
+    <li><strong>LOH (Large Object Heap):</strong> ~85KB+ অবজেক্ট আলাদা জায়গায়, compact হয় না সহজে — বড় array বারবার বানালে fragmentation। সমাধান: <span class="inline-code">ArrayPool&lt;T&gt;.Shared</span> থেকে ভাড়া নিন।</li>
+    <li><strong>Server GC vs Workstation GC:</strong> ASP.NET Core ডিফল্টে Server GC — প্রতি কোরে আলাদা heap, throughput বেশি।</li>
+    <li><strong>IDisposable ≠ GC:</strong> GC মেমোরি সামলায়; ফাইল হ্যান্ডেল, সকেট, DB connection-এর মতো unmanaged রিসোর্স ছাড়তে হয় <span class="inline-code">Dispose</span>/<span class="inline-code">using</span> দিয়ে — deterministic ভাবে।</li>
+  </ul>
+  <div class="callout danger"><div><span class="co-label">ইন্টারভিউ প্রশ্ন</span><p>"finalizer আর Dispose-এর পার্থক্য?" — Dispose আপনি ডাকেন (deterministic), finalizer GC ডাকে (কখন কেউ জানে না, দামি)। সঠিক প্যাটার্ন: Dispose pattern + <span class="inline-code">GC.SuppressFinalize</span>; নিজের কোডে finalizer প্রায় কখনোই লাগে না — SafeHandle ব্যবহার করুন।</p></div></div>
+
+  <h3>২৬.৩ Threading ও async — গভীরে</h3>
+  <figure class="code"><figcaption>যা প্রায়ই ভুল হয়<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// ১) async void শুধু event handler-এ — exception ধরা যায় না
+async void Bad() { await Task.Delay(1); throw new Exception(); } // অ্যাপ crash!
+
+// ২) CPU-bound কাজ ASP.NET-এ Task.Run দিয়ে "async বানাবেন না" —
+// থ্রেডপুলের থ্রেডই খরচ হয়, লাভ নেই। I/O-bound = async; CPU-bound =
+// আলাদা worker/queue ভাবুন।
+
+// ৩) Shared state — lock বা আরও ভালো: অবস্থা shared না রাখা
+private readonly object _gate = new();
+private int _count;
+public void Increment() { lock (_gate) { _count++; } }
+// হালকা বিকল্প: Interlocked.Increment(ref _count);
+
+// ৪) একসাথে অনেক async কাজ:
+var tasks = ids.Select(id => LoadAsync(id));
+var results = await Task.WhenAll(tasks);
+
+// ৫) CancellationToken সবসময় নিচ পর্যন্ত পাস করুন —
+// ক্লায়েন্ট চলে গেলে কোয়েরিও থামুক
+app.MapGet("/report", (CancellationToken ct) => BuildReportAsync(ct));</code></pre></figure>
+  <ul>
+    <li><strong>ConfigureAwait(false):</strong> লাইব্রেরি কোডে context-এ ফেরার দরকার নেই বলে লেখা হয়; ASP.NET Core-এ SynchronizationContext নেই, তাই অ্যাপ কোডে এটা কার্যত no-op — এই সূক্ষ্মতা বললে সিনিয়র শোনায়।</li>
+    <li><strong>ValueTask:</strong> প্রায়ই synchronously শেষ হওয়া hot path-এ Task-এর allocation বাঁচায়; দুবার await করা যায় না — জানুন, কিন্তু অকারণে ব্যবহার করবেন না।</li>
+    <li><strong>Channel&lt;T&gt;:</strong> producer/consumer-এর আধুনিক সমাধান (অধ্যায় ১৯-এ দেখেছেন) — BlockingCollection-এর async উত্তরসূরি।</li>
+  </ul>
+
+  <h3>২৬.৪ Allocation-free কোড: Span&lt;T&gt;</h3>
+  <figure class="code"><figcaption>SpanDemo.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// Span&lt;T&gt; = কোনো মেমোরির ওপর জানালা — কপি ছাড়াই slice
+ReadOnlySpan&lt;char&gt; line = "2026-07-13,order,1042".AsSpan();
+int comma = line.IndexOf(',');
+ReadOnlySpan&lt;char&gt; datePart = line[..comma];        // কোনো allocation নেই!
+DateOnly date = DateOnly.Parse(datePart);
+
+// তুলনা: line.Substring(0, comma) প্রতিবার নতুন string বানাত
+// লাখো লাইনের পার্সিং-এ পার্থক্যটা বিশাল
+
+// stackalloc — ছোট অস্থায়ী buffer stack-এই
+Span&lt;byte&gt; buffer = stackalloc byte[64];</code></pre></figure>
+
+  <h3>২৬.৫ মাপা ছাড়া অপ্টিমাইজ নয় — BenchmarkDotNet</h3>
+  <figure class="code"><figcaption>Benchmarks.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// dotnet add package BenchmarkDotNet
+[MemoryDiagnoser]                    // allocation-ও মাপে
+public class SplitBenchmarks
+{
+    private const string Line = "2026-07-13,order,1042";
+
+    [Benchmark(Baseline = true)]
+    public string WithSubstring() => Line.Substring(0, Line.IndexOf(','));
+
+    [Benchmark]
+    public int WithSpan() => Line.AsSpan()[..Line.IndexOf(',')].Length;
+}
+// Program.cs: BenchmarkRunner.Run&lt;SplitBenchmarks&gt;();
+// রিলিজ মোডে চালান: dotnet run -c Release</code></pre></figure>
+  <div class="callout tip"><div><span class="co-label">সিনিয়র মাইন্ডসেট</span><p>ইন্টারভিউতে পারফরম্যান্স প্রশ্নের সেরা উত্তর শুরু হয়: <em>"আগে profile করব"</em> — dotnet-trace, dotnet-counters, Visual Studio profiler। অনুমাননির্ভর micro-optimization নয়, মাপা bottleneck ঠিক করা — এটাই জুনিয়র আর সিনিয়রের পার্থক্য।</p></div></div>
+</section>
+
+<!-- ================= CH 27 ================= -->
+<section class="chapter" id="ch27">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ২৭ · অভিজ্ঞ লেভেল</span>
+    <h2>Advanced EF Core ও ডেটা প্যাটার্ন</h2>
+    <p class="ch-goal">Concurrency, transaction, bulk operation, প্রোডাকশন migration — যেখানে আসল সিস্টেম ভাঙে বা টেকে।</p>
+  </header>
+
+  <h3>২৭.১ Optimistic concurrency — দুজন একসাথে সেভ করলে?</h3>
+  <p>দুই ইউজার একই রেকর্ড এডিট করছে — শেষজনের লেখা চুপচাপ আগেরটা মুছে দেবে (lost update)। সমাধান: ভার্সন কলাম, mismatch হলে exception:</p>
+  <figure class="code"><figcaption>Concurrency token<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// PostgreSQL: বিল্ট-ইন xmin কলামকেই টোকেন বানানো যায়
+mb.Entity&lt;Product&gt;().Property(p => p.Version)
+  .IsRowVersion();   // SQL Server-এ rowversion
+
+// আপডেটের সময়:
+try
+{
+    product.Price = newPrice;
+    await _db.SaveChangesAsync();
+    // SQL: UPDATE ... WHERE Id = @id AND Version = @oldVersion
+}
+catch (DbUpdateConcurrencyException)
+{
+    // কেউ আগে বদলে ফেলেছে — এখন সিদ্ধান্ত ব্যবসার:
+    // retry? merge? ইউজারকে "রিফ্রেশ করে আবার চেষ্টা করুন"?
+    return Results.Conflict("রেকর্ডটি ইতিমধ্যে বদলেছে");
+}</code></pre></figure>
+  <p><strong>Pessimistic</strong> (আগে থেকে lock — <span class="inline-code">SELECT ... FOR UPDATE</span>) লাগে টিকিট বুকিং-এর মতো hot row-তে; বাকি সব জায়গায় optimistic-ই ডিফল্ট। এই তুলনাটা সিস্টেম-ডিজাইন ইন্টারভিউতেও আসে।</p>
+
+  <h3>২৭.২ Transaction ও isolation level</h3>
+  <figure class="code"><figcaption>এক লেনদেনে একাধিক লেখা<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// SaveChangesAsync এমনিতেই এক transaction — একাধিক SaveChanges
+// বা Dapper+EF মেশাতে হলে explicit transaction:
+await using var tx = await _db.Database.BeginTransactionAsync();
+try
+{
+    _db.Orders.Add(order);
+    await _db.SaveChangesAsync();
+
+    inventory.Reserve(order.Items);
+    await _db.SaveChangesAsync();
+
+    await tx.CommitAsync();
+}
+catch { await tx.RollbackAsync(); throw; }</code></pre></figure>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Isolation level</th><th>ঠেকায়</th><th>নোট</th></tr></thead>
+    <tbody>
+      <tr><td>Read Committed</td><td>dirty read</td><td>PostgreSQL/SQL Server-এর ডিফল্ট — বেশিরভাগ কাজে যথেষ্ট</td></tr>
+      <tr><td>Repeatable Read</td><td>+ non-repeatable read</td><td>এক লেনদেনে দুবার পড়লে একই ফল</td></tr>
+      <tr><td>Serializable</td><td>+ phantom read</td><td>সবচেয়ে কড়া, সবচেয়ে ধীর — সত্যিই লাগলে তবেই</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>২৭.৩ Bulk operation ও কোয়েরি টিউনিং</h3>
+  <figure class="code"><figcaption>EF Core 7+ — ExecuteUpdate/Delete<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// পুরনো উপায়: সব entity লোড → লুপে বদলাও → SaveChanges (N টা রাউন্ডট্রিপ)
+// নতুন: এক SQL-এই সরাসরি —
+await _db.Products
+    .Where(p => p.CategoryId == catId)
+    .ExecuteUpdateAsync(s => s.SetProperty(p => p.Price, p => p.Price * 0.9m));
+
+await _db.Carts
+    .Where(c => c.UpdatedAt < DateTime.UtcNow.AddDays(-30))
+    .ExecuteDeleteAsync();
+
+// আরও টুল:
+// AsSplitQuery()      — অনেক Include-এ cartesian explosion এড়ায়
+// TagWith("hot-path") — SQL লগে কোয়েরি চেনার লেবেল
+// compiled query      — অতি-গরম path-এ LINQ→SQL অনুবাদ ক্যাশ</code></pre></figure>
+  <ul>
+    <li><strong>Index:</strong> WHERE/JOIN/ORDER BY-তে ব্যবহৃত কলামে index; composite index-এ কলামের ক্রম গুরুত্বপূর্ণ; লেখা ধীর হয় — অন্ধভাবে সব কলামে নয়। <span class="inline-code">EXPLAIN ANALYZE</span> পড়তে শিখুন।</li>
+    <li><strong>Connection pooling:</strong> Npgsql ডিফল্টে করে; <span class="inline-code">AddDbContextPool</span> DbContext অবজেক্টও রিসাইকেল করে — high-RPS API-তে কাজে দেয়।</li>
+  </ul>
+
+  <h3>২৭.৪ প্রোডাকশনে migration</h3>
+  <ul>
+    <li><span class="inline-code">Database.Migrate()</span> অ্যাপ-স্টার্টআপে চালানো ছোট সিস্টেমে চলে; একাধিক instance একসাথে উঠলে race — বড় সিস্টেমে migration চালায় CI/CD-র আলাদা ধাপ: <span class="inline-code">dotnet ef migrations bundle</span> (self-contained executable) বা idempotent SQL script।</li>
+    <li><strong>Zero-downtime নিয়ম:</strong> ভাঙা বদল দুই ধাপে — আগে নতুন কলাম যোগ (পুরনো কোডও চলে), ডিপ্লয়, তারপর পুরনো কলাম সরান। কলাম rename কখনোই এক রিলিজে নয়।</li>
+  </ul>
+
+  <h3>২৭.৫ Outbox pattern — DB আর message broker-এর সমন্বয়</h3>
+  <p>"অর্ডার সেভ করলাম + ইভেন্ট পাঠালাম" — মাঝখানে অ্যাপ মরলে? DB-তে আছে কিন্তু ইভেন্ট যায়নি (বা উল্টো)। সমাধান: ইভেন্টও <strong>একই transaction-এ</strong> একটা Outbox টেবিলে লিখুন; আলাদা background worker সেখান থেকে পড়ে broker-এ পাঠায়:</p>
+  <figure class="code"><figcaption>Outbox — কাঠামো<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public class OutboxMessage
+{
+    public Guid Id { get; set; }
+    public string Type { get; set; } = "";       // "OrderPlaced"
+    public string Payload { get; set; } = "";    // JSON
+    public DateTime CreatedAt { get; set; }
+    public DateTime? ProcessedAt { get; set; }
+}
+
+// অর্ডার সেভের transaction-এই:
+_db.Orders.Add(order);
+_db.Outbox.Add(new OutboxMessage {
+    Id = Guid.NewGuid(), Type = "OrderPlaced",
+    Payload = JsonSerializer.Serialize(new { order.Id, order.Total }),
+    CreatedAt = DateTime.UtcNow
+});
+await _db.SaveChangesAsync();   // দুটোই এক সাথে commit বা এক সাথে fail
+
+// BackgroundService (অধ্যায় ১৯) প্রতি সেকেন্ডে unprocessed পড়ে
+// RabbitMQ-তে publish করে ProcessedAt বসায়; ব্যর্থ হলে পরে আবার —
+// অন্তত-একবার (at-least-once) ডেলিভারি নিশ্চিত</code></pre></figure>
+  <div class="callout note"><div><span class="co-label">কেন এটা জরুরি</span><p>Outbox + idempotent consumer (পরের অধ্যায়) — এই জুটি distributed system ইন্টারভিউয়ের অন্যতম প্রিয় আলোচনা। MassTransit/CAP-এর মতো লাইব্রেরিতে বিল্ট-ইন আছে, কিন্তু নিজে ব্যাখ্যা করতে পারতে হবে।</p></div></div>
+</section>
+
+<!-- ================= CH 28 ================= -->
+<section class="chapter" id="ch28">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ২৮ · অভিজ্ঞ লেভেল</span>
+    <h2>Distributed Systems — Messaging, gRPC, Resilience, DDD</h2>
+    <p class="ch-goal">সার্ভিসগুলো একে অপরের সাথে নির্ভরযোগ্যভাবে কথা বলে কীভাবে — mid/senior রোলের দৈনন্দিন বাস্তবতা।</p>
+  </header>
+
+  <h3>২৮.১ RabbitMQ + MassTransit — publish/consume</h3>
+  <figure class="code"><figcaption>MassTransit setup + consumer<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// dotnet add package MassTransit.RabbitMQ
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer&lt;OrderPlacedConsumer&gt;();
+    x.UsingRabbitMq((ctx, cfg) =>
+    {
+        cfg.Host("rabbitmq://localhost");
+        cfg.ConfigureEndpoints(ctx);   // queue/exchange অটো
+    });
+});
+
+public record OrderPlaced(Guid OrderId, decimal Total);
+
+// Publisher (Orders সার্ভিসে):
+await _publishEndpoint.Publish(new OrderPlaced(order.Id, order.Total));
+
+// Consumer (Notifications সার্ভিসে):
+public class OrderPlacedConsumer : IConsumer&lt;OrderPlaced&gt;
+{
+    public async Task Consume(ConsumeContext&lt;OrderPlaced&gt; ctx)
+    {
+        // ⚠ at-least-once ডেলিভারি = একই মেসেজ দুবার আসতে পারে!
+        // Idempotent consumer: আগে দেখেছি কি না চেক (MessageId টেবিলে)
+        await _email.SendOrderConfirmationAsync(ctx.Message.OrderId);
+    }
+}</code></pre></figure>
+  <ul>
+    <li><strong>Retry + Dead Letter Queue:</strong> consumer fail করলে কয়েকবার retry (backoff-সহ), তারপর মেসেজ DLQ-তে — সেখানে alert + ম্যানুয়াল তদন্ত। "poison message" পুরো queue আটকাবে না।</li>
+    <li><strong>Saga:</strong> কয়েক সার্ভিস জুড়ে লেনদেন (অর্ডার→পেমেন্ট→শিপিং) — distributed transaction নেই, বদলে প্রতি ধাপের <em>compensating action</em> (পেমেন্ট fail → অর্ডার cancel)। Choreography (ইভেন্ট শুনে শুনে) vs Orchestration (এক সমন্বয়ক state machine — MassTransit-এ আছে)।</li>
+    <li><strong>Kafka কখন:</strong> event stream/replay/বিপুল throughput দরকার হলে; সাধারণ task queue-তে RabbitMQ-ই সহজ ও যথেষ্ট।</li>
+  </ul>
+
+  <h3>২৮.২ gRPC — সার্ভিস-টু-সার্ভিস দ্রুত যোগাযোগ</h3>
+  <figure class="code"><figcaption>pricing.proto + সার্ভিস<span class="lang">C#</span></figcaption><pre><code>// pricing.proto — contract-first: আগে চুক্তি, তারপর কোড জেনারেট
+syntax = "proto3";
+service Pricing {
+  rpc GetPrice (PriceRequest) returns (PriceReply);
+}
+message PriceRequest { int32 product_id = 1; }
+message PriceReply   { double price = 1; string currency = 2; }</code></pre></figure>
+  <figure class="code"><figcaption>PricingService.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public class PricingService : Pricing.PricingBase
+{
+    public override async Task&lt;PriceReply&gt; GetPrice(
+        PriceRequest req, ServerCallContext ctx)
+    {
+        var price = await _repo.GetPriceAsync(req.ProductId);
+        return new PriceReply { Price = (double)price, Currency = "EUR" };
+    }
+}
+// app.MapGrpcService&lt;PricingService&gt;();
+// HTTP/2 + Protobuf বাইনারি = JSON REST-এর চেয়ে ছোট payload, কম latency
+// নিয়ম: বাইরের ক্লায়েন্টে REST, ভেতরের সার্ভিসে সার্ভিসে gRPC</code></pre></figure>
+
+  <h3>২৮.৩ Resilience — নেটওয়ার্ক fail করবেই</h3>
+  <figure class="code"><figcaption>Program.cs — .NET 8+ বিল্ট-ইন resilience<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// dotnet add package Microsoft.Extensions.Http.Resilience (Polly-ভিত্তিক)
+builder.Services.AddHttpClient&lt;PricingClient&gt;(c =>
+        c.BaseAddress = new Uri("https://pricing.internal"))
+    .AddStandardResilienceHandler();   // retry + circuit breaker + timeout একসাথে
+
+// ভেতরে যা আছে, ইন্টারভিউতে ব্যাখ্যা করার ভাষায়:
+// Retry (exponential backoff + jitter) — ক্ষণিকের fail সামলায়;
+//   শুধু idempotent কলে retry করবেন (GET হ্যাঁ, POST ভেবেচিন্তে)
+// Circuit breaker — পরপর fail হলে "সার্কিট খুলে" কিছুক্ষণ কল-ই
+//   বন্ধ রাখে; মরা সার্ভিসকে retry-ঝড়ে আরও মারা ঠেকায়
+// Timeout — ঝুলে থাকার চেয়ে দ্রুত fail ভালো (fail fast)</code></pre></figure>
+
+  <h3>২৮.৪ DDD — ধারণাগুলো যেগুলো টিমে রোজ শুনবেন</h3>
+  <ul>
+    <li><strong>Ubiquitous language:</strong> কোডের নাম = ব্যবসার ভাষা। ডোমেইন এক্সপার্ট "Booking" বললে ক্লাসের নাম <span class="inline-code">ReservationRecordDto</span> নয়, <span class="inline-code">Booking</span>।</li>
+    <li><strong>Bounded context:</strong> "Product" শব্দটা Sales আর Inventory-তে ভিন্ন জিনিস — প্রতিটি context-এর নিজের মডেল, জোর করে এক টেবিলে নয়। Microservice ভাগের প্রাকৃতিক সীমানাও এটাই।</li>
+    <li><strong>Aggregate:</strong> একসাথে consistent থাকতে হয় এমন entity-গুচ্ছ (Order + OrderLines), বাইরে থেকে ঢোকার একটাই দরজা — aggregate root। এক transaction = এক aggregate, এই নিয়মটা মনে রাখুন।</li>
+    <li><strong>Domain event:</strong> "OrderPlaced" — ডোমেইনে ঘটা ঘটনা, যেটা outbox হয়ে integration event-এ রূপ নেয়।</li>
+  </ul>
+  <div class="callout warn"><div><span class="co-label">Modular monolith — সৎ উত্তর</span><p>২০২৪+ ইন্ডাস্ট্রির স্পষ্ট ঝোঁক: আগে <strong>modular monolith</strong> (এক ডিপ্লয়মেন্ট, ভেতরে কঠোরভাবে আলাদা মডিউল — নিজ নিজ DbContext, যোগাযোগ interface/ইভেন্টে), সত্যিকারের প্রয়োজনে মডিউল খুলে আলাদা সার্ভিস। ইন্টারভিউতে এই অবস্থান নিলে অভিজ্ঞতা ঝরে পড়ে। .NET Aspire-ও চিনে রাখুন — লোকালে multi-service অ্যাপ চালানো/অবজার্ভ করার নতুন অফিসিয়াল টুলিং।</p></div></div>
+</section>
+
+<!-- ================= CH 29 ================= -->
+<section class="chapter" id="ch29">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ২৯ · অভিজ্ঞ লেভেল</span>
+    <h2>Observability — OpenTelemetry হাতে-কলমে</h2>
+    <p class="ch-goal">"প্রোডাকশনে ধীর কেন?" — এই প্রশ্নের উত্তর দিতে পারা মানুষটাই টিমের সবচেয়ে দামি। Traces, metrics, logs — সেটআপসহ।</p>
+  </header>
+
+  <h3>২৯.১ তিন স্তম্ভ, এক স্ট্যান্ডার্ড</h3>
+  <ul>
+    <li><strong>Logs</strong> — কী ঘটেছে (অধ্যায় ৯)</li>
+    <li><strong>Metrics</strong> — সংখ্যায় স্বাস্থ্য: RPS, latency p95, error rate, queue depth</li>
+    <li><strong>Traces</strong> — এক রিকোয়েস্টের পুরো যাত্রা: gateway → API → DB → broker → অন্য সার্ভিস, প্রতিটি ধাপের সময়সহ</li>
+  </ul>
+  <p><strong>OpenTelemetry (OTel)</strong> তিনটারই vendor-নিরপেক্ষ স্ট্যান্ডার্ড — একবার instrument করলে backend যা খুশি: Jaeger/Tempo (trace), Prometheus/Grafana (metrics), Loki/Seq (logs), বা Azure Application Insights, Datadog।</p>
+
+  <h3>২৯.২ সেটআপ</h3>
+  <figure class="code"><figcaption>Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// dotnet add package OpenTelemetry.Extensions.Hosting
+// + Instrumentation.AspNetCore, Instrumentation.Http, Exporter.OpenTelemetryProtocol
+
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(r => r.AddService("shop-api"))
+    .WithTracing(t => t
+        .AddAspNetCoreInstrumentation()   // ইনকামিং রিকোয়েস্ট → span
+        .AddHttpClientInstrumentation()   // আউটগোয়িং কল → child span
+        .AddNpgsql()                      // DB কোয়েরি → child span
+        .AddOtlpExporter())               // collector-এ পাঠাও
+    .WithMetrics(m => m
+        .AddAspNetCoreInstrumentation()
+        .AddRuntimeInstrumentation()      // GC, থ্রেডপুল, allocation
+        .AddOtlpExporter());</code></pre></figure>
+  <figure class="code"><figcaption>নিজের span ও metric<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">private static readonly ActivitySource Source = new("Shop.Checkout");
+private static readonly Meter Meter = new("Shop.Checkout");
+private static readonly Counter&lt;long&gt; OrdersPlaced =
+    Meter.CreateCounter&lt;long&gt;("orders_placed_total");
+
+public async Task CheckoutAsync(Cart cart)
+{
+    using var activity = Source.StartActivity("Checkout");   // custom span
+    activity?.SetTag("cart.items", cart.Items.Count);
+
+    await _payment.ChargeAsync(cart);      // trace-এ child হয়ে ঢুকবে
+    OrdersPlaced.Add(1);                   // ব্যবসায়িক metric
+}</code></pre></figure>
+  <p>জাদুটা হলো <strong>context propagation</strong>: <span class="inline-code">traceparent</span> header আপনাআপনি সার্ভিস থেকে সার্ভিসে যায় — Grafana/Jaeger-এ এক ক্লিকে দেখবেন কোন রিকোয়েস্টের ৮০০ms-এর ৭২০ms গেছে কোন SQL-এ।</p>
+
+  <h3>২৯.৩ SLO-মাইন্ডসেট — সিনিয়র শোনানোর শব্দভান্ডার</h3>
+  <ul>
+    <li><strong>SLI</strong> (indicator): মাপা জিনিস — "p95 latency", "success rate"</li>
+    <li><strong>SLO</strong> (objective): লক্ষ্য — "৩০ দিনে ৯৯.৯% রিকোয়েস্ট &lt; 300ms"</li>
+    <li><strong>Error budget:</strong> ০.১% fail করার "অনুমতি" — budget শেষ হলে ফিচার থামিয়ে stability-তে কাজ; ব্যবসা আর ইঞ্জিনিয়ারিং-এর দর-কষাকষির ভাষা</li>
+    <li><strong>Alert নিয়ম:</strong> symptom-এ alert করুন (error rate বাড়ছে), cause-এ নয় (CPU 80%); রাতে যে alert-এ কিছু করার নেই সেটা alert নয়, spam</li>
+  </ul>
+  <div class="callout tip"><div><span class="co-label">ইন্টারভিউ গোল্ড</span><p>"প্রোডাকশন incident সামলেছেন কখনো?" প্রশ্নে STAR গল্প রেডি রাখুন: alert পেলাম → trace/লগে সংকীর্ণ করলাম → mitigate (rollback/feature flag) → post-mortem-এ root cause + প্রতিরোধ। blameless post-mortem শব্দটা ব্যবহার করুন — ইউরোপীয় ইঞ্জিনিয়ারিং কালচারে এটা মূল্যবোধের সংকেত।</p></div></div>
+</section>
+
+<!-- ================= CH 30 ================= -->
+<section class="chapter" id="ch30">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ৩০ · অভিজ্ঞ লেভেল</span>
+    <h2>System Design ইন্টারভিউ — কাঠামো ও অনুশীলন</h2>
+    <p class="ch-goal">Mid-level থেকে ওপরে উঠলেই লুপে system design রাউন্ড থাকবে। এখানে চলার কাঠামো + একটা পূর্ণ উদাহরণ।</p>
+  </header>
+
+  <h3>৩০.১ ৪৫ মিনিটের খেলার নিয়ম</h3>
+  <ol class="steps">
+    <li><strong>Requirements (৫ মি):</strong> functional ("কী করবে") + non-functional ("কত ইউজার? latency? consistency নাকি availability জরুরি?")। <em>প্রশ্ন না করে ডিজাইন শুরু করাই এক নম্বর ভুল।</em></li>
+    <li><strong>Estimation (৫ মি):</strong> মোটা দাগে — DAU × request/user ÷ 86400 ≈ RPS; storage = রেকর্ড × সাইজ × বছর। নিখুঁত নয়, যুক্তিসঙ্গত।</li>
+    <li><strong>API + data model (১০ মি):</strong> মূল endpoint, টেবিল/কী, কোন DB কেন</li>
+    <li><strong>High-level ডায়াগ্রাম (১০ মি):</strong> client → LB → API → cache/DB/queue — বাক্স আর তীর</li>
+    <li><strong>Deep dive + trade-off (১৫ মি):</strong> ইন্টারভিউয়ার যেদিকে টানে — scaling, failure, consistency। প্রতি সিদ্ধান্তে "বিকল্প ছিল X, নিলাম Y কারণ…"</li>
+  </ol>
+
+  <h3>৩০.২ Building blocks — এক নজরে</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ব্লক</th><th>কখন টানবেন</th><th>খেয়াল</th></tr></thead>
+    <tbody>
+      <tr><td>Load balancer</td><td>একাধিক API instance</td><td>instance stateless রাখুন — session ডেটা Redis-এ</td></tr>
+      <tr><td>Cache (Redis)</td><td>read-heavy, একই ডেটা বারবার</td><td>invalidation + TTL; cache-aside প্যাটার্ন বলুন</td></tr>
+      <tr><td>CDN</td><td>static asset, ছবি, ভিডিও</td><td>edge-এ ক্যাশ = origin-এ চাপ কম</td></tr>
+      <tr><td>Queue (RabbitMQ/Kafka)</td><td>ধীর কাজ, traffic spike শোষণ, decoupling</td><td>at-least-once → idempotency লাগবেই</td></tr>
+      <tr><td>DB replication</td><td>read scale + failover</td><td>replica-য় পড়া = replication lag মানতে হবে</td></tr>
+      <tr><td>Sharding/partitioning</td><td>এক নোডে ডেটা/লোড ধরে না</td><td>shard key বাছাই-ই আসল; cross-shard join দুঃখ</td></tr>
+      <tr><td>Rate limiter</td><td>API সুরক্ষা, fairness</td><td>অধ্যায় ১৮ — token bucket নামটা বলুন</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>CAP এক লাইনে:</strong> network partition-এর সময় বেছে নিতে হয় — Consistency (ভুল উত্তরের চেয়ে না-উত্তর ভালো: ব্যাংক ব্যালেন্স) নাকি Availability (বাসি উত্তরও চলবে: প্রোডাক্ট ভিউ কাউন্ট)। বাস্তব প্রশ্ন হলো প্রতি ফিচারে কোনটা দরকার।</p>
+
+  <h3>৩০.৩ পূর্ণ উদাহরণ: Notification সিস্টেম ডিজাইন</h3>
+  <p><em>"১ কোটি ইউজারকে ইমেইল/পুশ/SMS নোটিফিকেশন পাঠানোর সিস্টেম বানান"</em> — .NET ভাষায় উত্তরের কঙ্কাল:</p>
+  <figure class="code"><figcaption>High-level design<span class="lang">text</span></figcaption><pre><code>Producers (Order svc, Marketing svc)
+      │  publish NotificationRequested (payload + template + userId)
+      ▼
+[RabbitMQ / Kafka]  ← spike শোষণ, producer-রা অপেক্ষা করে না
+      ▼
+Notification Service (ASP.NET Core, N instances)
+  ├─ user preferences + rate limit চেক (Redis: "user X কে দিনে max 5")
+  ├─ template render
+  ├─ Outbox → channel queue-গুলোতে fan-out
+  ▼
+[email-queue] [push-queue] [sms-queue]   ← চ্যানেলপ্রতি আলাদা queue:
+      ▼             ▼           ▼           SMS ধীর হলে email আটকায় না
+Email worker    Push worker  SMS worker  ← 3rd-party API + circuit breaker
+      ▼
+Delivery status টেবিল + retry (backoff) + DLQ
+Observability: প্রতি ধাপে metric (queued, sent, failed), trace propagation</code></pre></figure>
+  <p>যে trade-off গুলো নিজে থেকে বলবেন: at-least-once + idempotency key (এক নোটিফিকেশন দুবার নয়), priority queue (OTP আগে, মার্কেটিং পরে), 3rd-party rate limit মানা, GDPR — preference/unsubscribe সম্মান করা।</p>
+
+  <h3>৩০.৪ প্র্যাকটিস তালিকা</h3>
+  <ul>
+    <li>ছোট থেকে বড়: URL shortener → rate limiter → notification → chat → news feed → Uber-lite</li>
+    <li>প্রতিটি নিজে ২০ মিনিট কাগজে আঁকুন, তারপর সমাধান মেলান (Alex Xu-র বই দুটো / ByteByteGo, system-design-primer)</li>
+    <li>নিজের প্রজেক্টকে design ভাষায় বলা শিখুন: "আমার event booking app-এ overselling ঠেকিয়েছি optimistic concurrency দিয়ে" — বাস্তব অভিজ্ঞতা + তত্ত্ব একসাথে = সেরা উত্তর</li>
+  </ul>
+</section>
+
+<!-- ================= CH 31 ================= -->
+<section class="chapter" id="ch31">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ৩১ · অভিজ্ঞ লেভেল</span>
+    <h2>3+ বছরের অভিজ্ঞতা নিয়ে ইউরোপ: পজিশনিং ও নেগোসিয়েশন</h2>
+    <p class="ch-goal">অভিজ্ঞ প্রার্থী হিসেবে নিজেকে কোন লেভেলে দাঁড় করাবেন, CV কীভাবে বদলাবে, বেতন কীভাবে বাড়াবেন।</p>
+  </header>
+
+  <h3>৩১.১ আপনার ৩+ বছর ইউরোপে কোন লেভেল?</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>লেভেল</th><th>সাধারণ প্রত্যাশা</th><th>বছরের রেঞ্জ (গাইড মাত্র)</th></tr></thead>
+    <tbody>
+      <tr><td>Junior</td><td>টাস্ক দিলে করে, গাইডেন্স লাগে</td><td>০–২</td></tr>
+      <tr><td><strong>Mid-level</strong></td><td>ফিচার শুরু-শেষ একা owns করে, code review করে, জুনিয়রকে সাহায্য করে</td><td>২–৫ — <strong>আপনি এখানে</strong></td></tr>
+      <tr><td>Senior</td><td>সিস্টেম ডিজাইন করে, টিমের টেক সিদ্ধান্তে নেতৃত্ব, cross-team প্রভাব</td><td>৫+ (বছর নয়, প্রমাণ)</td></tr>
+    </tbody>
+  </table></div>
+  <p>বাস্তব টিপ: বিদেশি অভিজ্ঞতাকে কিছু কোম্পানি এক ধাপ discount করতে চায়। প্রতিষেধক হলো <strong>প্রমাণ</strong> — architecture নিয়েছেন এমন সিদ্ধান্ত, mentoring, প্রোডাকশন incident, মাপা impact। Mid হিসেবে আবেদন করুন আত্মবিশ্বাসে; junior পোস্টে আবেদন করে নিজেকে ছোট করবেন না।</p>
+
+  <h3>৩১.২ অভিজ্ঞ CV — "করেছি" নয়, "ফলাফল"</h3>
+  <figure class="code"><figcaption>Bullet-এর আগে-পরে<span class="lang">text</span></figcaption><pre><code>দুর্বল: "Worked on backend APIs using ASP.NET Core"
+
+শক্ত:  "Owned order-processing service (ASP.NET Core, PostgreSQL,
+       RabbitMQ) serving 40k orders/day; cut p95 latency 800ms→220ms
+       by fixing N+1 queries and adding Redis caching"
+
+সূত্র: [কাজ] + [স্কেল/প্রযুক্তি] + [মাপা ফলাফল]
+সংখ্যা না জানলে আনুমানিক দিন — "~", "roughly" লেখা যায়</code></pre></figure>
+  <ul>
+    <li>উপরে ৪-৫ লাইনের <strong>professional summary</strong>: "Software Engineer with 3+ years building .NET backend systems…" — recruiter ৩০ সেকেন্ডে এটুকুই পড়ে</li>
+    <li>অভিজ্ঞদের ক্ষেত্রে পোর্টফোলিও প্রজেক্টের চেয়ে <strong>কাজের গল্প</strong> বেশি ওজন রাখে; GitHub তবু সবুজ রাখুন — এই কোর্সের advanced প্রজেক্টগুলো (outbox, OTel-সহ) দেখানোর মতো জিনিস</li>
+    <li>প্রতিটি আবেদনের আগে job description-এর কীওয়ার্ড CV-তে মিলিয়ে নিন (ATS ফিল্টার)</li>
+  </ul>
+
+  <h3>৩১.৩ অভিজ্ঞদের ইন্টারভিউ লুপ — কী বদলায়</h3>
+  <ul>
+    <li><strong>System design রাউন্ড যোগ হয়</strong> (অধ্যায় ৩০) — এটাই mid/senior-এর ছাঁকনি</li>
+    <li><strong>Behavioral গভীর হয়:</strong> "সবচেয়ে কঠিন টেকনিক্যাল সিদ্ধান্ত?", "সহকর্মীর সাথে দ্বিমত হলে?", "একটা ব্যর্থতার গল্প" — ৬-৮টা STAR গল্প লিখে রাখুন: migration, incident, দ্বিমত→সমাধান, mentoring, deadline trade-off</li>
+    <li><strong>Code review রাউন্ড</strong> অনেক কোম্পানিতে: খারাপ PR দিয়ে বলবে review করুন — bug, সিকিউরিটি, নামকরণ, টেস্টের অভাব ধরুন; <em>সুরটা গঠনমূলক রাখুন</em>, সেটাও মাপা হচ্ছে</li>
+    <li><strong>আপনিও ইন্টারভিউ নিন:</strong> টিমের engineering culture প্রশ্ন করুন — CI/CD কেমন, on-call rotation, tech debt-এর প্রতি মনোভাব। ভালো প্রশ্ন নিজেই সিনিয়রিটির প্রমাণ।</li>
+  </ul>
+
+  <h3>৩১.৪ Mid/Senior বেতন ও নেগোসিয়েশন</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>দেশ</th><th>Mid (৩–৫ বছর)</th><th>Senior</th></tr></thead>
+    <tbody>
+      <tr><td>জার্মানি</td><td>€৫৫–৭২ হাজার</td><td>€৭০–৯৫ হাজার</td></tr>
+      <tr><td>নেদারল্যান্ডস</td><td>€৫৫–৭৫ হাজার</td><td>€৭০–৯৫ হাজার</td></tr>
+      <tr><td>নর্ডিক</td><td>€৫৫–৭৫ হাজার</td><td>€৭০–৯০ হাজার</td></tr>
+      <tr><td>সুইজারল্যান্ড</td><td>CHF ১০০–১২৫ হাজার</td><td>CHF ১২০–১৫০ হাজার</td></tr>
+      <tr><td>পোল্যান্ড</td><td>€৪০–৬০ হাজার</td><td>€৫৫–৮০ হাজার (B2B কন্ট্রাক্টে বেশি)</td></tr>
+    </tbody>
+  </table></div>
+  <p><em>আনুমানিক; শহর/ইন্ডাস্ট্রি ভেদে হেরফের। আবেদনকালে levels.fyi / Glassdoor / kununu-তে যাচাই করুন।</em></p>
+  <ul>
+    <li><strong>প্রথমে সংখ্যা বলবেন না</strong> — "What's the budgeted range for this role?" জিজ্ঞেস করুন; বলতেই হলে রেঞ্জের ওপরের দিক বলুন, relocation-এর খরচ-ঝুঁকির কথা মাথায় রেখে</li>
+    <li><strong>অফার পাওয়ার পরেই আসল নেগোসিয়েশন</strong> — প্রায় সবসময় ৫–১৫% জায়গা থাকে; ভদ্র এক লাইন: "I'm excited about the role — is there flexibility on base salary?" প্রতিযোগী অফার থাকলে সবচেয়ে জোরালো কার্ড</li>
+    <li>বেতন ছাড়াও: relocation package, ছুটি, remote দিন, learning budget, notice period — মোট প্যাকেজ দেখুন; জার্মানিতে ১৩তম মাসের বেতন/bonus কাঠামোও জিজ্ঞেস করুন</li>
+    <li>পোল্যান্ড/পর্তুগাল হয়ে ২-৩ বছর পর জার্মানি/নেদারল্যান্ডস/সুইজারল্যান্ড — এই সিঁড়ি-কৌশলও অনেকের জন্য কাজ করেছে; EU-র ভেতরে অভিজ্ঞতা থাকলে পরের ধাপ অনেক সহজ</li>
+  </ul>
+
+  <h3>৩১.৫ অভিজ্ঞদের ফাস্ট-ট্র্যাক প্ল্যান (৮–১০ সপ্তাহ)</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>সপ্তাহ</th><th>ফোকাস</th></tr></thead>
+    <tbody>
+      <tr><td>১–২</td><td>অধ্যায় ১–১৫ দ্রুত স্কিম করে ফাঁক পূরণ (বিশেষত DI lifetime, middleware, EF internals — যেগুলো "ব্যবহার করেছি কিন্তু ব্যাখ্যা করতে পারি না")</td></tr>
+      <tr><td>৩–৪</td><td>অধ্যায় ১৬–২৩ + ২৬–২৭ গভীরভাবে; নিজের অতীত প্রজেক্টের গল্পগুলো এই ভাষায় নতুন করে সাজান</td></tr>
+      <tr><td>৫–৬</td><td>অধ্যায় ২৮–২৯ — একটা ডেমো রিপো: দুই সার্ভিস + RabbitMQ + outbox + OTel + docker-compose; CV/LinkedIn আপডেট</td></tr>
+      <tr><td>৭–৮</td><td>অধ্যায় ৩০ — সপ্তাহে ৩টা system design অনুশীলন + ৬টা STAR গল্প লেখা; আবেদন শুরু (সপ্তাহে ১৫–২০টা, টার্গেট করা)</td></tr>
+      <tr><td>৯–১০</td><td>মক ইন্টারভিউ (pramp/peers), ফিডব্যাক লুপ, নেগোসিয়েশন প্রস্তুতি</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout tip"><div><span class="co-label">শেষ কথা — অভিজ্ঞদের জন্য</span><p>আপনার আসল সম্পদ ৩ বছরের যুদ্ধের গল্পগুলো — সেগুলোকে এই কোর্সের শব্দভান্ডারে (idempotency, p95, bounded context, error budget) অনুবাদ করতে পারলেই আপনি "আরেকজন প্রার্থী" থেকে "টিমে এখনই দরকার এমন ইঞ্জিনিয়ার" হয়ে উঠবেন। স্কিল আপনার আছে; এখন দরকার তার সঠিক ভাষা ও প্রমাণ।</p></div></div>
+</section>
+<footer class="footer">
+  <div class="grad-line"></div>
+  <p><strong>ASP.NET Core সম্পূর্ণ কোর্স</strong> — বাংলায়, শূন্য থেকে ইউরোপের চাকরি পর্যন্ত। কারিকুলাম মিলিয়ে নেওয়া হয়েছে <a href="https://roadmap.sh/aspnet-core" rel="noopener">roadmap.sh</a> ও শীর্ষ ইন্ডাস্ট্রি কোর্সগুলোর সাথে। কোড উদাহরণ .NET 8–10 সামঞ্জস্যপূর্ণ। বেতন/ভিসার তথ্য সময়ের সাথে বদলায় — আবেদনের আগে হালনাগাদ উৎস দেখুন।</p>
+</footer>
+
+</div>
+</main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- scroll progress ---------- */
+  var bar = document.getElementById("progress");
+  function onScroll(){
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + "%";
+  }
+  document.addEventListener("scroll", onScroll, {passive:true});
+  onScroll();
+
+  /* ---------- mobile menu ---------- */
+  var sidebar = document.getElementById("sidebar");
+  var btn = document.getElementById("menuBtn");
+  btn.addEventListener("click", function(){ sidebar.classList.toggle("open"); });
+  sidebar.addEventListener("click", function(e){
+    if (e.target.closest("a")) sidebar.classList.remove("open");
+  });
+
+  /* ---------- nav search filter ---------- */
+  var search = document.getElementById("navSearch");
+  var items = Array.prototype.slice.call(document.querySelectorAll("nav li"));
+  search.addEventListener("input", function(){
+    var q = search.value.trim().toLowerCase();
+    items.forEach(function(li){
+      li.classList.toggle("hidden", q !== "" && li.textContent.toLowerCase().indexOf(q) === -1);
+    });
+  });
+
+  /* ---------- scroll-spy ---------- */
+  var links = Array.prototype.slice.call(document.querySelectorAll("nav a"));
+  var map = {};
+  links.forEach(function(a){ map[a.getAttribute("href").slice(1)] = a; });
+  var spy = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if (en.isIntersecting){
+        links.forEach(function(a){ a.classList.remove("active"); });
+        var link = map[en.target.id];
+        if (link) link.classList.add("active");
+      }
+    });
+  }, {rootMargin:"-15% 0px -75% 0px"});
+  document.querySelectorAll(".chapter").forEach(function(s){ spy.observe(s); });
+
+  /* ---------- reveal on scroll ---------- */
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reduced && "IntersectionObserver" in window){
+    var rev = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if (en.isIntersecting){ en.target.classList.add("in"); rev.unobserve(en.target); }
+      });
+    }, {rootMargin:"0px 0px -5% 0px"});
+    document.querySelectorAll(".chapter").forEach(function(s){
+      s.classList.add("reveal"); rev.observe(s);
+    });
+  }
+
+  /* ---------- copy buttons ---------- */
+  document.querySelectorAll("figure.code").forEach(function(fig){
+    var cap = fig.querySelector("figcaption");
+    var pre = fig.querySelector("pre");
+    if (!cap || !pre) return;
+    var b = document.createElement("button");
+    b.className = "copy-btn"; b.type = "button"; b.textContent = "কপি";
+    b.addEventListener("click", function(){
+      var text = pre.textContent;
+      function done(){ b.textContent = "কপি হয়েছে ✓"; setTimeout(function(){ b.textContent = "কপি"; }, 1600); }
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done, done);
+      } else {
+        var ta = document.createElement("textarea");
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); } catch(e){}
+        document.body.removeChild(ta); done();
+      }
+    });
+    cap.appendChild(b);
+  });
+
+  /* ---------- tiny C# / generic highlighter ---------- */
+  var KW = new Set(("public private protected internal static readonly const class interface record struct enum namespace using var new return if else for foreach while switch case break continue async await try catch finally throw is not null true false void int string bool decimal double float long char object this base get set init where out ref in do default sealed override virtual abstract event delegate params typeof nameof let from select yield partial required global when as lock").split(" "));
+  var TYPES = /^[A-Z][A-Za-z0-9_]*$/;
+
+  function highlight(code){
+    var out = "", i = 0, n = code.length;
+    function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+    while (i < n){
+      var ch = code[i];
+      // line comment
+      if (ch === "/" && code[i+1] === "/"){
+        var j = code.indexOf("\n", i); if (j === -1) j = n;
+        out += '<span class="com">' + esc(code.slice(i, j)) + "</span>"; i = j; continue;
+      }
+      // block comment
+      if (ch === "/" && code[i+1] === "*"){
+        var j2 = code.indexOf("*/", i + 2); j2 = j2 === -1 ? n : j2 + 2;
+        out += '<span class="com">' + esc(code.slice(i, j2)) + "</span>"; i = j2; continue;
+      }
+      // razor comment @* *@
+      if (ch === "@" && code[i+1] === "*"){
+        var j3 = code.indexOf("*@", i + 2); j3 = j3 === -1 ? n : j3 + 2;
+        out += '<span class="com">' + esc(code.slice(i, j3)) + "</span>"; i = j3; continue;
+      }
+      // string
+      if (ch === '"' || (ch === "$" && code[i+1] === '"') || (ch === "@" && code[i+1] === '"')){
+        var start = i; i += (ch === '"' ? 1 : 2);
+        while (i < n && code[i] !== '"'){ if (code[i] === "\\") i++; i++; }
+        i = Math.min(i + 1, n);
+        out += '<span class="str">' + esc(code.slice(start, i)) + "</span>"; continue;
+      }
+      // hash comment (shell/yaml/docker)
+      if (ch === "#" && (i === 0 || code[i-1] === "\n" || code[i-1] === " ")){
+        var j4 = code.indexOf("\n", i); if (j4 === -1) j4 = n;
+        out += '<span class="com">' + esc(code.slice(i, j4)) + "</span>"; i = j4; continue;
+      }
+      // number
+      if (/[0-9]/.test(ch) && (i === 0 || !/[A-Za-z_0-9]/.test(code[i-1]))){
+        var start2 = i;
+        while (i < n && /[0-9_.mMfLxX]/.test(code[i])) i++;
+        out += '<span class="num">' + esc(code.slice(start2, i)) + "</span>"; continue;
+      }
+      // word
+      if (/[A-Za-z_@]/.test(ch)){
+        var start3 = i;
+        if (ch === "@") i++;
+        while (i < n && /[A-Za-z0-9_]/.test(code[i])) i++;
+        var word = code.slice(start3, i);
+        var bare = word.replace(/^@/, "");
+        if (KW.has(bare)) out += '<span class="kw">' + esc(word) + "</span>";
+        else if (TYPES.test(bare)) out += '<span class="typ">' + esc(word) + "</span>";
+        else out += esc(word);
+        continue;
+      }
+      out += esc(ch); i++;
+    }
+    return out;
+  }
+
+  document.querySelectorAll("figure.code pre code").forEach(function(el){
+    var cls = el.className || "";
+    if (cls.indexOf("lang-") !== -1 || el.closest("figure").querySelector("figcaption")){
+      el.innerHTML = highlight(el.textContent);
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

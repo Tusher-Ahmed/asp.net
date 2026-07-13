@@ -231,6 +231,23 @@ td{font-variant-numeric:tabular-nums}
   main{padding:0 20px 70px}
   .hero{padding:44px 0 30px}
 }
+
+/* ---------- chapter progress tracking ---------- */
+.side-progress{margin:6px 0 4px; padding:11px 13px; border:1px solid var(--line); border-radius:12px; background:var(--surface2)}
+.side-progress .sp-label{display:flex; justify-content:space-between; align-items:baseline; font-size:12px; color:var(--muted); margin-bottom:7px; letter-spacing:.05em}
+.side-progress b{color:var(--ink); font-variant-numeric:tabular-nums; font-size:13px}
+.sp-bar{height:6px; border-radius:99px; background:var(--line); overflow:hidden}
+.sp-bar i{display:block; height:100%; width:0; background:var(--grad); border-radius:99px; transition:width .35s ease}
+@media (prefers-reduced-motion: reduce){.sp-bar i{transition:none}}
+nav a.done::after{content:"✓"; margin-left:auto; color:var(--teal-c); font-weight:700; font-size:12px}
+.done-btn{
+  margin-top:14px; display:inline-flex; align-items:center; gap:8px;
+  font:inherit; font-size:13.5px; padding:7px 18px; border-radius:999px;
+  border:1px solid var(--line); background:var(--surface); color:var(--muted);
+  cursor:pointer; transition:border-color .15s,color .15s,background .15s;
+}
+.done-btn:hover{border-color:var(--accent); color:var(--accent-ink)}
+.done-btn.on{background:var(--teal-soft); color:var(--teal-c); border-color:transparent; font-weight:700}
 </style>
 </head>
 <body>
@@ -3125,6 +3142,50 @@ Observability: প্রতি ধাপে metric (queued, sent, failed), trace
     });
     cap.appendChild(b);
   });
+
+  /* ---------- chapter progress (localStorage) ---------- */
+  var LS_KEY = "aspnet-course-done";
+  var done = {};
+  try { done = JSON.parse(localStorage.getItem(LS_KEY) || "{}") || {}; } catch(e){ done = {}; }
+  var chapters = Array.prototype.slice.call(document.querySelectorAll(".chapter"));
+  var total = chapters.length;
+
+  var sideBox = document.createElement("div");
+  sideBox.className = "side-progress";
+  sideBox.innerHTML = '<div class="sp-label"><span>আপনার অগ্রগতি</span><b id="spCount"></b></div>' +
+                      '<div class="sp-bar"><i id="spFill"></i></div>';
+  search.parentNode.insertBefore(sideBox, search.nextSibling);
+
+  function refreshProgress(){
+    var count = 0;
+    chapters.forEach(function(s){ if (done[s.id]) count++; });
+    document.getElementById("spCount").textContent = count + " / " + total;
+    document.getElementById("spFill").style.width = (count / total * 100) + "%";
+    links.forEach(function(a){
+      a.classList.toggle("done", !!done[a.getAttribute("href").slice(1)]);
+    });
+    chapters.forEach(function(s){
+      var b = s.querySelector(".done-btn");
+      if (b) {
+        var on = !!done[s.id];
+        b.classList.toggle("on", on);
+        b.textContent = on ? "✓ অধ্যায়টি সম্পন্ন" : "সম্পন্ন হিসেবে চিহ্নিত করুন";
+      }
+    });
+  }
+
+  chapters.forEach(function(s){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "done-btn";
+    b.addEventListener("click", function(){
+      if (done[s.id]) delete done[s.id]; else done[s.id] = 1;
+      try { localStorage.setItem(LS_KEY, JSON.stringify(done)); } catch(e){}
+      refreshProgress();
+    });
+    var head = s.querySelector(".ch-head");
+    (head || s).appendChild(b);
+  });
+  refreshProgress();
 
   /* ---------- tiny C# / generic highlighter ---------- */
   var KW = new Set(("public private protected internal static readonly const class interface record struct enum namespace using var new return if else for foreach while switch case break continue async await try catch finally throw is not null true false void int string bool decimal double float long char object this base get set init where out ref in do default sealed override virtual abstract event delegate params typeof nameof let from select yield partial required global when as lock").split(" "));

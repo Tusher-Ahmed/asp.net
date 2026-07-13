@@ -21,5 +21,6 @@ To publish it as a website, enable **GitHub Pages** (Settings → Pages → Depl
 - Two tracks: beginner (~4–6 months) and experienced fast-track (8–10 weeks)
 - Curriculum cross-checked against [roadmap.sh/aspnet-core](https://roadmap.sh/aspnet-core) and top industry courses
 - Light/dark theme, chapter search, syntax-highlighted code with copy buttons
+- Progress tracking — mark chapters as done (saved in your browser via localStorage)
 
 > Salary/visa figures are approximate guides — verify current numbers before applying.

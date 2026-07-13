@@ -17,7 +17,7 @@ To publish it as a website, enable **GitHub Pages** (Settings → Pages → Depl
 | ৫ · ক্যারিয়ার | 24–25 | Europe job market guide, 6-month roadmap, portfolio projects |
 | ৬ · অভিজ্ঞদের জন্য (3+ YOE) | 26–31 | .NET runtime internals, advanced EF Core, distributed systems (RabbitMQ, gRPC, outbox, saga), OpenTelemetry observability, system design interviews, mid/senior positioning & salary negotiation |
 
-- 120+ runnable code examples (.NET 8–10 compatible)
+- 130+ runnable code examples (.NET 8–10 compatible)
 - Two tracks: beginner (~4–6 months) and experienced fast-track (8–10 weeks)
 - Curriculum cross-checked against [roadmap.sh/aspnet-core](https://roadmap.sh/aspnet-core) and top industry courses
 - Light/dark theme, chapter search, syntax-highlighted code with copy buttons

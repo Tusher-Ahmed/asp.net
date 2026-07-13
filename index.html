@@ -310,7 +310,7 @@ td{font-variant-numeric:tabular-nums}
   <p class="lead">এই পেজটি একটি সম্পূর্ণ, ধারাবাহিক কারিকুলাম। প্রতিটি অধ্যায় আগেরটার ওপর দাঁড়িয়ে — তাই ওপর থেকে নিচে পড়ুন, প্রতিটি কোড নিজে টাইপ করে চালান। আর <strong>৩+ বছরের অভিজ্ঞ ইঞ্জিনিয়ার</strong> হলে পর্ব ১–৫ দ্রুত ঝালিয়ে নিয়ে সোজা চলে যান <a href="#ch26">পর্ব ৬-এ</a> — runtime internals, distributed systems, observability, system design ও mid/senior লেভেলের ইন্টারভিউ-নেগোসিয়েশন সেখানে।</p>
   <div class="hero-meta">
     <span class="chip"><b>৩১টি</b> অধ্যায়</span>
-    <span class="chip"><b>১২০+</b> কোড উদাহরণ</span>
+    <span class="chip"><b>১৩০+</b> কোড উদাহরণ</span>
     <span class="chip"><b>Junior → Senior</b> দুই ট্র্যাক</span>
     <span class="chip"><b>~৪–৬ মাস</b> বিগিনার (দিনে ২ ঘণ্টা)</span>
     <span class="chip"><b>৮–১০ সপ্তাহ</b> অভিজ্ঞ ফাস্ট-ট্র্যাক</span>
@@ -422,6 +422,16 @@ dotnet run
 Console.WriteLine("Hello, World!");
 Console.WriteLine("আমি ASP.NET Core শিখছি!");</code></pre></figure>
   <div class="callout note"><div><span class="co-label">জেনে রাখুন</span><p>আগে C#-এ <span class="inline-code">Main</span> মেথডসহ অনেক boilerplate লিখতে হতো। আধুনিক .NET-এ ফাইলের ওপরে সরাসরি কোড লেখা যায় — কম্পাইলার নিজেই <span class="inline-code">Main</span> বানিয়ে নেয়।</p></div></div>
+
+  <h3>২.৫ Git — প্রথম দিন থেকেই</h3>
+  <p>ইউরোপের প্রতিটি টিম Git-এ কাজ করে — এটা ঐচ্ছিক স্কিল নয়, ভাষার মতোই ভিত্তি। আজকের HelloBangla প্রজেক্ট থেকেই প্রতিটি অনুশীলন Git-এ রাখুন:</p>
+  <figure class="code"><figcaption>টার্মিনাল — দৈনন্দিন Git<span class="lang">shell</span></figcaption><pre><code class="lang-sh">git init                          # প্রজেক্টে Git চালু
+git add .                         # বদলগুলো স্টেজে
+git commit -m "Add hello world"   # স্ন্যাপশট (মেসেজ ইংরেজিতে, বর্তমান কালে)
+git checkout -b feature/login     # নতুন কাজ নতুন ব্রাঞ্চে
+git push -u origin feature/login  # GitHub-এ পাঠানো
+git pull                          # অন্যদের কাজ নামানো</code></pre></figure>
+  <p>টিমের স্বাভাবিক প্রবাহ (যেটা ইন্টারভিউতেও জিজ্ঞেস করে): <strong>main ব্রাঞ্চে সরাসরি কেউ লেখে না</strong> → ফিচার ব্রাঞ্চ → push → <strong>Pull Request</strong> → সহকর্মীর code review → CI টেস্ট পাশ → merge। আরও শিখে রাখুন: <span class="inline-code">git log</span>, <span class="inline-code">git diff</span>, merge conflict সমাধান, <span class="inline-code">.gitignore</span> (bin/, obj/ কখনো commit নয় — <span class="inline-code">dotnet new gitignore</span> কমান্ডেই রেডিমেড পাবেন)।</p>
 </section>
 
 <!-- ================= CH 03 ================= -->
@@ -589,6 +599,58 @@ bool anyFree  = products.Any(p => p.Price == 0);
 decimal total = products.Sum(p => p.Price);</code></pre></figure>
   <p>এখানে <span class="inline-code">p =&gt; p.Price &gt; 100</span> হলো <strong>lambda expression</strong> — ছোট্ট নামহীন ফাংশন: "p নামের ইনপুট নাও, <span class="inline-code">p.Price &gt; 100</span> ফেরত দাও"।</p>
 
+  <h3>৩.৯ Inheritance ও Polymorphism</h3>
+  <p>এক ক্লাস আরেক ক্লাসের বৈশিষ্ট্য পেতে পারে (<strong>inheritance</strong>), আর parent-এর জায়গায় child বসিয়ে ভিন্ন আচরণ পাওয়া যায় (<strong>polymorphism</strong>):</p>
+  <figure class="code"><figcaption>Polymorphism.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public abstract class PaymentMethod          // abstract = সরাসরি new করা যায় না
+{
+    public abstract decimal Fee(decimal amount);   // child-কে লিখতেই হবে
+    public virtual string Receipt() => "সাধারণ রসিদ"; // child চাইলে বদলাতে পারে
+}
+
+public class CardPayment : PaymentMethod
+{
+    public override decimal Fee(decimal amount) => amount * 0.02m;
+}
+
+public class BankTransfer : PaymentMethod
+{
+    public override decimal Fee(decimal amount) => 1.50m;
+    public override string Receipt() => "ব্যাংক ট্রান্সফার রসিদ";
+}
+
+// Polymorphism কাজে: টাইপ না জেনেই সঠিক Fee হিসাব হয়
+List&lt;PaymentMethod&gt; payments = new() { new CardPayment(), new BankTransfer() };
+foreach (var p in payments)
+    Console.WriteLine(p.Fee(100m));   // 2.00 তারপর 1.50</code></pre></figure>
+  <div class="callout note"><div><span class="co-label">আধুনিক পরামর্শ</span><p>গভীর inheritance চেইন (A→B→C→D) আজকাল খারাপ চর্চা ধরা হয় — ভঙ্গুর হয়। নিয়ম: <strong>"composition over inheritance"</strong> — আচরণ শেয়ার করতে interface + ছোট ছোট সার্ভিস জুড়ে দিন; inheritance রাখুন সত্যিকারের "X একধরনের Y" সম্পর্কের জন্য। এই মতামতটা ইন্টারভিউতে বলতে পারা প্লাস পয়েন্ট।</p></div></div>
+
+  <h3>৩.১০ Exception Handling</h3>
+  <figure class="code"><figcaption>Exceptions.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">try
+{
+    var text = File.ReadAllText("config.json");
+    int value = int.Parse(text);
+}
+catch (FileNotFoundException ex)          // নির্দিষ্টটা আগে ধরুন
+{
+    Console.WriteLine($"ফাইল নেই: {ex.FileName}");
+}
+catch (FormatException) when (DateTime.Now.Hour < 6)  // when = শর্তসাপেক্ষ catch
+{
+    Console.WriteLine("রাতের ব্যাচ-জবে সংখ্যা ভুল");
+}
+finally
+{
+    Console.WriteLine("সফল-ব্যর্থ যাই হোক, এটা চলবেই");  // cleanup-এর জায়গা
+}
+
+// নিজের exception — ডোমেইনের ভাষায়
+public class InsufficientBalanceException : Exception
+{
+    public InsufficientBalanceException(decimal balance)
+        : base($"ব্যালেন্স অপর্যাপ্ত: {balance}") { }
+}</code></pre></figure>
+  <div class="callout danger"><div><span class="co-label">ইন্টারভিউ ফাঁদ</span><p><span class="inline-code">catch (Exception ex) { throw ex; }</span> লিখলে <strong>stack trace মুছে যায়</strong> — আসল দোষী লাইন আর খুঁজে পাবেন না। আবার ছুড়তে হলে শুধু <span class="inline-code">throw;</span> লিখুন। আর খালি <span class="inline-code">catch {}</span> (exception গিলে ফেলা) প্রোডাকশন কোডের সবচেয়ে ঘৃণিত অভ্যাস — অন্তত লগ করুন।</p></div></div>
+
   <div class="callout tip"><div><span class="co-label">প্র্যাকটিস</span><p>এই অধ্যায়ের প্রতিটি কোড একটি কনসোল প্রজেক্টে চালিয়ে দেখুন। তারপর নিজে বানান: একটি <span class="inline-code">Student</span> ক্লাস, ১০ জনের List, LINQ দিয়ে GPA অনুযায়ী সর্ট করে টপ ৩ জন বের করুন।</p></div></div>
 </section>
 <!-- ================= CH 04 ================= -->
@@ -654,6 +716,27 @@ app.Run();</code></pre></figure>
   </table></div>
 
   <div class="callout note"><div><span class="co-label">Environment ধারণা</span><p>ASP.NET Core তিনটা স্ট্যান্ডার্ড environment চেনে: <strong>Development</strong>, <strong>Staging</strong>, <strong>Production</strong>। <span class="inline-code">ASPNETCORE_ENVIRONMENT</span> ভ্যারিয়েবল দিয়ে ঠিক হয় কোনটা চলছে। কোডে চেক: <span class="inline-code">app.Environment.IsDevelopment()</span></p></div></div>
+
+  <h3>৪.৫ HTTP প্রাইমার — যে ভাষায় ওয়েব কথা বলে</h3>
+  <p>ওয়েব ডেভেলপার হিসেবে আপনার প্রতিটা কাজের নিচে HTTP। একটা রিকোয়েস্ট-রেসপন্স জোড়া আসলে দেখতে এমন:</p>
+  <figure class="code"><figcaption>কাঁচা HTTP — একবার চোখে দেখে রাখুন<span class="lang">http</span></figcaption><pre><code>POST /api/todos HTTP/1.1              ← method + path + ভার্সন
+Host: localhost:5000
+Content-Type: application/json         ← body-তে কী পাঠাচ্ছি
+Authorization: Bearer eyJhbG...        ← পরিচয় (অধ্যায় ১৬)
+
+{ "title": "HTTP শেখা" }              ← body
+
+HTTP/1.1 201 Created                   ← স্ট্যাটাস কোড
+Location: /api/todos/7                 ← নতুন রিসোর্সের ঠিকানা
+Content-Type: application/json
+
+{ "id": 7, "title": "HTTP শেখা", "isDone": false }</code></pre></figure>
+  <ul>
+    <li><strong>Method-এর অর্থ:</strong> GET (পড়া, body নেই), POST (তৈরি), PUT (পুরো প্রতিস্থাপন), PATCH (আংশিক বদল), DELETE (মুছে ফেলা)</li>
+    <li><strong>Idempotent</strong> মানে: একই রিকোয়েস্ট বারবার পাঠালেও ফল একই — GET, PUT, DELETE idempotent; POST নয় (দুবার পাঠালে দুটো অর্ডার!)। <em>নেটওয়ার্ক retry-এর যুগে এই ধারণাটা ইন্টারভিউয়ের প্রিয় প্রশ্ন।</em></li>
+    <li><strong>স্ট্যাটাস কোডের পরিবার:</strong> 2xx সফল · 3xx redirect · 4xx <em>ক্লায়েন্টের</em> ভুল · 5xx <em>সার্ভারের</em> ভুল — "৪ মানে তুমি, ৫ মানে আমি"</li>
+    <li><strong>Header:</strong> মেটাডেটা — কে পাঠাচ্ছে, কী ফরম্যাটে, ক্যাশ করা যাবে কি না। ব্রাউজারের DevTools → Network ট্যাবে যেকোনো সাইটের আসল ট্রাফিক দেখে অভ্যাস করুন।</li>
+  </ul>
 </section>
 
 <!-- ================= CH 05 ================= -->
@@ -738,6 +821,35 @@ app.UseCors();                      // ৫. cross-origin নিয়ম
 app.UseAuthentication();            // ৬. তুমি কে?
 app.UseAuthorization();             // ৭. তোমার কি অনুমতি আছে?
 app.MapControllers();               // ৮. গন্তব্য (endpoints)</code></pre></figure>
+
+  <h3>৫.৫ Filter — endpoint-এর গায়ের কাছের স্তর</h3>
+  <p>Middleware চলে <em>সব</em> রিকোয়েস্টে; <strong>filter</strong> চলে নির্দিষ্ট endpoint/controller-এ, এবং <strong>model binding-এর পরে</strong> — তাই filter প্যারামিটার-ভ্যালিডেশনের মতো কাজ পারে যা middleware পারে না। এই পার্থক্যটা (roadmap.sh-এও আলাদা টপিক) ইন্টারভিউতে আসে।</p>
+  <figure class="code"><figcaption>Action filter (MVC) + Endpoint filter (Minimal API)<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// MVC: attribute বানিয়ে যেকোনো action/controller-এ বসান
+public class LogSlowRequestAttribute : ActionFilterAttribute
+{
+    public override async Task OnActionExecutionAsync(
+        ActionExecutingContext ctx, ActionExecutionDelegate next)
+    {
+        var sw = Stopwatch.StartNew();
+        await next();                       // আসল action চলে
+        if (sw.ElapsedMilliseconds > 500)
+            Console.WriteLine($"ধীর! {ctx.HttpContext.Request.Path}");
+    }
+}
+
+[LogSlowRequest]                            // ব্যবহার
+public class OrdersController : ControllerBase { /* ... */ }
+
+// Minimal API-র সমতুল্য: endpoint filter
+app.MapPost("/api/todos", CreateTodo)
+   .AddEndpointFilter(async (ctx, next) =>
+   {
+       var dto = ctx.GetArgument&lt;CreateTodoDto&gt;(0);   // binding হয়ে গেছে!
+       if (string.IsNullOrWhiteSpace(dto.Title))
+           return Results.BadRequest("Title লাগবেই");
+       return await next(ctx);
+   });</code></pre></figure>
+  <p>MVC-তে filter-এর ধরন: <strong>Authorization → Resource → Action → Exception → Result</strong> — এই ক্রমে চলে। মনে রাখার সূত্র: cross-cutting জিনিস সব রিকোয়েস্টে লাগলে middleware, নির্দিষ্ট কিছু endpoint-এ লাগলে filter।</p>
 </section>
 
 <!-- ================= CH 06 ================= -->
@@ -1268,6 +1380,23 @@ public IActionResult Create(CreateProductVm vm)
     </tbody>
   </table></div>
   <div class="callout tip"><div><span class="co-label">জবের বাস্তবতা</span><p>ইউরোপের জব পোস্টিংয়ের সিংহভাগ চায় <strong>Web API + React/Angular</strong> — তাই এই কোর্সের মূল ফোকাস API। MVC/Razor Pages জানা দরকার লিগ্যাসি প্রজেক্ট বোঝার জন্য।</p></div></div>
+
+  <h3>১২.৩ Blazor — এক নজরে</h3>
+  <p><strong>Blazor</strong> দিয়ে JavaScript না লিখেই C#-এ ইন্টারঅ্যাকটিভ UI বানানো যায়। একটা component দেখলেই ধারণা পরিষ্কার হবে:</p>
+  <figure class="code"><figcaption>Counter.razor<span class="lang">Razor</span></figcaption><pre><code>@page "/counter"
+&lt;h1&gt;গণনা: @count&lt;/h1&gt;
+&lt;button @onclick="Increment"&gt;বাড়ান&lt;/button&gt;
+
+@code {
+    private int count = 0;
+    private void Increment() => count++;
+    // বাটনে ক্লিক → C# মেথড চলে → UI নিজে নিজে আপডেট হয়
+}</code></pre></figure>
+  <ul>
+    <li><strong>Render mode:</strong> .NET 8 থেকে এক অ্যাপেই বাছাই করা যায় — <em>Interactive Server</em> (SignalR দিয়ে সার্ভারে চলে), <em>WebAssembly</em> (ব্রাউজারেই .NET চলে), বা static SSR। component-প্রতি আলাদা mode-ও সম্ভব।</li>
+    <li><strong>কখন:</strong> টিম পুরোপুরি C#-ঘেঁষা হলে (এন্টারপ্রাইজ internal tool, অ্যাডমিন প্যানেল) দারুণ; পাবলিক-ফেসিং বড় SPA-তে এখনো React/Angular-এর বাজারই বড়।</li>
+    <li><strong>জব-মার্কেট বাস্তবতা:</strong> কিছু ইউরোপীয় কোম্পানি (বিশেষত Microsoft-shop) স্পষ্টভাবে Blazor চায় — CV-তে "familiar with Blazor" রাখার মতো পরিচিতি এই সেকশনেই যথেষ্ট, গভীরে যাবেন চাকরির প্রয়োজনে।</li>
+  </ul>
 </section>
 
 <!-- ================= CH 13 ================= -->
@@ -1322,6 +1451,31 @@ public class RegisterDtoValidator : AbstractValidator&lt;RegisterDto&gt;
         RuleFor(x => x.Age).InclusiveBetween(18, 120);
     }
 }</code></pre></figure>
+
+  <h3>১৩.৪ File upload — IFormFile</h3>
+  <figure class="code"><figcaption>ছবি আপলোড endpoint<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">app.MapPost("/api/products/{id:int}/image",
+    async (int id, IFormFile file) =>
+{
+    // ১) সাইজ সীমা (এখানে 2MB)
+    if (file.Length is 0 or > 2 * 1024 * 1024)
+        return Results.BadRequest("ফাইল খালি বা 2MB-র বেশি");
+
+    // ২) extension সাদা-তালিকা — Content-Type হেডার বিশ্বাসযোগ্য নয়
+    var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+    if (ext is not (".jpg" or ".jpeg" or ".png" or ".webp"))
+        return Results.BadRequest("শুধু ছবি ফাইল");
+
+    // ৩) নিজে নাম দিন — ইউজারের দেওয়া ফাইলনাম কখনো path-এ বসাবেন না
+    //    (../../ দিয়ে path traversal আক্রমণ হয়)
+    var safeName = $"{id}-{Guid.NewGuid()}{ext}";
+    var path = Path.Combine("uploads", safeName);
+
+    await using var stream = File.Create(path);
+    await file.CopyToAsync(stream);
+
+    return Results.Ok(new { url = $"/uploads/{safeName}" });
+}).DisableAntiforgery();   // JWT-API-তে; কুকি-অ্যাপে antiforgery রাখুন</code></pre></figure>
+  <p>প্রোডাকশনে ফাইল সাধারণত অ্যাপ-সার্ভারের ডিস্কে নয় — যায় object storage-এ (Azure Blob Storage / Amazon S3), ডাটাবেসে থাকে শুধু URL। কারণ: একাধিক সার্ভার-ইনস্ট্যান্সে লোকাল ডিস্ক শেয়ার হয় না, আর কনটেইনার রিস্টার্টে ফাইল হারায়।</p>
 
   <div class="callout danger"><div><span class="co-label">মূল নীতি</span><p><strong>ক্লায়েন্টকে কখনো বিশ্বাস করবেন না।</strong> ফ্রন্টএন্ডে যত সুন্দর validation-ই থাকুক, সার্ভারে আবার চেক করতেই হবে — কারণ যে কেউ Postman/curl দিয়ে সরাসরি API-তে যা খুশি পাঠাতে পারে।</p></div></div>
 </section>
@@ -1551,6 +1705,75 @@ public async Task&lt;PagedResult&lt;ProductDto&gt;&gt; GetAll(
     return new(items, page, pageSize, total);
 }</code></pre></figure>
 
+  <h3>১৫.৫ JSON serialization নিয়ন্ত্রণ — System.Text.Json</h3>
+  <p>ASP.NET Core ডিফল্টে <span class="inline-code">System.Text.Json</span> ব্যবহার করে এবং ওয়েব-প্রেক্ষাপটে property নাম অটোমেটিক <strong>camelCase</strong> হয় (<span class="inline-code">Name</span> → <span class="inline-code">"name"</span>)। যা প্রায়ই দরকার হয়:</p>
+  <figure class="code"><figcaption>JSON টিউনিং<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public class ProductDto
+{
+    [JsonPropertyName("product_name")]      // ভিন্ন নাম চাইলে
+    public string Name { get; set; } = "";
+
+    [JsonIgnore]                            // JSON-এ যাবেই না
+    public decimal CostPrice { get; set; }
+}
+
+// অ্যাপজুড়ে সেটিংস (Minimal API):
+builder.Services.ConfigureHttpJsonOptions(o =>
+{
+    // enum সংখ্যার বদলে নাম হিসেবে: "status": "Shipped"
+    o.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    // null property বাদ দিয়ে payload ছোট রাখা:
+    o.SerializerOptions.DefaultIgnoreCondition =
+        JsonIgnoreCondition.WhenWritingNull;
+});
+// Controller-ভিত্তিক API-তে একই কাজ: AddControllers().AddJsonOptions(...)</code></pre></figure>
+  <div class="callout warn"><div><span class="co-label">দুটো ক্লাসিক সমস্যা</span><p>১) <strong>Circular reference:</strong> Product → Category → Products → … Entity সরাসরি serialize করলে এই চক্রে exception — আরেকটা কারণ কেন DTO ব্যবহার করবেন। ২) <strong>DateTime:</strong> সবসময় UTC-তে রাখুন ও ISO-8601 (<span class="inline-code">2026-07-13T10:30:00Z</span>) ফরম্যাটে পাঠান; local time API-তে পাঠানো মানে টাইমজোন-বাগের চাষ।</p></div></div>
+
+  <h3>১৫.৬ বাইরের API ডাকা — IHttpClientFactory</h3>
+  <p>আপনার API-ও অন্যের API ডাকবে (পেমেন্ট গেটওয়ে, কারেন্সি রেট)। এখানে সবচেয়ে বিখ্যাত ভুল:</p>
+  <figure class="code"><figcaption>ভুল বনাম সঠিক<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// ❌ প্রতি রিকোয়েস্টে new HttpClient() —
+// Dispose করলেও socket TIME_WAIT-এ পড়ে থাকে;
+// লোড বাড়লে "socket exhaustion"-এ অ্যাপ মরে। ক্লাসিক ইন্টারভিউ প্রশ্ন!
+
+// ✅ Typed client — factory pool সামলায়, DNS বদলও সামলায়
+public class ExchangeRateClient
+{
+    private readonly HttpClient _http;
+    public ExchangeRateClient(HttpClient http) => _http = http;
+
+    public async Task&lt;decimal&gt; GetEurToBdtAsync()
+    {
+        var data = await _http.GetFromJsonAsync&lt;RateResponse&gt;("/latest?base=EUR");
+        return data!.Rates["BDT"];
+    }
+}
+public record RateResponse(Dictionary&lt;string, decimal&gt; Rates);
+
+// Program.cs:
+builder.Services.AddHttpClient&lt;ExchangeRateClient&gt;(c =>
+{
+    c.BaseAddress = new Uri("https://api.exchangerate.host");
+    c.Timeout = TimeSpan.FromSeconds(5);   // timeout সবসময় দিন
+});
+// প্রোডাকশনে সাথে resilience (retry/circuit breaker) — অধ্যায় ২৮.৩</code></pre></figure>
+
+  <h3>১৫.৭ API Versioning — চুক্তি ভাঙার সভ্য উপায়</h3>
+  <p>API একবার ক্লায়েন্টরা ব্যবহার শুরু করলে response-এর আকৃতি বদলানো মানে তাদের অ্যাপ ভাঙা। সমাধান: নতুন আকৃতি নতুন ভার্সনে:</p>
+  <figure class="code"><figcaption>Asp.Versioning<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// dotnet add package Asp.Versioning.Http
+builder.Services.AddApiVersioning(o =>
+{
+    o.DefaultApiVersion = new ApiVersion(1);
+    o.AssumeDefaultVersionWhenUnspecified = true;
+    o.ApiVersionReader = new UrlSegmentApiVersionReader();  // /api/v1/...
+});
+
+var vset = app.NewApiVersionSet().HasApiVersion(1).HasApiVersion(2).Build();
+
+app.MapGet("/api/v{version:apiVersion}/products", GetProductsV1)
+   .WithApiVersionSet(vset).MapToApiVersion(1);
+app.MapGet("/api/v{version:apiVersion}/products", GetProductsV2)
+   .WithApiVersionSet(vset).MapToApiVersion(2);</code></pre></figure>
+  <p>নিয়ম: <strong>যোগ করা নিরাপদ</strong> (নতুন optional ফিল্ড ভার্সন লাগে না), <strong>বদলানো/মুছে ফেলা breaking</strong> (নতুন ভার্সন + পুরনোটার deprecation নোটিস)। URL-এ ভার্সন (<span class="inline-code">/v1/</span>) সবচেয়ে প্রচলিত; header-ভিত্তিকও আছে — ইন্টারভিউতে trade-off বলতে পারলেই যথেষ্ট।</p>
+
   <div class="callout tip"><div><span class="co-label">মাইলফলক প্রজেক্ট</span><p>এই পর্যন্ত শিখে বানান: <strong>Bookstore API</strong> — Book + Author entity (1-to-many), PostgreSQL + EF Core, DTO, pagination + সার্চ, Swagger। এটাই হবে আপনার পোর্টফোলিওর প্রথম পাথর — অধ্যায় ১৬-২২ এর ওপর এটাকেই ধাপে ধাপে প্রোডাকশন-মানে নিয়ে যাব।</p></div></div>
 </section>
 <!-- ================= CH 16 ================= -->
@@ -1596,7 +1819,8 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 app.UseAuthentication();   // ক্রম মনে আছে তো? AuthN আগে,
 app.UseAuthorization();    // AuthZ পরে</code></pre></figure>
-  <figure class="code"><figcaption>টোকেন বানানো — login endpoint<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">app.MapPost("/api/auth/login", (LoginDto dto, IConfiguration cfg) =>
+  <figure class="code"><figcaption>টোকেন বানানো — login endpoint<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// dotnet add package System.IdentityModel.Tokens.Jwt
+app.MapPost("/api/auth/login", (LoginDto dto, IConfiguration cfg) =>
 {
     // বাস্তবে: ডাটাবেস থেকে ইউজার এনে hash যাচাই করবেন (Identity নিচে)
     if (dto.Email != "admin@shop.com" || dto.Password != "P@ss12345")
@@ -1677,7 +1901,53 @@ public class AppUser : IdentityUser { public string? FullName { get; set; } }
 // await userManager.CreateAsync(user, password);   ← hashing অটো
 // await userManager.CheckPasswordAsync(user, password);</code></pre></figure>
 
-  <div class="callout note"><div><span class="co-label">ইউরোপে যা শুনবেন</span><p>বড় কোম্পানিতে লগইন প্রায়ই নিজের সার্ভারে হয় না — হয় <strong>OpenID Connect</strong> প্রোভাইডারে: <strong>Keycloak</strong> (ইউরোপে খুব জনপ্রিয়, ওপেন সোর্স), <strong>Microsoft Entra ID</strong> (Azure AD), Auth0। ধারণাটা জানুন: আপনার API শুধু টোকেন যাচাই করে, ইস্যু করে ওই প্রোভাইডার। Refresh token ধারণাটাও শিখুন — access token-এর আয়ু ছোট রেখে নতুন টোকেন নেওয়ার কৌশল।</p></div></div>
+  <div class="callout note"><div><span class="co-label">ইউরোপে যা শুনবেন</span><p>বড় কোম্পানিতে লগইন প্রায়ই নিজের সার্ভারে হয় না — হয় <strong>OpenID Connect</strong> প্রোভাইডারে: <strong>Keycloak</strong> (ইউরোপে খুব জনপ্রিয়, ওপেন সোর্স), <strong>Microsoft Entra ID</strong> (Azure AD), Auth0। ধারণাটা জানুন: আপনার API শুধু টোকেন যাচাই করে, ইস্যু করে ওই প্রোভাইডার। Refresh token-এর বাস্তবায়ন নিচেই দেখুন।</p></div></div>
+
+  <h3>১৬.৬ Refresh token — বাস্তবায়নের কঙ্কাল</h3>
+  <p>Access token-এর আয়ু ছোট (১৫-৩০ মিনিট) রাখলে চুরি গেলেও ক্ষতি সীমিত — কিন্তু ইউজারকে তো আধঘণ্টা পরপর লগইন করানো যায় না। সমাধান: লগইনে সাথে একটা <strong>refresh token</strong>-ও দিন (দীর্ঘ আয়ু, ডাটাবেসে রাখা, বাতিলযোগ্য):</p>
+  <figure class="code"><figcaption>RefreshToken entity + endpoint<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public class RefreshToken
+{
+    public int Id { get; set; }
+    public string UserId { get; set; } = "";
+    public string Token { get; set; } = "";     // র‍্যান্ডম, hash করে রাখা ভালো
+    public DateTime ExpiresAt { get; set; }     // যেমন ৭ দিন
+    public DateTime? RevokedAt { get; set; }
+    public bool IsActive => RevokedAt is null &amp;&amp; ExpiresAt > DateTime.UtcNow;
+}
+
+static string NewRefreshToken() =>
+    Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
+// লগইনে: access token (৩০ মি) + refresh token (DB-তে সেভ) দুটোই দিন
+
+app.MapPost("/api/auth/refresh", async (RefreshDto dto, AppDbContext db) =>
+{
+    var stored = await db.RefreshTokens
+        .FirstOrDefaultAsync(t => t.Token == dto.RefreshToken);
+
+    if (stored is not { IsActive: true })
+        return Results.Unauthorized();
+
+    // Rotation: পুরনোটা বাতিল, নতুন জোড়া ইস্যু —
+    // চুরি হওয়া টোকেন দ্বিতীয়বার ব্যবহৃত হলে ধরা পড়ে (reuse detection)
+    stored.RevokedAt = DateTime.UtcNow;
+    var next = new RefreshToken
+    {
+        UserId = stored.UserId,
+        Token = NewRefreshToken(),
+        ExpiresAt = DateTime.UtcNow.AddDays(7)
+    };
+    db.RefreshTokens.Add(next);
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        accessToken = CreateAccessToken(stored.UserId),
+        refreshToken = next.Token
+    });
+});
+// লগআউট = ইউজারের সব active refresh token revoke করা</code></pre></figure>
+  <p>ব্রাউজার-ক্লায়েন্টে refresh token রাখার নিরাপদ জায়গা <strong>httpOnly + Secure cookie</strong> (JavaScript পড়তে পারে না, XSS থেকে সুরক্ষিত); localStorage-এ রাখা ঝুঁকিপূর্ণ — এই trade-off ইন্টারভিউতে জিজ্ঞেস করে।</p>
 </section>
 
 <!-- ================= CH 17 ================= -->
@@ -2098,6 +2368,26 @@ jobs:
       <tr><td>Kubernetes</td><td>বড় সিস্টেমের কনটেইনার অর্কেস্ট্রেশন — জুনিয়র হিসেবে ধারণা থাকলেই যথেষ্ট</td></tr>
     </tbody>
   </table></div>
+  <h3>২২.৫ Kestrel ও reverse proxy</h3>
+  <p>ASP.NET Core-এর ভেতরের ওয়েব সার্ভারের নাম <strong>Kestrel</strong> — খুব দ্রুত এবং প্রোডাকশন-যোগ্য। তবে ক্লাসিক Linux VPS-এ সাধারণত সামনে একটা <strong>reverse proxy</strong> (nginx/Caddy) বসে: TLS সার্টিফিকেট, একই সার্ভারে একাধিক অ্যাপ, compression — এসব সে সামলায়। (কনটেইনার-জগতে load balancer/ingress-ই এই ভূমিকা নেয়।)</p>
+  <figure class="code"><figcaption>/etc/nginx/sites-available/shop<span class="lang">nginx</span></figcaption><pre><code>server {
+    listen 80;
+    server_name api.myshop.com;
+    location / {
+        proxy_pass         http://localhost:8080;   # Kestrel
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   Host $host;
+    }
+}</code></pre></figure>
+  <figure class="code"><figcaption>Program.cs — proxy-র পেছনে থাকলে<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// নইলে অ্যাপ সব রিকোয়েস্টকে proxy-র IP আর http ভাববে —
+// লগে ভুল IP, redirect-লুপ, ভুল লিংক তৈরি হয়
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor
+                     | ForwardedHeaders.XForwardedProto
+});</code></pre></figure>
+
   <div class="callout note"><div><span class="co-label">Observability</span><p>প্রোডাকশনে অ্যাপ "দেখার" তিন স্তম্ভ: <strong>logs</strong> (অধ্যায় ৯), <strong>metrics</strong>, <strong>traces</strong>। আধুনিক স্ট্যান্ডার্ড <strong>OpenTelemetry</strong> — .NET-এ বিল্ট-ইন সাপোর্ট আছে। শব্দটা জেনে রাখুন, জব পোস্টিংয়ে বাড়ছে।</p></div></div>
 </section>
 
@@ -2195,6 +2485,8 @@ public async Task&lt;ActionResult&lt;ProductDto&gt;&gt; Get(int id)
     <li><strong>প্রজেক্ট লিখুন ফলাফলসহ:</strong> "Built a REST API with ASP.NET Core 10, PostgreSQL, JWT auth, 85% test coverage, deployed with Docker on Hetzner" — টেক স্ট্যাক + সংখ্যা।</li>
     <li><strong>GitHub সবুজ রাখুন:</strong> ২-৩টা পরিষ্কার প্রজেক্ট (README, টেস্ট, CI ব্যাজসহ) ২০টা আধখাওয়া রিপোর চেয়ে ভালো।</li>
     <li><strong>LinkedIn ইংরেজিতে, headline-এ স্ট্যাক:</strong> ".NET Backend Developer — ASP.NET Core · PostgreSQL · Docker · Azure"। Open to Work চালু করুন, recruiter-রা সত্যিই খোঁজে।</li>
+    <li><strong>কোথায় খুঁজবেন:</strong> LinkedIn ছাড়াও — <a href="https://ec.europa.eu/eures" rel="noopener">EURES</a> (EU-র অফিসিয়াল জব পোর্টাল), StepStone ও Xing (জার্মানি), <a href="https://www.honeypot.io" rel="noopener">Honeypot</a> (জার্মানি/NL — কোম্পানিই আপনাকে অ্যাপ্লাই করে), <a href="https://relocate.me" rel="noopener">Relocate.me</a> ও <a href="https://arbeitnow.com" rel="noopener">Arbeitnow</a> (ভিসা-স্পনসরড ফিল্টার), Welcome to the Jungle (ফ্রান্স/স্পেন), আর Hacker News-এর মাসিক "Who is hiring" থ্রেড (রিমোট-EU)।</li>
+    <li><strong>Cover letter:</strong> জার্মান-ঘরানার কোম্পানিতে এখনো প্রত্যাশিত — ৩ প্যারা যথেষ্ট: কেন এই কোম্পানি, আপনার সবচেয়ে প্রাসঙ্গিক ২টা অর্জন, ভিসা/শুরুর সময়। জেনেরিক টেমপ্লেট পাঠাবেন না — ধরা পড়ে।</li>
   </ul>
 
   <h3>২৪.৪ ইন্টারভিউ প্রক্রিয়া — সাধারণ ধাপ</h3>
@@ -2204,6 +2496,8 @@ public async Task&lt;ActionResult&lt;ProductDto&gt;&gt; Get(int id)
     <li><strong>Technical deep-dive:</strong> আপনার প্রজেক্ট নিয়ে আলোচনা + নিচের প্রশ্নগুলোর মতো প্রশ্ন</li>
     <li><strong>Team/culture fit:</strong> আচরণগত প্রশ্ন — STAR পদ্ধতিতে (Situation, Task, Action, Result) গল্প সাজিয়ে রাখুন</li>
   </ol>
+
+  <div class="callout tip"><div><span class="co-label">Take-home assignment-এ জেতার নিয়ম</span><p>ইউরোপে খুব প্রচলিত রাউন্ড। যা তফাত গড়ে: পরিষ্কার <strong>README</strong> (কীভাবে চালাতে হয় + কী কী trade-off নিয়েছেন ও কেন), <strong>কয়েকটা অর্থবহ টেস্ট</strong> (১০০% coverage নয় — গুরুত্বপূর্ণ পথগুলো), <strong>ছোট ছোট commit</strong> ভালো মেসেজসহ (আপনার কাজের ধারা দেখায়), আর <strong>docker compose up</strong> দিয়ে এক কমান্ডে চালু হওয়া। সময়সীমার ভেতরে "নিখুঁত অসম্পূর্ণ"-এর চেয়ে "সম্পূর্ণ সরল" জমা দিন — বাকি আইডিয়া README-র "Next steps"-এ লিখুন।</p></div></div>
 
   <h3>২৪.৫ সবচেয়ে কমন টেকনিক্যাল প্রশ্ন (এই কোর্সেই সব আছে)</h3>
   <ul>
@@ -2525,6 +2819,7 @@ message PriceReply   { double price = 1; string currency = 2; }</code></pre></fi
 // app.MapGrpcService&lt;PricingService&gt;();
 // HTTP/2 + Protobuf বাইনারি = JSON REST-এর চেয়ে ছোট payload, কম latency
 // নিয়ম: বাইরের ক্লায়েন্টে REST, ভেতরের সার্ভিসে সার্ভিসে gRPC</code></pre></figure>
+  <p>তৃতীয় বিকল্পটাও চিনে রাখুন: <strong>GraphQL</strong> (.NET-এ HotChocolate লাইব্রেরি) — ক্লায়েন্ট নিজেই বলে দেয় কোন কোন ফিল্ড চাই; অনেক ভিন্ন ক্লায়েন্টের (mobile/web) ভিন্ন ডেটা-চাহিদা থাকলে কাজে দেয়। ইউরোপের কিছু প্রোডাক্ট কোম্পানিতে আছে — নাম ও কখন-কেন জানা থাকলেই ইন্টারভিউতে যথেষ্ট।</p>
 
   <h3>২৮.৩ Resilience — নেটওয়ার্ক fail করবেই</h3>
   <figure class="code"><figcaption>Program.cs — .NET 8+ বিল্ট-ইন resilience<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// dotnet add package Microsoft.Extensions.Http.Resilience (Polly-ভিত্তিক)

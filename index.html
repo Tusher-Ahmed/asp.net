@@ -313,6 +313,13 @@ nav a.done::after{content:"✓"; margin-left:auto; color:var(--teal-c); font-wei
       <li><a href="#ch30"><span class="n">30</span>System Design ইন্টারভিউ</a></li>
       <li><a href="#ch31"><span class="n">31</span>Mid/Senior পজিশনিং ও নেগোসিয়েশন</a></li>
     </ul>
+    <p class="nav-part">পর্ব ৭ · প্রফেশনাল প্র্যাকটিস</p>
+    <ul>
+      <li><a href="#ch32"><span class="n">32</span>RESTful API ডিজাইন ও Integration</a></li>
+      <li><a href="#ch33"><span class="n">33</span>MySQL — Schema ও Query Optimization</a></li>
+      <li><a href="#ch34"><span class="n">34</span>Performance, Scalability, Maintainability</a></li>
+      <li><a href="#ch35"><span class="n">35</span>Production Debugging ও Documentation</a></li>
+    </ul>
   </nav>
 </aside>
 
@@ -326,8 +333,8 @@ nav a.done::after{content:"✓"; margin-left:auto; color:var(--teal-c); font-wei
   <h2>ASP.NET Core — শূন্য থেকে ইউরোপের চাকরি পর্যন্ত</h2>
   <p class="lead">এই পেজটি একটি সম্পূর্ণ, ধারাবাহিক কারিকুলাম। প্রতিটি অধ্যায় আগেরটার ওপর দাঁড়িয়ে — তাই ওপর থেকে নিচে পড়ুন, প্রতিটি কোড নিজে টাইপ করে চালান। আর <strong>৩+ বছরের অভিজ্ঞ ইঞ্জিনিয়ার</strong> হলে পর্ব ১–৫ দ্রুত ঝালিয়ে নিয়ে সোজা চলে যান <a href="#ch26">পর্ব ৬-এ</a> — runtime internals, distributed systems, observability, system design ও mid/senior লেভেলের ইন্টারভিউ-নেগোসিয়েশন সেখানে।</p>
   <div class="hero-meta">
-    <span class="chip"><b>৩১টি</b> অধ্যায়</span>
-    <span class="chip"><b>১৩০+</b> কোড উদাহরণ</span>
+    <span class="chip"><b>৩৫টি</b> অধ্যায়</span>
+    <span class="chip"><b>১৪০+</b> কোড উদাহরণ</span>
     <span class="chip"><b>Junior → Senior</b> দুই ট্র্যাক</span>
     <span class="chip"><b>~৪–৬ মাস</b> বিগিনার (দিনে ২ ঘণ্টা)</span>
     <span class="chip"><b>৮–১০ সপ্তাহ</b> অভিজ্ঞ ফাস্ট-ট্র্যাক</span>
@@ -3051,6 +3058,283 @@ Observability: প্রতি ধাপে metric (queued, sent, failed), trace
   </table></div>
 
   <div class="callout tip"><div><span class="co-label">শেষ কথা — অভিজ্ঞদের জন্য</span><p>আপনার আসল সম্পদ ৩ বছরের যুদ্ধের গল্পগুলো — সেগুলোকে এই কোর্সের শব্দভান্ডারে (idempotency, p95, bounded context, error budget) অনুবাদ করতে পারলেই আপনি "আরেকজন প্রার্থী" থেকে "টিমে এখনই দরকার এমন ইঞ্জিনিয়ার" হয়ে উঠবেন। স্কিল আপনার আছে; এখন দরকার তার সঠিক ভাষা ও প্রমাণ।</p></div></div>
+</section>
+<!-- ================= CH 32 ================= -->
+<section class="chapter" id="ch32">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ৩২ · প্রফেশনাল প্র্যাকটিস</span>
+    <h2>RESTful API ডিজাইন ও Integration Patterns</h2>
+    <p class="ch-goal">endpoint লিখতে পারা আর API <em>ডিজাইন</em> করতে পারা দুটো আলাদা স্কিল। এই অধ্যায় দ্বিতীয়টা শেখায় — সাথে অন্য সিস্টেমের সঙ্গে জোড়া লাগানোর প্যাটার্নগুলো।</p>
+  </header>
+
+  <h3>৩২.১ Resource modeling — API-র কঙ্কাল</h3>
+  <p>ভালো REST API ডিজাইন শুরু হয় ডাটাবেস বা কোড থেকে নয় — <strong>ক্লায়েন্ট কোন "জিনিস" নিয়ে কাজ করবে</strong> সেই resource-তালিকা থেকে:</p>
+  <figure class="code"><figcaption>Resource ডিজাইনের ব্যাকরণ<span class="lang">text</span></figcaption><pre><code>সংগ্রহ (collection)        GET/POST   /orders
+একক (item)                GET/PUT/PATCH/DELETE   /orders/42
+নেস্টেড সম্পর্ক             GET   /orders/42/items        ← ২ স্তরের বেশি নামবেন না
+ফিল্টার query-তে           GET   /orders?status=shipped&amp;from=2026-01-01
+অ্যাকশন যা resource নয়:    POST  /orders/42/cancel        ← sub-resource হিসেবে
+                          (বিকল্প: PATCH দিয়ে status বদল — টিমের কনভেনশন মানুন)
+
+খারাপ গন্ধ (ইন্টারভিউতে ধরিয়ে দিতে বলবে):
+  /getOrders, /order/delete/42      ← ক্রিয়া URL-এ (ক্রিয়া = HTTP method)
+  /orders/42/items/7/product/3/...  ← গভীর নেস্টিং; /products/3 আলাদাই থাক
+  GET দিয়ে ডেটা বদলানো              ← GET-কে ক্যাশ/prefetch করা নিরাপদ হতে হবে</code></pre></figure>
+
+  <h3>৩২.২ Error contract ও idempotency key</h3>
+  <p>প্রফেশনাল API-র এররও একটা <em>চুক্তি</em> — অধ্যায় ১৭-র ProblemDetails-ই স্ট্যান্ডার্ড; সাথে ব্যবসায়িক এরর-কোড দিন যেন ক্লায়েন্ট প্রোগ্রাম্যাটিক্যালি আলাদা করতে পারে:</p>
+  <figure class="code"><figcaption>ব্যবসায়িক এরর — মেশিন-পাঠযোগ্য<span class="lang">JSON</span></figcaption><pre><code class="lang-json">{
+  "status": 409,
+  "title": "স্টক নেই",
+  "code": "OUT_OF_STOCK",
+  "detail": "Product 42 এর মজুদ 0, চাওয়া হয়েছে 3",
+  "instance": "/api/v1/orders"
+}</code></pre></figure>
+  <p>আর টাকার লেনদেনের মতো POST-এ ক্লায়েন্ট নেটওয়ার্ক-টাইমআউটে retry করলে ডাবল-চার্জ ঠেকায় <strong>idempotency key</strong> (Stripe-এর জনপ্রিয় করা প্যাটার্ন):</p>
+  <figure class="code"><figcaption>Idempotency key middleware-ধারণা<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// ক্লায়েন্ট পাঠায়:  Idempotency-Key: 7f9c...(uuid)
+app.MapPost("/api/payments", async (PaymentDto dto, HttpRequest req,
+    IDistributedCache cache) =>
+{
+    var key = req.Headers["Idempotency-Key"].ToString();
+    if (string.IsNullOrEmpty(key)) return Results.BadRequest("Key লাগবে");
+
+    // একই key আগে এলে আগের ফলাফলই ফেরত — নতুন চার্জ নয়
+    var cached = await cache.GetStringAsync($"idem:{key}");
+    if (cached is not null)
+        return Results.Content(cached, "application/json");
+
+    var result = await ProcessPaymentAsync(dto);
+    await cache.SetStringAsync($"idem:{key}",
+        JsonSerializer.Serialize(result),
+        new DistributedCacheEntryOptions
+            { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24) });
+    return Results.Ok(result);
+});</code></pre></figure>
+
+  <h3>৩২.৩ Pagination-এর দুই ঘরানা — offset বনাম cursor</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th></th><th>Offset (<code>?page=500</code>)</th><th>Cursor/keyset (<code>?after=id_9942</code>)</th></tr></thead>
+    <tbody>
+      <tr><td>কাজের ধরন</td><td><code>OFFSET 10000 LIMIT 20</code> — DB আগের ১০ হাজার সারি <em>পড়ে ফেলে দেয়</em></td><td><code>WHERE id &gt; 9942 LIMIT 20</code> — index ধরে সোজা লাফ</td></tr>
+      <tr><td>গভীর পৃষ্ঠায়</td><td>ক্রমশ ধীর</td><td>সমান দ্রুত</td></tr>
+      <tr><td>ডেটা বদলালে</td><td>সারি পিছলে যায় (এক আইটেম দুবার/বাদ)</td><td>স্থিতিশীল</td></tr>
+      <tr><td>"পৃষ্ঠা ৭-এ যাও"</td><td>পারে</td><td>পারে না — শুধু পরের/আগের</td></tr>
+      <tr><td>কখন</td><td>অ্যাডমিন টেবিল, ছোট ডেটা</td><td>ফিড, অসীম স্ক্রল, বড় ডেটা, পাবলিক API</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>৩২.৪ Integration patterns — অন্য সিস্টেমের সাথে জোড়া</h3>
+  <ul>
+    <li><strong>Sync (request/response):</strong> সহজ, কিন্তু ডাকা সার্ভিস ধীর/মৃত হলে আপনিও — তাই সবসময় timeout + retry + circuit breaker (অধ্যায় ২৮.৩)।</li>
+    <li><strong>Async (event/queue):</strong> decoupled ও স্থিতিস্থাপক (অধ্যায় ২৮.১) — কিন্তু eventual consistency মেনে নিতে হয়।</li>
+    <li><strong>Webhook:</strong> "কিছু ঘটলে <em>আমি তোমাকে</em> ডাকব" — পেমেন্ট গেটওয়ে এভাবেই ফল জানায়। রিসিভার বানানোর নিয়ম: <em>সিগনেচার যাচাই করুন</em> (HMAC header), <em>দ্রুত 200 দিন</em> (কাজ queue-তে ফেলে), <em>duplicate সামলান</em> (তারা retry করে)।</li>
+    <li><strong>Polling বনাম webhook বনাম SSE/WebSocket:</strong> মাঝে মাঝে চেক চলবে → polling; সোর্স push দিতে পারে → webhook (সার্ভার-টু-সার্ভার) বা SignalR/SSE (ব্রাউজারে)।</li>
+    <li><strong>Anti-corruption layer:</strong> বাইরের API-র অগোছালো মডেল সরাসরি নিজের ডোমেইনে ঢোকাবেন না — মাঝে একটা অনুবাদক ক্লাস (adapter) রাখুন; বাইরেরটা বদলালে শুধু adapter বদলায়। DDD-র (অধ্যায় ২৮.৪) বাস্তব প্রয়োগ।</li>
+    <li><strong>BFF (Backend-for-Frontend):</strong> মোবাইল আর ওয়েবের চাহিদা আলাদা হলে প্রত্যেকের জন্য পাতলা নিজস্ব API-স্তর — ক্লায়েন্টপ্রতি দর্জি-করা রেসপন্স, ভেতরে একই সার্ভিস।</li>
+  </ul>
+  <div class="callout tip"><div><span class="co-label">ইন্টারভিউ ফ্রেম</span><p>"How would you integrate with a third-party payment provider?" — মডেল উত্তর: typed HttpClient + timeout (১৫.৬) → resilience pipeline (২৮.৩) → idempotency key (৩২.২) → webhook receiver with signature check → reconciliation job রাতে মিলিয়ে দেখে। এই এক উত্তরে পাঁচটা অধ্যায় জ্বলজ্বল করে।</p></div></div>
+</section>
+
+<!-- ================= CH 33 ================= -->
+<section class="chapter" id="ch33">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ৩৩ · প্রফেশনাল প্র্যাকটিস</span>
+    <h2>MySQL — Schema Design ও Query Optimization</h2>
+    <p class="ch-goal">ইউরোপের বহু কোম্পানির (বিশেষত PHP/লিগ্যাসি-উত্তরাধিকার স্ট্যাকে) প্রধান ডাটাবেস MySQL/MariaDB। EF Core-এর সাথে ব্যবহার, সঠিক স্কিমা, আর ধীর কোয়েরি দ্রুত করা।</p>
+  </header>
+
+  <h3>৩৩.১ .NET থেকে MySQL</h3>
+  <figure class="code"><figcaption>টার্মিনাল + Program.cs<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// প্রোভাইডার: Pomelo (কমিউনিটি-স্ট্যান্ডার্ড, ফ্রি)
+// dotnet add package Pomelo.EntityFrameworkCore.MySql
+
+builder.Services.AddDbContext&lt;ShopDbContext&gt;(opt =>
+    opt.UseMySql(
+        builder.Configuration.GetConnectionString("Default"),
+        ServerVersion.AutoDetect(
+            builder.Configuration.GetConnectionString("Default"))));
+
+// connection string:
+// "Server=localhost;Database=shopdb;User=app;Password=...;"
+// বাকি সব — entity, migration, LINQ — অধ্যায় ১৪-র মতোই।
+// এটাই EF-এর সৌন্দর্য: PostgreSQL→MySQL বদলে মূলত ২ লাইন বদলায়।</code></pre></figure>
+  <div class="callout note"><div><span class="co-label">MySQL-এর নিজস্ব চরিত্র</span><p>Engine সবসময় <strong>InnoDB</strong> (transaction + row-level lock; MyISAM মৃত)। Charset <strong>utf8mb4</strong> নিন — MySQL-এর পুরনো "utf8" আসলে ৩-বাইট, ইমোজি/অনেক অক্ষরে ভাঙে; বাংলা টেক্সটের জন্যও utf8mb4-ই সঠিক। ডিফল্ট isolation level PostgreSQL-এর মতো Read Committed নয় — <strong>Repeatable Read</strong> (অধ্যায় ২৭.২-এর টেবিলটা মনে করুন)।</p></div></div>
+
+  <h3>৩৩.২ Schema design — সিদ্ধান্তগুলো</h3>
+  <ul>
+    <li><strong>Normalization (3NF পর্যন্ত):</strong> প্রতিটি তথ্য এক জায়গায় — customer-এর ঠিকানা orders টেবিলে কপি নয়, customers-এ একবার। আপডেট-অসঙ্গতি (anomaly) ঠেকায়।</li>
+    <li><strong>ইচ্ছাকৃত denormalization:</strong> read-ভারী জায়গায় হিসাব করা মান (যেমন <span class="inline-code">orders.total_amount</span>) রেখে দেওয়া বৈধ কৌশল — শর্ত: কে/কখন আপডেট রাখবে তা পরিষ্কার। "নর্মালাইজ করে শুরু, মেপে denormalize" — ইন্টারভিউ-বাক্য।</li>
+    <li><strong>ডেটা টাইপ কৃপণের মতো:</strong> টাকা <span class="inline-code">DECIMAL(10,2)</span> (কখনোই FLOAT নয়!), স্ট্যাটাস <span class="inline-code">TINYINT</span>/enum, সময় <span class="inline-code">DATETIME(6)</span> UTC-তে, ID-তে <span class="inline-code">BIGINT AUTO_INCREMENT</span> বা UUIDv7 (এলোমেলো UUIDv4 primary key-তে InnoDB-র B-tree ছত্রখান করে — সূক্ষ্ম কিন্তু দামি জ্ঞান)।</li>
+    <li><strong>FK constraint রাখুন</strong> — "অ্যাপে সামলাবো" বলে বাদ দিলে একদিন এতিম সারি (orphan rows) পাবেনই।</li>
+  </ul>
+  <figure class="code"><figcaption>schema.sql — নমুনা<span class="lang">sql</span></figcaption><pre><code class="lang-sql">CREATE TABLE orders (
+    id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    customer_id   BIGINT UNSIGNED NOT NULL,
+    status        TINYINT NOT NULL DEFAULT 0,      -- 0=pending,1=paid...
+    total_amount  DECIMAL(10,2) NOT NULL,
+    created_at    DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    CONSTRAINT fk_orders_customer
+        FOREIGN KEY (customer_id) REFERENCES customers(id),
+    INDEX idx_customer_created (customer_id, created_at)  -- নিচে ব্যাখ্যা
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;</code></pre></figure>
+
+  <h3>৩৩.৩ Index — কীভাবে ভাবতে হয়</h3>
+  <ul>
+    <li><strong>Composite index-এ ক্রমই সব:</strong> <span class="inline-code">(customer_id, created_at)</span> index কাজ করে "এই customer-এর অর্ডার তারিখক্রমে" কোয়েরিতে; কিন্তু <em>শুধু</em> created_at দিয়ে খুঁজলে কাজে লাগে না — বাঁ দিক থেকে ব্যবহার হয় (leftmost prefix rule)।</li>
+    <li><strong>Covering index:</strong> কোয়েরির সব কলাম index-এই থাকলে টেবিল ছোঁয়াই লাগে না — EXPLAIN-এ <span class="inline-code">Using index</span> দেখলে বুঝবেন জিতেছেন।</li>
+    <li><strong>Index অকেজো হয়ে যায় যখন:</strong> কলামে ফাংশন (<span class="inline-code">WHERE YEAR(created_at)=2026</span> ❌ → রেঞ্জ দিন ✅), আগে-% যুক্ত LIKE (<span class="inline-code">'%abc'</span>), টাইপ-অমিল (string কলামে number তুলনা)।</li>
+    <li><strong>দাম আছে:</strong> প্রতিটি index মানে প্রতি INSERT/UPDATE-এ বাড়তি লেখা — "সব কলামে index" সমাধান নয়, রোগ।</li>
+  </ul>
+
+  <h3>৩৩.৪ ধীর কোয়েরি ধরা ও সারানো — কর্মপ্রবাহ</h3>
+  <figure class="code"><figcaption>EXPLAIN পড়া<span class="lang">sql</span></figcaption><pre><code class="lang-sql">-- ধাপ ১: অপরাধী খুঁজুন
+-- slow query log চালু করুন (long_query_time = 0.5), বা
+-- EF-এর লগে ধীর কোয়েরি দেখুন (অধ্যায় ৯)
+
+-- ধাপ ২: DB-কে জিজ্ঞেস করুন সে কী প্ল্যান করছে
+EXPLAIN SELECT o.id, o.total_amount
+FROM orders o
+WHERE o.customer_id = 42
+ORDER BY o.created_at DESC
+LIMIT 20;
+
+-- যা দেখবেন:
+-- type: ALL        ← 🔴 full table scan! index নেই/ব্যবহার হচ্ছে না
+-- type: ref/range  ← 🟢 index ধরে খুঁজছে
+-- rows: 2,400,000  ← কত সারি ছুঁতে হবে (কম = ভালো)
+-- Extra: Using filesort ← ORDER BY-র জন্য আলাদা সর্ট — index দিয়ে ঢাকুন
+-- Extra: Using index    ← 🟢 covering index, সেরা অবস্থা</code></pre></figure>
+  <p>সারানোর সাধারণ ক্রম: সঠিক index যোগ → <span class="inline-code">SELECT *</span> বাদ দিয়ে দরকারি কলাম (EF-তে <span class="inline-code">Select()</span> projection — অধ্যায় ১৪) → offset-এর বদলে keyset pagination (৩২.৩) → তবু ভারী হলে ক্যাশ (অধ্যায় ১৮) বা read replica (অধ্যায় ৩০)।</p>
+  <div class="callout tip"><div><span class="co-label">অনুশীলন</span><p>নিজের Bookstore API-তে ১০ লাখ ডামি সারি ভরুন (একটা লুপে <span class="inline-code">AddRange</span> + ব্যাচে SaveChanges), তারপর সার্চ endpoint-টা EXPLAIN করুন — index ছাড়া/সহ পার্থক্য নিজের চোখে দেখা এক ঘণ্টার সেরা বিনিয়োগ। ইন্টারভিউতে "আমি EXPLAIN দিয়ে filesort ধরে composite index-এ নামিয়েছি ৪০০ms→৮ms" বলতে পারা = সোনা।</p></div></div>
+</section>
+
+<!-- ================= CH 34 ================= -->
+<section class="chapter" id="ch34">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ৩৪ · প্রফেশনাল প্র্যাকটিস</span>
+    <h2>Performance, Scalability ও Maintainability Engineering</h2>
+    <p class="ch-goal">দ্রুত অ্যাপ, বাড়তে-পারা সিস্টেম, আর দু-বছর পরেও বদলানো-যায় এমন কোডবেস — তিনটা একসাথে চালানোর ইঞ্জিনিয়ারিং।</p>
+  </header>
+
+  <h3>৩৪.১ Performance: মাপো → খোঁজো → সারাও → আবার মাপো</h3>
+  <ol class="steps">
+    <li><strong>Baseline মাপুন:</strong> load-testing টুল দিয়ে (k6 জনপ্রিয়, সহজ) — এখনকার RPS আর p95 কত?</li>
+    <li><strong>Bottleneck খুঁজুন:</strong> trace (অধ্যায় ২৯) বলবে সময় কোথায় যাচ্ছে — ৯০% ক্ষেত্রে উত্তর: ডাটাবেস।</li>
+    <li><strong>সারান — সস্তা থেকে দামি ক্রমে:</strong> index/কোয়েরি (৩৩.৪) → N+1/AsNoTracking (১৪) → ক্যাশ (১৮) → ধীর কাজ queue-তে (১৯) → তবেই hardware/architecture।</li>
+    <li><strong>আবার মাপুন</strong> — সংখ্যা ছাড়া "দ্রুত হয়েছে" দাবি ইঞ্জিনিয়ারিং নয়।</li>
+  </ol>
+  <figure class="code"><figcaption>loadtest.js — k6 দিয়ে ২ মিনিটে লোড টেস্ট<span class="lang">JS</span></figcaption><pre><code class="lang-js">import http from "k6/http";
+import { check } from "k6";
+
+export const options = {
+  stages: [
+    { duration: "30s", target: 50 },    // ৫০ ভার্চুয়াল ইউজারে ওঠো
+    { duration: "1m",  target: 50 },    // ধরে রাখো
+    { duration: "10s", target: 0 },
+  ],
+  thresholds: {
+    http_req_duration: ["p(95)&lt;300"],   // p95 &lt; 300ms না হলে টেস্ট fail
+    http_req_failed:   ["rate&lt;0.01"],
+  },
+};
+
+export default function () {
+  const res = http.get("http://localhost:8080/api/products?page=1");
+  check(res, { "status 200": (r) => r.status === 200 });
+}
+// চালান: k6 run loadtest.js — CI-তেও বসানো যায় (performance regression ধরা)</code></pre></figure>
+  <p>অ্যাপ-সাইডে দুটো নিত্য অস্ত্র: <span class="inline-code">dotnet-counters monitor</span> (লাইভ RPS, GC, থ্রেডপুল queue) আর response compression + <span class="inline-code">System.Text.Json</span> source-gen serialization — সস্তায় বড় লাভ।</p>
+
+  <h3>৩৪.২ Scalability: বড় হওয়ার নকশা</h3>
+  <ul>
+    <li><strong>Vertical (বড় মেশিন)</strong> — সহজ কিন্তু ছাদ আছে; <strong>Horizontal (বেশি মেশিন)</strong> — ছাদ নেই, কিন্তু শর্ত একটাই: <strong>অ্যাপ stateless হতে হবে</strong>। Session/ক্যাশ Redis-এ (১৮), ফাইল object storage-এ (১৩.৪), SignalR-এ Redis backplane — তাহলেই load balancer-এর পেছনে যত খুশি কপি।</li>
+    <li><strong>ডাটাবেসই প্রথম আটকায়:</strong> ক্রম মনে রাখুন — connection pooling → read replica (পড়া আলাদা) → ক্যাশ-স্তর → sharding <em>(একদম শেষ অস্ত্র — জটিলতা বিশাল)</em>।</li>
+    <li><strong>Queue = ধাক্কা-শোষক:</strong> traffic spike-এ সব কাজ সাথে সাথে করার দরকার নেই — accept করুন, queue-তে ফেলুন (১৯, ২৮), শান্তভাবে process করুন। Black Friday এভাবেই বাঁচে।</li>
+    <li><strong>Backpressure ও graceful degradation:</strong> সিস্টেম ভরে গেলে rate limit (১৮.৪) + অগুরুত্বপূর্ণ ফিচার সাময়িক বন্ধ (recommendation বন্ধ, checkout চালু) — পুরো ডোবার চেয়ে আংশিক সেবা ভালো।</li>
+  </ul>
+
+  <h3>৩৪.৩ Maintainability: দু-বছর পরের সহকর্মীর জন্য</h3>
+  <p>কোড একবার লেখা হয়, পঞ্চাশবার পড়া হয়। ইউরোপের টিমগুলো এই স্কিলটা code review-তেই মেপে নেয়:</p>
+  <ul>
+    <li><strong>Analyzer দিয়ে মান জোর করুন:</strong> <span class="inline-code">.editorconfig</span> + Roslyn analyzer + <span class="inline-code">TreatWarningsAsErrors</span> — স্টাইল-তর্ক মানুষে নয়, টুলে মিটুক। <span class="inline-code">dotnet format</span> CI-তে।</li>
+    <li><strong>নামকরণই অর্ধেক ডকুমেন্টেশন:</strong> <span class="inline-code">ProcessData()</span> নয়, <span class="inline-code">RecalculateMonthlyInvoiceTotals()</span>; boolean-এ প্রশ্নবোধক নাম (<span class="inline-code">isEligibleForRefund</span>)।</li>
+    <li><strong>ছোট PR, বর্ণনাসহ:</strong> ৩০০ লাইনের নিচে রাখুন; বর্ণনায় <em>কী</em> নয় (diff-ই বলে), <em>কেন</em> লিখুন। ভালো commit message-ও তাই।</li>
+    <li><strong>Tech debt ব্যবস্থাপনা:</strong> দেখা মাত্র <span class="inline-code">// TODO</span> নয় — ticket খুলুন, প্রতি sprint-এ ২০% সময় debt-এ — এই ভাষায় ইন্টারভিউতে কথা বলুন।</li>
+    <li><strong>Boy-scout rule:</strong> যে ফাইলে কাজ করছেন, একটু পরিষ্কার করে রেখে আসুন — refactoring আলাদা প্রকল্প নয়, অভ্যাস।</li>
+  </ul>
+  <div class="callout warn"><div><span class="co-label">তিনটার টানাটানি</span><p>Performance, scalability, maintainability প্রায়ই একে অপরের বিরুদ্ধে টানে — micro-optimized কোড পড়া কঠিন, denormalized স্কিমা বদলানো কঠিন। সিনিয়র উত্তর কখনোই "সবসময় X" নয় — <em>"মেপে দেখব কোনটা এই সিস্টেমের আসল সীমাবদ্ধতা, সেটার জন্যই দাম দেব"</em>। এই বাক্যটা মনে রাখুন।</p></div></div>
+</section>
+
+<!-- ================= CH 35 ================= -->
+<section class="chapter" id="ch35">
+  <header class="ch-head">
+    <span class="ch-num">অধ্যায় ৩৫ · প্রফেশনাল প্র্যাকটিস</span>
+    <h2>Production Debugging, Troubleshooting ও Technical Documentation</h2>
+    <p class="ch-goal">"লোকালে তো ঠিকই চলে" — এর পরের অধ্যায়। জ্বলন্ত প্রোডাকশনে পদ্ধতিমাফিক তদন্ত, .NET-এর ডায়াগনস্টিক টুলবক্স, আর যে লেখালেখি আপনাকে টিমে অমূল্য করে তোলে।</p>
+  </header>
+
+  <h3>৩৫.১ তদন্তের পদ্ধতি — আতঙ্ক নয়, প্রোটোকল</h3>
+  <ol class="steps">
+    <li><strong>Blast radius মাপুন:</strong> সবাই আক্রান্ত না ৫% ইউজার? এখনই খারাপ হলো না ধীরে ধীরে? (metrics ড্যাশবোর্ড — অধ্যায় ২৯)</li>
+    <li><strong>"কী বদলেছে?" জিজ্ঞেস করুন:</strong> প্রোডাকশন সমস্যার সিংহভাগের পেছনে সাম্প্রতিক deploy, config বদল, বা নির্ভরশীল সার্ভিসের বদল — deploy history-ই প্রথম সন্দেহভাজন।</li>
+    <li><strong>আগে থামান, পরে বুঝুন (mitigate first):</strong> rollback / feature flag বন্ধ / instance restart — ইউজারের রক্তক্ষরণ বন্ধ করুন; root cause খোঁজা তারপর, শান্ত মাথায়।</li>
+    <li><strong>Trace → লগ → কোড ক্রমে নামুন:</strong> ধীর/ব্যর্থ রিকোয়েস্টের trace খুলুন (কোন span-এ সময়/এরর?) → সেই সার্ভিসের structured লগ correlation ID ধরে ফিল্টার → তবেই কোডে।</li>
+    <li><strong>প্রতিটি অনুমান লিখে টেস্ট করুন:</strong> "মনে হয় ক্যাশ" — যাচাই না করে পরের অনুমানে লাফাবেন না; তদন্ত-নোট রাখুন (post-mortem-এও লাগবে)।</li>
+  </ol>
+
+  <h3>৩৫.২ .NET ডায়াগনস্টিক টুলবক্স</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>টুল</th><th>কোন প্রশ্নের উত্তর</th></tr></thead>
+    <tbody>
+      <tr><td><code>dotnet-counters</code></td><td>লাইভ অবস্থা: RPS, GC/sec, exception rate, threadpool queue — "এখন কী হচ্ছে?"</td></tr>
+      <tr><td><code>dotnet-dump</code></td><td>প্রসেসের স্ন্যাপশট নিয়ে পরে ব্যবচ্ছেদ — "মেমোরিতে কী জমে আছে? কোন থ্রেড কোথায় আটকে?"</td></tr>
+      <tr><td><code>dotnet-trace</code></td><td>CPU প্রোফাইল — "কোন মেথড CPU খাচ্ছে?"</td></tr>
+      <tr><td><code>dotnet-gcdump</code></td><td>হালকা heap স্ন্যাপশট — memory leak শিকারে</td></tr>
+    </tbody>
+  </table></div>
+  <figure class="code"><figcaption>বাস্তব দৃশ্য: কনটেইনারের মেমোরি বেড়েই চলেছে<span class="lang">shell</span></figcaption><pre><code class="lang-sh"># ১) কনটেইনারে ঢুকুন (বা sidecar-এ টুল রাখুন)
+kubectl exec -it shop-api-7d4f -- /bin/bash
+
+# ২) প্রসেস আইডি দেখুন, লাইভ কাউন্টার দেখুন
+dotnet-counters monitor -p 1
+#   gen-2-gc-count বাড়ছে কিন্তু heap কমছে না? → leak-এর গন্ধ
+
+# ৩) আধঘণ্টা ব্যবধানে দুটো স্ন্যাপশট
+dotnet-gcdump collect -p 1     # → dump_1.gcdump
+dotnet-gcdump collect -p 1     # → dump_2.gcdump
+
+# ৪) লোকালে তুলনা (Visual Studio / PerfView):
+#    কোন টাইপের অবজেক্ট-সংখ্যা লাফিয়ে বেড়েছে? retention path কী ধরে রেখেছে?
+#    ক্লাসিক অপরাধী: static Dictionary-তে জমতে থাকা এন্ট্রি, event handler
+#    unsubscribe না করা, IDisposable dispose না হওয়া, বেলাগাম IMemoryCache</code></pre></figure>
+  <p>আরেকটা নিত্যদিনের ত্রয়ী: <span class="inline-code">kubectl logs --previous</span> (crash-এর আগের লগ), <span class="inline-code">docker stats</span> (রিসোর্স), আর <span class="inline-code">/health</span> endpoint (অধ্যায় ২২.২)। মনে রাখুন: <strong>প্রোডাকশনে debugger লাগানো প্রায় কখনোই অপশন নয়</strong> — সে কারণেই ভালো লগ/trace/metric আগে থেকে বসানো (অধ্যায় ৯, ২৯) আসলে debugging-এরই বিনিয়োগ।</p>
+
+  <h3>৩৫.৩ Technical documentation — যে লেখা ইঞ্জিনিয়ারকে সিনিয়র বানায়</h3>
+  <ul>
+    <li><strong>README (প্রতি রিপোতে):</strong> এক প্যারায় কী এই সার্ভিস → লোকালে চালানোর ৩ কমান্ড → env var তালিকা → কোথায় deploy হয়। নতুন সদস্যের প্রথম দিন = আপনার README-র পরীক্ষা।</li>
+    <li><strong>ADR (Architecture Decision Record):</strong> বড় সিদ্ধান্তের ছোট দলিল — ইউরোপের টিমে খুব প্রচলিত, নিচে টেমপ্লেট।</li>
+    <li><strong>Runbook:</strong> "X অ্যালার্ট বাজলে কী করবেন" — ধাপে ধাপে; রাত ৩টার আপনি দিনের আপনার চেয়ে বোকা, তার জন্য লিখুন।</li>
+    <li><strong>API ডকুমেন্টেশন:</strong> OpenAPI (১৫.৩) + endpoint-এ summary; ডক কোডের পাশে রাখুন (docs-as-code) — wiki-তে দূরে রাখলেই বাসি হয়।</li>
+    <li><strong>ডায়াগ্রাম:</strong> C4 model-এর প্রথম দুই স্তরই যথেষ্ট (Context: কে কার সাথে কথা বলে; Container: ভেতরের বড় টুকরোগুলো) — Mermaid দিয়ে টেক্সটেই আঁকুন, Git-এ ভার্সন হয়।</li>
+  </ul>
+  <figure class="code"><figcaption>docs/adr/0007-switch-to-keyset-pagination.md<span class="lang">markdown</span></figcaption><pre><code># ADR-0007: Offset-এর বদলে keyset pagination
+
+## Status
+Accepted — 2026-07-10
+
+## Context
+/api/orders গভীর পৃষ্ঠায় p95 4s ছাড়াচ্ছে (EXPLAIN: 2.4M rows scanned)।
+মোবাইল অ্যাপ অসীম-স্ক্রল ব্যবহার করে; "পৃষ্ঠা N-এ যাও" ফিচার কেউ ব্যবহার করে না
+(analytics: 0.2%)।
+
+## Decision
+Public API-তে cursor-ভিত্তিক pagination (after=id প্যারামিটার);
+অ্যাডমিন প্যানেলে offset-ই থাকবে (ছোট ডেটা, page-jump দরকার)।
+
+## Consequences
++ p95 4s → 60ms (লোড টেস্টে যাচাই)
+- ক্লায়েন্টদের v2 endpoint-এ যেতে হবে (৬ মাস deprecation window)
+- মোট পৃষ্ঠা-সংখ্যা আর দেখানো যাবে না — প্রোডাক্ট টিম রাজি</code></pre></figure>
+  <div class="callout tip"><div><span class="co-label">ক্যারিয়ার-সত্য</span><p>একই মানের দুই ইঞ্জিনিয়ারের মধ্যে যে <em>লিখে বোঝাতে পারে</em> — incident-এর post-mortem, ডিজাইনের ADR, পরিষ্কার PR বর্ণনা — promotion আর ভিসা-স্পনসর দুটোই তার দিকে ঝোঁকে। রিমোট/আন্তর্জাতিক টিমে লেখাই আপনার উপস্থিতি। আপনার GitHub প্রজেক্টে আজই একটা ADR ফোল্ডার খুলুন — ইন্টারভিউয়ারের চোখে এটা বিরল ও উজ্জ্বল সংকেত।</p></div></div>
 </section>
 <footer class="footer">
   <div class="grad-line"></div>

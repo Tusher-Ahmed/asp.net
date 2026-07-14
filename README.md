@@ -6,7 +6,7 @@ A complete, self-contained ASP.NET Core curriculum in **Bangla** — from absolu
 
 To publish it as a website, enable **GitHub Pages** (Settings → Pages → Deploy from branch → `main` / root) and it will be live at `https://tusher-ahmed.github.io/asp.net/`.
 
-## What's inside — 31 chapters in 6 parts
+## What's inside — 35 chapters in 7 parts
 
 | Part | Chapters | Topics |
 |------|----------|--------|
@@ -16,8 +16,9 @@ To publish it as a website, enable **GitHub Pages** (Settings → Pages → Depl
 | ৪ · প্রোডাকশন স্কিল | 16–23 | JWT/Identity auth, error handling, caching, background services, SignalR, testing, security/GDPR, Docker + CI/CD, Clean Architecture + SOLID |
 | ৫ · ক্যারিয়ার | 24–25 | Europe job market guide, 6-month roadmap, portfolio projects |
 | ৬ · অভিজ্ঞদের জন্য (3+ YOE) | 26–31 | .NET runtime internals, advanced EF Core, distributed systems (RabbitMQ, gRPC, outbox, saga), OpenTelemetry observability, system design interviews, mid/senior positioning & salary negotiation |
+| ৭ · প্রফেশনাল প্র্যাকটিস | 32–35 | RESTful API design & integration patterns, MySQL schema design & query optimization, performance/scalability/maintainability engineering, production debugging & technical documentation (ADRs, runbooks) |
 
-- 130+ runnable code examples (.NET 8–10 compatible)
+- 140+ runnable code examples (.NET 8–10 compatible)
 - Two tracks: beginner (~4–6 months) and experienced fast-track (8–10 weeks)
 - Curriculum cross-checked against [roadmap.sh/aspnet-core](https://roadmap.sh/aspnet-core) and top industry courses
 - Light/dark theme, chapter search, syntax-highlighted code with copy buttons

@@ -3132,7 +3132,62 @@ app.MapPost("/api/payments", async (PaymentDto dto, HttpRequest req,
     <li><strong>Anti-corruption layer:</strong> বাইরের API-র অগোছালো মডেল সরাসরি নিজের ডোমেইনে ঢোকাবেন না — মাঝে একটা অনুবাদক ক্লাস (adapter) রাখুন; বাইরেরটা বদলালে শুধু adapter বদলায়। DDD-র (অধ্যায় ২৮.৪) বাস্তব প্রয়োগ।</li>
     <li><strong>BFF (Backend-for-Frontend):</strong> মোবাইল আর ওয়েবের চাহিদা আলাদা হলে প্রত্যেকের জন্য পাতলা নিজস্ব API-স্তর — ক্লায়েন্টপ্রতি দর্জি-করা রেসপন্স, ভেতরে একই সার্ভিস।</li>
   </ul>
+  <h3>৩২.৫ HTTP caching ও ETag — REST-এর আসল শক্তি</h3>
+  <figure class="code"><figcaption>Conditional request — দুই ব্যবহার<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// ব্যবহার ১: ব্যান্ডউইথ বাঁচানো (conditional GET)
+app.MapGet("/api/products/{id:int}", async (int id, HttpContext ctx,
+    ProductService svc) =>
+{
+    var product = await svc.GetAsync(id);
+    if (product is null) return Results.NotFound();
+
+    var etag = $"\"{product.Version}\"";          // ভার্সনই ট্যাগ
+    ctx.Response.Headers.ETag = etag;
+
+    // ক্লায়েন্ট আগেরটা পাঠালে আর body পাঠাতে হয় না:
+    if (ctx.Request.Headers.IfNoneMatch == etag)
+        return Results.StatusCode(304);           // Not Modified
+    return Results.Ok(product);
+});
+
+// ব্যবহার ২: lost update ঠেকানো (optimistic concurrency, অধ্যায় ২৭.১-এর HTTP রূপ)
+// ক্লায়েন্ট PUT-এ পাঠায়:  If-Match: "v7"
+// সার্ভারে এখন v9 হলে →  412 Precondition Failed → ক্লায়েন্ট রিফ্রেশ করে আবার</code></pre></figure>
+  <p>সাথে <span class="inline-code">Cache-Control</span> জানুন: <span class="inline-code">public, max-age=300</span> (৫ মিনিট যে-কেউ ক্যাশ করুক), <span class="inline-code">private</span> (শুধু ব্রাউজার, CDN নয়), <span class="inline-code">no-store</span> (সংবেদনশীল ডেটা)। "REST কেন scalable?" প্রশ্নের পাঠ্যবই-উত্তর এটাই: <strong>stateless + cacheable</strong> — GET-গুলো মাঝপথের যেকোনো স্তরে ক্যাশ হতে পারে।</p>
+
+  <h3>৩২.৬ Long-running operation — 202 Accepted প্যাটার্ন</h3>
+  <p>রিপোর্ট তৈরি/ভিডিও প্রসেসিং ৫ মিনিট লাগলে HTTP কানেকশন ধরে রাখবেন না:</p>
+  <figure class="code"><figcaption>Async request-reply<span class="lang">text</span></figcaption><pre><code>POST /api/reports                → 202 Accepted
+                                   Location: /api/reports/jobs/j_8842
+                                   (কাজ queue-তে গেল — অধ্যায় ১৯)
+
+GET /api/reports/jobs/j_8842     → 200 { "status": "processing", "progress": 60 }
+GET /api/reports/jobs/j_8842     → 200 { "status": "done",
+                                         "resultUrl": "/api/reports/r_105" }
+
+বিকল্প: status-polling-এর বদলে webhook বা SignalR-এ ফল জানানো (৩২.৪, ১৯.২)</code></pre></figure>
+  <p>একই পরিবারের আরেকটা নিয়ম: rate-limit ছাড়ালে <span class="inline-code">429 Too Many Requests</span> + <span class="inline-code">Retry-After: 30</span> header — ভদ্র API ক্লায়েন্টকে বলে দেয় কখন ফিরতে হবে।</p>
+
+  <h3>৩২.৭ Richardson Maturity Model — "আপনার API কতটা RESTful?"</h3>
+  <ul>
+    <li><strong>Level 0:</strong> এক URL-এ সব POST (RPC-স্টাইল) · <strong>Level 1:</strong> আলাদা resource URL · <strong>Level 2:</strong> + সঠিক HTTP method ও status code — <em>ইন্ডাস্ট্রির বাস্তব মান এটাই</em> · <strong>Level 3:</strong> + HATEOAS — রেসপন্সের ভেতরে পরের ধাপের লিংক (<span class="inline-code">"links": [{"rel":"cancel", "href":"/orders/42/cancel"}]</span>)।</li>
+    <li>সৎ উত্তর: "আমরা Level 2 বানাই; HATEOAS তত্ত্বে সুন্দর, বাস্তবে ক্লায়েন্টরা কমই ব্যবহার করে" — এই nuance-টাই ইন্টারভিউয়ার শুনতে চায়।</li>
+    <li><strong>Contract-first বনাম code-first:</strong> আগে OpenAPI স্পেক লিখে টিমগুলো একমত হওয়া (বড় সংস্থা/একাধিক টিম) বনাম কোড থেকে স্পেক জেনারেট (ছোট টিম, দ্রুত) — দুটোরই নাম জানুন।</li>
+  </ul>
+
   <div class="callout tip"><div><span class="co-label">ইন্টারভিউ ফ্রেম</span><p>"How would you integrate with a third-party payment provider?" — মডেল উত্তর: typed HttpClient + timeout (১৫.৬) → resilience pipeline (২৮.৩) → idempotency key (৩২.২) → webhook receiver with signature check → reconciliation job রাতে মিলিয়ে দেখে। এই এক উত্তরে পাঁচটা অধ্যায় জ্বলজ্বল করে।</p></div></div>
+
+  <h3>৩২.৮ এই টপিকে সম্ভাব্য ইন্টারভিউ প্রশ্ন</h3>
+  <ul>
+    <li>PUT বনাম PATCH বনাম POST — কখন কোনটা? idempotent কোনগুলো? <em>(৪.৫, ৬.১)</em></li>
+    <li>REST API-তে ভার্সনিং কীভাবে করবেন, কখন breaking change? <em>(১৫.৭)</em></li>
+    <li>Payment API-তে ডাবল-চার্জ কীভাবে ঠেকাবেন? <em>(idempotency key — ৩২.২)</em></li>
+    <li>১ কোটি রেকর্ডের তালিকা endpoint কীভাবে ডিজাইন করবেন? <em>(cursor pagination — ৩২.৩)</em></li>
+    <li>ETag কী, কী কী কাজে লাগে? 304 আর 412 কখন? <em>(৩২.৫)</em></li>
+    <li>৫ মিনিট লাগা অপারেশনের API কেমন হবে? <em>(202 + status URL — ৩২.৬)</em></li>
+    <li>Webhook রিসিভ করার সময় কী কী সাবধানতা? <em>(signature, fast-ack, dedupe — ৩২.৪)</em></li>
+    <li>Third-party API down হলে আপনার সিস্টেম কীভাবে বাঁচবে? <em>(timeout, circuit breaker, queue — ২৮.৩, ৩২.৪)</em></li>
+    <li>404 বনাম 400 বনাম 409 বনাম 422 — কোন ভুলে কোনটা? <em>(১০.৩, ৩২.২)</em></li>
+  </ul>
 </section>
 
 <!-- ================= CH 33 ================= -->
@@ -3204,7 +3259,70 @@ LIMIT 20;
 -- Extra: Using filesort ← ORDER BY-র জন্য আলাদা সর্ট — index দিয়ে ঢাকুন
 -- Extra: Using index    ← 🟢 covering index, সেরা অবস্থা</code></pre></figure>
   <p>সারানোর সাধারণ ক্রম: সঠিক index যোগ → <span class="inline-code">SELECT *</span> বাদ দিয়ে দরকারি কলাম (EF-তে <span class="inline-code">Select()</span> projection — অধ্যায় ১৪) → offset-এর বদলে keyset pagination (৩২.৩) → তবু ভারী হলে ক্যাশ (অধ্যায় ১৮) বা read replica (অধ্যায় ৩০)।</p>
+  <h3>৩৩.৫ ক্লাসিক SQL ইন্টারভিউ কোয়েরি — হাতে লিখতে পারতে হবে</h3>
+  <figure class="code"><figcaption>যে প্রশ্নগুলো ঘুরেফিরে আসে<span class="lang">sql</span></figcaption><pre><code class="lang-sql">-- ১) দ্বিতীয় সর্বোচ্চ বেতন (সবচেয়ে জিজ্ঞাসিত!)
+SELECT MAX(salary) FROM employees
+WHERE salary &lt; (SELECT MAX(salary) FROM employees);
+-- বিকল্প (টাই সামলায়): SELECT DISTINCT salary FROM employees
+--   ORDER BY salary DESC LIMIT 1 OFFSET 1;
+
+-- ২) ডুপ্লিকেট খোঁজা
+SELECT email, COUNT(*) AS cnt
+FROM users
+GROUP BY email
+HAVING COUNT(*) &gt; 1;          -- HAVING = গ্রুপের ওপর শর্ত
+
+-- ৩) প্রতি বিভাগের সর্বোচ্চ বেতনের কর্মী (top-N per group)
+SELECT e.*
+FROM employees e
+JOIN (SELECT department_id, MAX(salary) AS mx
+      FROM employees GROUP BY department_id) m
+  ON e.department_id = m.department_id AND e.salary = m.mx;
+-- MySQL 8+: window function দিয়ে আরও পরিষ্কার —
+-- ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY salary DESC)
+
+-- ৪) যেসব customer-এর কোনো order নেই (LEFT JOIN + NULL প্যাটার্ন)
+SELECT c.*
+FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.id
+WHERE o.id IS NULL;
+
+-- ৫) গত ৩০ দিনের দৈনিক বিক্রি
+SELECT DATE(created_at) AS day, SUM(total_amount) AS revenue
+FROM orders
+WHERE created_at &gt;= NOW() - INTERVAL 30 DAY
+GROUP BY DATE(created_at)
+ORDER BY day;</code></pre></figure>
+  <ul>
+    <li><strong>WHERE বনাম HAVING:</strong> WHERE ছাঁকে <em>গ্রুপ করার আগে</em> (সারি ধরে), HAVING <em>গ্রুপ করার পরে</em> (aggregate-এর ওপর)।</li>
+    <li><strong>JOIN-এর প্রকার এক লাইনে:</strong> INNER = দুই পাশেই মিল আছে এমন; LEFT = বাঁয়ের সব + ডানে মিললে; RIGHT = উল্টোটা; CROSS = সব×সব। "LEFT JOIN + IS NULL" = "নেই" খোঁজার অস্ত্র।</li>
+    <li><strong>DELETE বনাম TRUNCATE:</strong> DELETE সারি ধরে ধরে (WHERE চলে, rollback হয়, ধীর); TRUNCATE পুরো টেবিল রিসেট (দ্রুত, DDL, auto-increment-ও রিসেট)।</li>
+    <li><strong>VARCHAR বনাম TEXT:</strong> ছোট-নির্দিষ্ট দৈর্ঘ্য ও index দরকার হলে VARCHAR; বড়/সীমাহীন কনটেন্টে TEXT (index-এ prefix লাগে)।</li>
+  </ul>
+
+  <h3>৩৩.৬ Clustered index, locking ও deadlock</h3>
+  <ul>
+    <li><strong>InnoDB-তে primary key-ই clustered index</strong> — টেবিলের সারিগুলো <em>ভৌতভাবে PK-ক্রমে</em> সাজানো থাকে; প্রতিটি secondary index-এর পাতায় থাকে PK-র কপি (তাই মোটা PK = সব index মোটা)। এ কারণেই: PK ছোট ও ক্রমবর্ধমান রাখুন (৩৩.২-এর UUIDv4 সতর্কতার আসল কারণ এটাই) — এই ব্যাখ্যা দিতে পারা = শক্ত প্রার্থী।</li>
+    <li><strong>Deadlock:</strong> দুই transaction উল্টো ক্রমে দুটো সারি lock করতে গেলে — MySQL একজনকে মেরে দেয় (<span class="inline-code">Deadlock found; try restarting transaction</span>)। প্রতিরোধ: সব জায়গায় <em>একই ক্রমে</em> সারি ধরুন, transaction ছোট রাখুন; প্রতিকার: ধরা পড়লে অ্যাপে <strong>retry</strong> (এটা স্বাভাবিক ঘটনা, বাগ নয়) — EF-এ execution strategy বা Polly দিয়ে।</li>
+    <li><strong>এখনই কী চলছে দেখা:</strong> <span class="inline-code">SHOW PROCESSLIST;</span> (কোন কোয়েরি কতক্ষণ ঝুলছে), <span class="inline-code">SHOW ENGINE INNODB STATUS;</span> (শেষ deadlock-এর ময়নাতদন্ত), আটকে থাকা কোয়েরি <span class="inline-code">KILL &lt;id&gt;;</span></li>
+    <li><strong>Read/write split:</strong> লেখা primary-তে, পড়া replica-য় — কিন্তু replication lag মানে "এইমাত্র লিখে সাথে সাথে পড়লে" পুরনো ডেটা পেতে পারেন; সমাধান: নিজের-লেখা-নিজে-পড়া (read-your-writes) কোয়েরিগুলো primary-তে পাঠানো। <em>(অধ্যায় ৩০-এর টেবিলের সাথে মেলে)</em></li>
+  </ul>
+
   <div class="callout tip"><div><span class="co-label">অনুশীলন</span><p>নিজের Bookstore API-তে ১০ লাখ ডামি সারি ভরুন (একটা লুপে <span class="inline-code">AddRange</span> + ব্যাচে SaveChanges), তারপর সার্চ endpoint-টা EXPLAIN করুন — index ছাড়া/সহ পার্থক্য নিজের চোখে দেখা এক ঘণ্টার সেরা বিনিয়োগ। ইন্টারভিউতে "আমি EXPLAIN দিয়ে filesort ধরে composite index-এ নামিয়েছি ৪০০ms→৮ms" বলতে পারা = সোনা।</p></div></div>
+
+  <h3>৩৩.৭ এই টপিকে সম্ভাব্য ইন্টারভিউ প্রশ্ন</h3>
+  <ul>
+    <li>Index কীভাবে কাজ করে? Composite index-এ কলামের ক্রম কেন গুরুত্বপূর্ণ? <em>(৩৩.৩)</em></li>
+    <li>Clustered আর secondary index-এর পার্থক্য? PK হিসেবে random UUID খারাপ কেন? <em>(৩৩.৬)</em></li>
+    <li>একটা কোয়েরি হঠাৎ ধীর — কীভাবে debug করবেন? <em>(slow log → EXPLAIN → index — ৩৩.৪)</em></li>
+    <li>দ্বিতীয় সর্বোচ্চ বেতনের কোয়েরি লিখুন / ডুপ্লিকেট ইমেইল খুঁজুন <em>(৩৩.৫)</em></li>
+    <li>WHERE বনাম HAVING? LEFT JOIN বনাম INNER JOIN? <em>(৩৩.৫)</em></li>
+    <li>Normalization কী? কখন ইচ্ছা করে ভাঙবেন? <em>(৩৩.২)</em></li>
+    <li>Deadlock কী, কীভাবে সামলান? <em>(একই ক্রমে lock + retry — ৩৩.৬)</em></li>
+    <li>Transaction isolation level-গুলো বলুন; MySQL-এর ডিফল্ট কোনটা? <em>(২৭.২, ৩৩.১)</em></li>
+    <li>টাকার কলামে FLOAT কেন নয়? <em>(binary ভগ্নাংশে 0.1 নিখুঁত হয় না — DECIMAL — ৩৩.২)</em></li>
+    <li>১০ কোটি সারির টেবিলে pagination? <em>(keyset — ৩২.৩, ৩৩.৪)</em></li>
+  </ul>
 </section>
 
 <!-- ================= CH 34 ================= -->
@@ -3261,7 +3379,49 @@ export default function () {
     <li><strong>Tech debt ব্যবস্থাপনা:</strong> দেখা মাত্র <span class="inline-code">// TODO</span> নয় — ticket খুলুন, প্রতি sprint-এ ২০% সময় debt-এ — এই ভাষায় ইন্টারভিউতে কথা বলুন।</li>
     <li><strong>Boy-scout rule:</strong> যে ফাইলে কাজ করছেন, একটু পরিষ্কার করে রেখে আসুন — refactoring আলাদা প্রকল্প নয়, অভ্যাস।</li>
   </ul>
+  <h3>৩৪.৪ CPU-bound না I/O-bound — আগে রোগ চিনুন</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>লক্ষণ</th><th>রোগ</th><th>ওষুধ</th></tr></thead>
+    <tbody>
+      <tr><td>CPU উঁচু, রিকোয়েস্ট ধীর</td><td>CPU-bound: serialization, regex, অ্যালগরিদম, GC-চাপ</td><td>dotnet-trace প্রোফাইল; অ্যালগরিদম/allocation কমান; কাজ worker-এ সরান</td></tr>
+      <tr><td>CPU নিচু, তবু ধীর</td><td>I/O-bound: DB/API-র অপেক্ষা; বা thread starvation</td><td>trace-এ কোন কল ধীর দেখুন; async ঠিক আছে কি না; DB টিউনিং (৩৩.৪)</td></tr>
+      <tr><td>মাঝে মাঝে সব থমকে যায়</td><td>GC pause (বিশাল heap/LOH) বা lock contention</td><td>allocation rate কমান (২৬.৪); lock-এর ভেতরের কাজ ছোট করুন</td></tr>
+    </tbody>
+  </table></div>
+  <p>আর মাথায় রাখুন মোটা দাগের <strong>latency-সিঁড়ি</strong> — মেমোরি (~ন্যানোসেকেন্ড) → Redis/একই-DC নেটওয়ার্ক (~০.৫ms) → indexed SQL কোয়েরি (~১–৫ms) → এক মহাদেশে HTTP (~২০–৫০ms) → মহাদেশ-পার HTTP (~১০০–৩০০ms)। মানে: <em>একটা নেটওয়ার্ক হপ বাঁচানো হাজারটা মাইক্রো-অপ্টিমাইজেশনের সমান</em>, আর মেমোরি-ক্যাশ DB-র চেয়ে শতগুণ দ্রুত — এই অনুপাতগুলো মুখে থাকলে system design উত্তর ওজনদার হয়।</p>
+
+  <h3>৩৪.৫ Horizontal scaling-এর ফাঁদগুলো</h3>
+  <ul>
+    <li><strong>Sticky session-এ ভরসা নয়:</strong> "এই ইউজার সবসময় সার্ভার-৩-এ" — deploy/অটোস্কেলে ভাঙে। State বাইরে রাখুন (Redis), যেকোনো instance যেকোনো রিকোয়েস্ট নিক।</li>
+    <li><strong>ইন-প্রসেস জিনিস আর কাজ করে না:</strong> <span class="inline-code">lock</span> এক প্রসেসেই সীমাবদ্ধ — একাধিক instance-এ লাগবে distributed lock (Redis <span class="inline-code">SET NX EX</span>) বা আরও ভালো: DB-র unique constraint/optimistic concurrency-তে সমস্যাটাই এড়ানো। IMemoryCache-ও instance-প্রতি আলাদা (তাই ১৮.২-এর HybridCache)।</li>
+    <li><strong>Scheduled job × N instance = N বার চলা:</strong> BackgroundService সব কপিতে চলে! সমাধান: leader election / distributed lock / job আলাদা single-instance সার্ভিসে (Hangfire-এর নিজস্ব সমাধান আছে)।</li>
+    <li><strong>12-Factor App</strong> নামটা বলুন: config env-এ (৮), stateless process, লগ stdout-এ, dev/prod সমতা — cloud-native চাকরির শব্দভান্ডার।</li>
+  </ul>
+
+  <h3>৩৪.৬ Legacy কোডবেসে কাজ — "এটা আমরা রোজ করি"</h3>
+  <p>আন্তর্জাতিক কোম্পানির অতি প্রিয় প্রশ্ন: <em>"টেস্টবিহীন ৮ বছরের পুরনো কোডবেস পেলেন — কী করবেন?"</em> মডেল উত্তর:</p>
+  <ol class="steps">
+    <li><strong>আগে জাল বিছাই:</strong> বদলানোর আগে বর্তমান আচরণ ধরে রাখা <strong>characterization test</strong> লিখি — "এখন যা করে সেটাই সঠিক" ধরে নিয়ে ইনপুট-আউটপুট বন্দি করি।</li>
+    <li><strong>Seam খুঁজি:</strong> যেখানে interface বসানো যায় (DI-র জায়গা) — সেখান থেকে টুকরোটা টেস্টেবল করি।</li>
+    <li><strong>Strangler Fig প্যাটার্ন:</strong> পুরোটা একবারে rewrite নয় (প্রায় সবসময় ব্যর্থ হয়) — নতুন ফিচার নতুন পরিষ্কার মডিউলে, রাউটিং দিয়ে ধীরে ধীরে পুরনোটার রক্ত শুকিয়ে আনি।</li>
+    <li><strong>Boy-scout + মাপা অগ্রগতি:</strong> প্রতি sprint-এ coverage/complexity মেট্রিক একটু ভালো — বিগ-ব্যাং নয়, চক্রবৃদ্ধি।</li>
+  </ol>
+  <p><strong>Testing pyramid</strong>-ও এখানেই বলুন: অনেক unit (দ্রুত, সস্তা) → কম integration (১টা DB-সহ পথ) → হাতে-গোনা E2E (ভঙ্গুর, দামি)। উল্টো পিরামিড (সব E2E) = ধীর CI + flaky টেস্ট — চেনা রোগ।</p>
+
   <div class="callout warn"><div><span class="co-label">তিনটার টানাটানি</span><p>Performance, scalability, maintainability প্রায়ই একে অপরের বিরুদ্ধে টানে — micro-optimized কোড পড়া কঠিন, denormalized স্কিমা বদলানো কঠিন। সিনিয়র উত্তর কখনোই "সবসময় X" নয় — <em>"মেপে দেখব কোনটা এই সিস্টেমের আসল সীমাবদ্ধতা, সেটার জন্যই দাম দেব"</em>। এই বাক্যটা মনে রাখুন।</p></div></div>
+
+  <h3>৩৪.৭ এই টপিকে সম্ভাব্য ইন্টারভিউ প্রশ্ন</h3>
+  <ul>
+    <li>API ধীর — আপনার debug করার ধাপগুলো বলুন <em>(মাপা → trace → DB → ক্যাশ — ৩৪.১)</em></li>
+    <li>কীভাবে বুঝবেন সমস্যা CPU-bound না I/O-bound? <em>(৩৪.৪)</em></li>
+    <li>অ্যাপকে horizontally scale করতে কী কী লাগবে? stateless মানে কী? <em>(৩৪.৫)</em></li>
+    <li>দুটো instance-এ একই scheduled job দুবার চলা কীভাবে ঠেকাবেন? <em>(৩৪.৫)</em></li>
+    <li>Caching কোথায় কোথায় বসাতে পারেন, invalidation কীভাবে? <em>(১৮, ৩২.৫)</em></li>
+    <li>১০ গুণ ট্রাফিক এলে প্রথমে কী ভাঙবে, কী করবেন? <em>(DB → pool/replica/cache/queue — ৩৪.২)</em></li>
+    <li>Load testing করেছেন কখনো? কী মাপতেন? <em>(k6, p95, error rate — ৩৪.১)</em></li>
+    <li>টেস্টবিহীন legacy কোডে ফিচার যোগ করতে বললে? <em>(characterization → seam → strangler — ৩৪.৬)</em></li>
+    <li>কোড maintainable রাখতে টিমে কী কী চর্চা চান? <em>(analyzer, ছোট PR, ADR, debt-ticket — ৩৪.৩, ৩৫.৪)</em></li>
+  </ul>
 </section>
 
 <!-- ================= CH 35 ================= -->
@@ -3308,7 +3468,24 @@ dotnet-gcdump collect -p 1     # → dump_2.gcdump
 #    unsubscribe না করা, IDisposable dispose না হওয়া, বেলাগাম IMemoryCache</code></pre></figure>
   <p>আরেকটা নিত্যদিনের ত্রয়ী: <span class="inline-code">kubectl logs --previous</span> (crash-এর আগের লগ), <span class="inline-code">docker stats</span> (রিসোর্স), আর <span class="inline-code">/health</span> endpoint (অধ্যায় ২২.২)। মনে রাখুন: <strong>প্রোডাকশনে debugger লাগানো প্রায় কখনোই অপশন নয়</strong> — সে কারণেই ভালো লগ/trace/metric আগে থেকে বসানো (অধ্যায় ৯, ২৯) আসলে debugging-এরই বিনিয়োগ।</p>
 
-  <h3>৩৫.৩ Technical documentation — যে লেখা ইঞ্জিনিয়ারকে সিনিয়র বানায়</h3>
+  <h3>৩৫.৩ ক্লাসিক .NET প্রোডাকশন-রোগের playbook</h3>
+  <p>এই টেবিলটা কার্যত ইন্টারভিউ-প্রশ্নের উত্তরমালা — প্রতিটা সারি "X হচ্ছে, কী করবেন?" ধাঁচের প্রশ্নের জবাব:</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>লক্ষণ</th><th>সম্ভাব্য কারণ</th><th>তদন্ত ও প্রতিকার</th></tr></thead>
+    <tbody>
+      <tr><td>হঠাৎ <em>সব</em> রিকোয়েস্ট ধীর/টাইমআউট, অথচ CPU নিচু</td><td><strong>Thread pool starvation</strong> — কোথাও sync-over-async (<code>.Result</code>, <code>.Wait()</code>, <code>Task.Run</code>-এর অপচয়)</td><td><code>dotnet-counters</code>-এ threadpool queue length বাড়ছে কি না; dump-এ থ্রেডগুলো Wait-এ আটকে; সমাধান: async all the way (৩.৭, ২৬.৩)</td></tr>
+      <tr><td>এরর: "timeout waiting for connection from pool"</td><td>DB connection pool শেষ — connection leak (dispose হয়নি) বা ধীর কোয়েরি সব connection দখলে</td><td>ধীর কোয়েরি আগে (৩৩.৪); DbContext-এর আয়ু scoped তো (৭.৩)? pool size শেষ চিকিৎসা, প্রথম নয়</td></tr>
+      <tr><td>মেমোরি ক্রমেই বাড়ছে, শেষে OOM-kill</td><td>Leak: static collection, event unsubscribe না করা, unbounded cache</td><td>দুই সময়ের gcdump তুলনা (৩৫.২); cache-এ SizeLimit/TTL দিন</td></tr>
+      <tr><td>CPU 100% আটকে</td><td>Regex catastrophic backtracking, অসীম লুপ, বিশাল serialization, GC-থ্র্যাশিং</td><td><code>dotnet-trace</code> ৩০ সেকেন্ড নিয়ে hot method দেখুন; allocation rate দেখুন (৩৪.৪)</td></tr>
+      <tr><td>মাঝে মাঝে অদ্ভুত 500 — reproduce হয় না</td><td>Race condition; কুখ্যাত উদাহরণ: DbContext একাধিক থ্রেডে শেয়ার (singleton-এ ঢুকে গেছে)</td><td>correlation ID ধরে সেই রিকোয়েস্টের লগ; captive dependency চেক (৭.৩)</td></tr>
+      <tr><td>Deploy-এর পরেই 502/504</td><td>অ্যাপ উঠতে ধীর/ক্র্যাশ-লুপ, proxy-র timeout ছোট, port mismatch</td><td><code>kubectl logs --previous</code> / কনটেইনার লগের প্রথম লাইন; health probe-এর ফল</td></tr>
+      <tr><td>একটা instance-ই খারাপ, বাকিরা সুস্থ</td><td>Node-এর রোগ, ভাঙা local state, আংশিক deploy</td><td>সেটাকে LB থেকে বাদ দিন (drain), পরে ব্যবচ্ছেদ — আগে সেবা, পরে বিজ্ঞান</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Liveness বনাম readiness probe</strong>-ও এখানেই জানুন: <em>liveness</em> = "প্রসেসটা বেঁচে আছে?" — fail করলে Kubernetes <em>restart</em> করে; <em>readiness</em> = "ট্রাফিক নেওয়ার অবস্থায় আছে?" (DB-তে পৌঁছাতে পারছে?) — fail করলে শুধু LB থেকে <em>বাদ</em>, restart নয়। দুটো গুলিয়ে ফেললে DB-র সাময়িক সমস্যায় পুরো ক্লাস্টার restart-ঝড়ে পড়ে — সূক্ষ্ম কিন্তু সিনিয়র-চেনানো পয়েন্ট (health checks — ২২.২)।</p>
+  <p>আর incident মেটার পরে <strong>blameless post-mortem</strong> (২৯.৩) — কাঠামো: টাইমলাইন (কখন শুরু/ধরা/সারানো) → impact (কত ইউজার, কত মিনিট) → root cause (৫-বার-"কেন" পদ্ধতি) → কী ভালো কাজ করেছে → action item মালিক-সহ। "দোষী কে" প্রশ্নটাই নিষিদ্ধ — সিস্টেম সারাই, মানুষ নয়।</p>
+
+  <h3>৩৫.৪ Technical documentation — যে লেখা ইঞ্জিনিয়ারকে সিনিয়র বানায়</h3>
   <ul>
     <li><strong>README (প্রতি রিপোতে):</strong> এক প্যারায় কী এই সার্ভিস → লোকালে চালানোর ৩ কমান্ড → env var তালিকা → কোথায় deploy হয়। নতুন সদস্যের প্রথম দিন = আপনার README-র পরীক্ষা।</li>
     <li><strong>ADR (Architecture Decision Record):</strong> বড় সিদ্ধান্তের ছোট দলিল — ইউরোপের টিমে খুব প্রচলিত, নিচে টেমপ্লেট।</li>
@@ -3335,6 +3512,31 @@ Public API-তে cursor-ভিত্তিক pagination (after=id প্যা
 - ক্লায়েন্টদের v2 endpoint-এ যেতে হবে (৬ মাস deprecation window)
 - মোট পৃষ্ঠা-সংখ্যা আর দেখানো যাবে না — প্রোডাক্ট টিম রাজি</code></pre></figure>
   <div class="callout tip"><div><span class="co-label">ক্যারিয়ার-সত্য</span><p>একই মানের দুই ইঞ্জিনিয়ারের মধ্যে যে <em>লিখে বোঝাতে পারে</em> — incident-এর post-mortem, ডিজাইনের ADR, পরিষ্কার PR বর্ণনা — promotion আর ভিসা-স্পনসর দুটোই তার দিকে ঝোঁকে। রিমোট/আন্তর্জাতিক টিমে লেখাই আপনার উপস্থিতি। আপনার GitHub প্রজেক্টে আজই একটা ADR ফোল্ডার খুলুন — ইন্টারভিউয়ারের চোখে এটা বিরল ও উজ্জ্বল সংকেত।</p></div></div>
+
+  <h3>৩৫.৫ রিমোট আন্তর্জাতিক টিমের স্ট্যান্ডার্ড — যা দিয়ে আপনাকে মাপা হবে</h3>
+  <p>রিমোট রোলে কোম্পানি আসলে দুটো জিনিস কিনছে: <strong>লিখে যোগাযোগ করার ক্ষমতা</strong> আর <strong>তদারকি ছাড়া দায়িত্ব নেওয়ার ক্ষমতা (ownership)</strong>। টেকনিক্যাল রাউন্ডের পাশাপাশি এগুলোই যাচাই হয়:</p>
+  <ul>
+    <li><strong>Async-first communication:</strong> "একটু কল করি?" নয় — প্রশ্নটা এমনভাবে লিখুন যেন উত্তরদাতা এক পাসেই দিতে পারে: কনটেক্সট + কী চেষ্টা করেছি + নির্দিষ্ট প্রশ্ন + স্ক্রিনশট/লিংক। এই দক্ষতার প্রদর্শনী হলো আপনার PR description, ticket comment, আর এই কোর্সের ৩৫.৪-এর সব দলিল।</li>
+    <li><strong>Ownership-এর ভাষা:</strong> "ব্লকড ছিলাম, বসে ছিলাম" — নিষিদ্ধ বাক্য। বদলে: "X-এ ব্লকড, তাই Y অনুমান নিয়ে এগিয়েছি / Z-কে জিজ্ঞেস করে ততক্ষণে অন্য টাস্ক ধরেছি — কাল সকালের মধ্যে unblock না হলে escalate করব।" স্ট্যাটাস আপডেট <em>চাওয়ার আগেই</em> দিন — daily standup-এ কাজ + বাধা + পরের ধাপ, তিন লাইনে।</li>
+    <li><strong>Timezone-সৌজন্য:</strong> overlap-ঘণ্টাগুলো (ইউরোপের সাথে বাংলাদেশের সুবিধা: দিনের বড় অংশ মেলে) মিটিং/pairing-এর জন্য রাখুন; বাকি সময়ের সিদ্ধান্ত লিখিত থাকুক যেন ঘুমন্ত সহকর্মী সকালে পড়ে নিতে পারে। "await async, block never" — টিমের ক্ষেত্রেও সত্য।</li>
+    <li><strong>Behavioral প্রশ্নে রিমোট-সংস্করণ আসবে:</strong> "ভিন্ন timezone-এর সহকর্মীর সাথে দ্বিমত কীভাবে মেটাবেন?" (লিখিত proposal/ADR-এ যুক্তি, synchronous ঝগড়া নয়), "কীভাবে নিজেকে productive রাখেন?", "কখনো ভুল বুঝে ভুল জিনিস বানিয়েছেন?" (উত্তরের মোরাল: আগে লিখিত spec নিশ্চিত করি) — প্রতিটার STAR গল্প তৈরি রাখুন (২৪.৪)।</li>
+    <li><strong>রিমোট ইন্টারভিউর যান্ত্রিক দিক:</strong> ইন্টারনেট ব্যাকআপ (মোবাইল হটস্পট রেডি), শান্ত জায়গা + ভালো মাইক, ক্যামেরা চালু, IDE/স্ক্রিন-শেয়ার আগে থেকে পরীক্ষিত। লাইভ কোডিংয়ে <strong>ইংরেজিতে think-aloud</strong> করুন — নীরবে কোড লেখা রিমোট-রোলে সবচেয়ে বড় red flag, কারণ ওরা দেখতে চায় আপনি দূর থেকে ভাবনা <em>সম্প্রচার</em> করতে পারেন কি না। আটকে গেলে বলুন: "I'd normally check the docs here — let me reason about it first."</li>
+    <li><strong>Contractor হলে জানুন:</strong> অনেক আন্তর্জাতিক রিমোট চুক্তি B2B/contractor মডেলে হয় (Deel/Remote.com-এর মতো প্ল্যাটফর্মে) — invoice, নিজের ট্যাক্স — এই শব্দগুলো আগে শুনে রাখলে অফার-আলোচনায় হকচকিয়ে যাবেন না।</li>
+  </ul>
+  <div class="callout tip"><div><span class="co-label">এক লাইনে</span><p>রিমোট ইন্টারভিউয়ের প্রতিটি ধাপে নিজেকে জিজ্ঞেস করুন: <em>"আমার এই উত্তর/PR/মেসেজ কি এমন, যে ৮ ঘণ্টা পরে ঘুম থেকে উঠে পড়া সহকর্মীর আর কোনো প্রশ্ন করতে হবে না?"</em> — হ্যাঁ হলে আপনি আন্তর্জাতিক স্ট্যান্ডার্ডে আছেন।</p></div></div>
+
+  <h3>৩৫.৬ এই টপিকে সম্ভাব্য ইন্টারভিউ প্রশ্ন</h3>
+  <ul>
+    <li>প্রোডাকশনে API হঠাৎ ধীর — প্রথম ৫ মিনিটে কী করবেন? <em>(blast radius → কী বদলেছে → mitigate — ৩৫.১)</em></li>
+    <li>CPU কম তবু সব টাইমআউট — কী সন্দেহ করবেন? <em>(thread pool starvation — ৩৫.৩)</em></li>
+    <li>মেমোরি leak কীভাবে খুঁজবেন প্রোডাকশনে? <em>(gcdump তুলনা — ৩৫.২)</em></li>
+    <li>Liveness আর readiness probe-এর পার্থক্য, গুলালে কী হয়? <em>(৩৫.৩)</em></li>
+    <li>রাত ৩টায় alert — কোড দেখবেন আগে না rollback? <em>(mitigate first — ৩৫.১)</em></li>
+    <li>"Tell me about a production incident you handled" <em>(STAR + blameless post-mortem — ২৯.৩, ৩৫.৩)</em></li>
+    <li>নতুন সার্ভিসের কী কী ডকুমেন্ট রাখেন? ADR কী? <em>(৩৫.৪)</em></li>
+    <li>Reproduce-না-হওয়া বাগ কীভাবে ধরবেন? <em>(correlation ID + structured log + race সন্দেহ — ৩৫.৩)</em></li>
+    <li>ভিন্ন timezone-এর টিমমেটকে ব্লকার জানানোর আদর্শ উপায়? <em>(async-first লিখিত এসকালেশন — ৩৫.৫)</em></li>
+  </ul>
 </section>
 <footer class="footer">
   <div class="grad-line"></div>

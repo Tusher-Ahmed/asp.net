@@ -3176,7 +3176,136 @@ GET /api/reports/jobs/j_8842     → 200 { "status": "done",
 
   <div class="callout tip"><div><span class="co-label">ইন্টারভিউ ফ্রেম</span><p>"How would you integrate with a third-party payment provider?" — মডেল উত্তর: typed HttpClient + timeout (১৫.৬) → resilience pipeline (২৮.৩) → idempotency key (৩২.২) → webhook receiver with signature check → reconciliation job রাতে মিলিয়ে দেখে। এই এক উত্তরে পাঁচটা অধ্যায় জ্বলজ্বল করে।</p></div></div>
 
-  <h3>৩২.৮ এই টপিকে সম্ভাব্য ইন্টারভিউ প্রশ্ন</h3>
+  <h3>৩২.৮ কেস স্টাডি: Orders API — শূন্য থেকে পূর্ণ ডিজাইন</h3>
+  <p>ইন্টারভিউতে "একটা Order API ডিজাইন করুন" বললে এই ক্রমে ভাবুন এবং <em>জোরে জোরে</em> এই ধাপগুলো বলুন। প্রথমে ডোমেইনের প্রাণ — <strong>state machine</strong>:</p>
+  <figure class="code"><figcaption>ধাপ ১: Order-এর জীবনচক্র (আগে অবস্থা, পরে endpoint)<span class="lang">text</span></figcaption><pre><code>          ┌──────────┐   pay    ┌────────┐  ship   ┌─────────┐ deliver ┌───────────┐
+ create → │ pending  │ ───────▶ │  paid  │ ──────▶ │ shipped │ ──────▶ │ delivered │
+          └──────────┘          └────────┘         └─────────┘         └───────────┘
+               │ cancel              │ cancel(+refund)
+               ▼                     ▼
+          ┌───────────┐        ┌──────────┐
+          │ cancelled │        │ refunded │
+          └───────────┘        └──────────┘
+
+নিয়ম যা ডিজাইনকে চালায়:
+• shipped-এর পরে cancel অসম্ভব → 409 Conflict + code: "ALREADY_SHIPPED"
+• প্রতিটি তীর = একটা ব্যবসায়িক অপারেশন = একটা endpoint বা status-transition
+• অবৈধ transition ডাটাবেস নয়, ডোমেইন-লজিকে আটকান — DB শেষ প্রহরী</code></pre></figure>
+  <figure class="code"><figcaption>ধাপ ২: Endpoint কন্ট্রাক্ট — টিমকে দেখানোর টেবিল<span class="lang">text</span></figcaption><pre><code>POST   /api/v1/orders                 201 + Location   অর্ডার তৈরি (Idempotency-Key)
+GET    /api/v1/orders/{id}            200 / 404        একক অর্ডার (ETag সহ)
+GET    /api/v1/orders?status=paid     200              তালিকা (cursor pagination)
+       &amp;after=ord_9812&amp;limit=20
+POST   /api/v1/orders/{id}/cancel     200 / 409        transition endpoint
+GET    /api/v1/orders/{id}/events     200              অডিট-ইতিহাস (কী কখন ঘটেছে)
+
+কেন PATCH /orders/{id} {status: "cancelled"} নয়?
+→ cancel-এর সাথে side effect আছে (refund, মেইল, স্টক ফেরত) —
+  এটা "ফিল্ড বদল" নয়, "ব্যবসায়িক কাজ"; আলাদা POST তাকে স্পষ্ট নাম দেয়,
+  আলাদা authorization দেওয়া যায়, আলাদা rate limit বসানো যায়।
+  ছোট ফিল্ড-বদলে (shipping address-এ note) PATCH-ই ঠিক।</code></pre></figure>
+  <figure class="code"><figcaption>ধাপ ৩: রিকোয়েস্ট/রেসপন্স বডি — পূর্ণ নমুনা<span class="lang">JSON</span></figcaption><pre><code class="lang-json">// POST /api/v1/orders          Idempotency-Key: 0f8a...-uuid
+{
+  "items": [ { "productId": 42, "quantity": 2 } ],
+  "shippingAddressId": 7,
+  "couponCode": "SUMMER10"
+}
+
+// 201 Created    Location: /api/v1/orders/ord_10421    ETag: "1"
+{
+  "id": "ord_10421",
+  "status": "pending",
+  "items": [ { "productId": 42, "name": "Laptop Stand",
+               "unitPrice": 39.99, "quantity": 2, "lineTotal": 79.98 } ],
+  "totals": { "subtotal": 79.98, "discount": 8.00,
+              "vat": 13.68, "grand": 85.66 },
+  "createdAt": "2026-07-14T09:30:00Z"
+}
+// লক্ষ করুন: unitPrice রেসপন্সে সার্ভার-হিসাবকৃত — রিকোয়েস্টে দাম
+// নেওয়া হয়নি! ক্লায়েন্টের পাঠানো দাম বিশ্বাস করা ক্লাসিক নিরাপত্তা-ভুল।</code></pre></figure>
+  <p>এরপর বলুন: error catalog (কোন transition-এ কোন 4xx + business code — ৩২.২), consistency (order + payment এক transaction, ইভেন্ট outbox দিয়ে — ২৭.৫), আর scale (পড়া replica/ক্যাশ থেকে, লেখা queue-শোষিত — ৩৪.২)। এই এক কেস স্টাডিতে পুরো পর্ব ৭ গাঁথা।</p>
+
+  <h3>৩২.৯ PATCH গভীরে — Merge Patch বনাম JSON Patch</h3>
+  <figure class="code"><figcaption>দুই ঘরানার PATCH<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// ঘরানা ১: JSON Merge Patch (সহজ, বহুল ব্যবহৃত) — যা পাঠাবেন তাই বসবে
+// PATCH /api/products/42
+// { "price": 34.99, "description": null }   ← null মানে "মুছে দাও"
+// সমস্যা: "description পাঠাইনি" আর "description = null" আলাদা করতে
+// C#-এ Optional&lt;T&gt; ধাঁচের wrapper বা JsonElement লাগে — এটা বলতে পারা = গভীরতা
+
+// ঘরানা ২: JSON Patch (RFC 6902) — অপারেশনের তালিকা, সূক্ষ্ম নিয়ন্ত্রণ
+// PATCH /api/products/42   Content-Type: application/json-patch+json
+// [
+//   { "op": "replace", "path": "/price",       "value": 34.99 },
+//   { "op": "remove",  "path": "/description" },
+//   { "op": "add",     "path": "/tags/-",      "value": "sale" }
+// ]
+// ASP.NET Core: Microsoft.AspNetCore.JsonPatch + [FromBody] JsonPatchDocument&lt;T&gt;
+[HttpPatch("{id:int}")]
+public async Task&lt;IActionResult&gt; Patch(int id,
+    JsonPatchDocument&lt;UpdateProductDto&gt; patch)
+{
+    var dto = await _svc.GetForUpdateAsync(id);
+    if (dto is null) return NotFound();
+    patch.ApplyTo(dto, ModelState);          // ভুল path হলে ModelState-এ ধরা
+    if (!ModelState.IsValid) return ValidationProblem(ModelState);
+    await _svc.SaveAsync(id, dto);
+    return NoContent();
+}</code></pre></figure>
+
+  <h3>৩২.১০ Webhook রিসিভার — প্রোডাকশন-মানের কোড</h3>
+  <figure class="code"><figcaption>Stripe-ধাঁচের HMAC যাচাইসহ রিসিভার<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">app.MapPost("/webhooks/payment", async (HttpRequest req,
+    EmailQueue queue, AppDbContext db, IConfiguration cfg) =>
+{
+    // ১) কাঁচা body পড়ুন — deserialize-এর আগেই, কারণ HMAC কাঁচা bytes-এর ওপর
+    using var reader = new StreamReader(req.Body);
+    string payload = await reader.ReadToEndAsync();
+
+    // ২) সিগনেচার যাচাই — এটা ছাড়া যে-কেউ "পেমেন্ট সফল" পাঠাতে পারবে!
+    string theirSig = req.Headers["X-Signature"].ToString();
+    byte[] secret = Encoding.UTF8.GetBytes(cfg["Webhooks:PaymentSecret"]!);
+    byte[] expected = HMACSHA256.HashData(secret,
+        Encoding.UTF8.GetBytes(payload));
+    // টাইমিং-অ্যাটাক-নিরাপদ তুলনা — == নয়:
+    if (!CryptographicOperations.FixedTimeEquals(
+            expected, Convert.FromHexString(theirSig)))
+        return Results.Unauthorized();
+
+    var evt = JsonSerializer.Deserialize&lt;PaymentEvent&gt;(payload)!;
+
+    // ৩) Dedupe — সেন্ডার retry করে, একই ইভেন্ট দুবার আসবেই
+    bool seen = await db.WebhookEvents.AnyAsync(e => e.EventId == evt.Id);
+    if (seen) return Results.Ok();          // চুপচাপ ack — এররে retry-ঝড় হয়
+
+    db.WebhookEvents.Add(new WebhookEvent { EventId = evt.Id,
+        ReceivedAt = DateTime.UtcNow });
+
+    // ৪) ভারী কাজ এখানে নয় — queue-তে (সেন্ডারের timeout ৫-১০ সেকেন্ড!)
+    await db.SaveChangesAsync();
+    await queue.QueueAsync(evt.OrderId);
+
+    return Results.Ok();                     // দ্রুত 2xx = "পেয়েছি"
+});</code></pre></figure>
+  <p>উল্টো দিকটাও জানুন — <strong>নিজে webhook পাঠালে:</strong> HMAC সাইন করুন, exponential backoff-এ retry দিন (১মি→৫মি→৩০মি…), ব্যর্থগুলো dead-letter করুন, আর গ্রাহককে endpoint টেস্ট করার "ping" ইভেন্ট দিন। এই সমরূপতা (দুই পাশ থেকেই সমস্যাটা দেখা) সিনিয়র-সংকেত।</p>
+
+  <h3>৩২.১১ Service-to-service auth — OAuth2 Client Credentials</h3>
+  <p>ইউজারবিহীন যোগাযোগে (আপনার সার্ভিস → বিলিং সার্ভিস) স্ট্যান্ডার্ড হলো client credentials flow — token সার্ভার থেকে টোকেন নিয়ে কল:</p>
+  <figure class="code"><figcaption>টোকেন নেওয়া + ক্যাশ + লাগানো — এক জায়গায়<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// dotnet add package Duende.AccessTokenManagement (বা নিজে হাতে)
+builder.Services.AddClientCredentialsTokenManagement()
+    .AddClient("billing", client =>
+    {
+        client.TokenEndpoint = "https://auth.internal/connect/token";
+        client.ClientId = "shop-api";
+        client.ClientSecret = cfg["Auth:BillingClientSecret"];
+        client.Scope = "billing.write";
+    });
+
+builder.Services.AddClientCredentialsHttpClient("billing-http", "billing",
+    client => client.BaseAddress = new Uri("https://billing.internal"));
+// এখন এই named client-এ টোকেন নেওয়া, ক্যাশ করা, মেয়াদ শেষে নতুন
+// নেওয়া — সব অটো। ইন্টারভিউ-বাক্য: "user-context থাকলে authorization
+// code flow + টোকেন ফরওয়ার্ড; না থাকলে client credentials; API key
+// শুধু দুর্বল/লিগ্যাসি ক্ষেত্রে rate-limit শনাক্তকরণে।"</code></pre></figure>
+
+  <h3>৩২.১২ এই টপিকে সম্ভাব্য ইন্টারভিউ প্রশ্ন</h3>
   <ul>
     <li>PUT বনাম PATCH বনাম POST — কখন কোনটা? idempotent কোনগুলো? <em>(৪.৫, ৬.১)</em></li>
     <li>REST API-তে ভার্সনিং কীভাবে করবেন, কখন breaking change? <em>(১৫.৭)</em></li>
@@ -3310,7 +3439,88 @@ ORDER BY day;</code></pre></figure>
 
   <div class="callout tip"><div><span class="co-label">অনুশীলন</span><p>নিজের Bookstore API-তে ১০ লাখ ডামি সারি ভরুন (একটা লুপে <span class="inline-code">AddRange</span> + ব্যাচে SaveChanges), তারপর সার্চ endpoint-টা EXPLAIN করুন — index ছাড়া/সহ পার্থক্য নিজের চোখে দেখা এক ঘণ্টার সেরা বিনিয়োগ। ইন্টারভিউতে "আমি EXPLAIN দিয়ে filesort ধরে composite index-এ নামিয়েছি ৪০০ms→৮ms" বলতে পারা = সোনা।</p></div></div>
 
-  <h3>৩৩.৭ এই টপিকে সম্ভাব্য ইন্টারভিউ প্রশ্ন</h3>
+  <h3>৩৩.৭ ভেতরের যন্ত্র: B+ tree — index আসলে কী</h3>
+  <p>"Index কীভাবে কাজ করে?" প্রশ্নে বেশিরভাগ প্রার্থী বলে "দ্রুত খোঁজা যায়" — আপনি বলবেন <em>কেন</em>:</p>
+  <figure class="code"><figcaption>B+ tree — ৩ স্তরে ১০ কোটি সারি<span class="lang">text</span></figcaption><pre><code>                        root পাতা (page, 16KB)
+                     [ 1000 | 5000 | 9000 ... ]
+                    /        |         \
+        internal [1..999] [1000..4999] [5000..8999]     ← দিকনির্দেশ
+                    |
+   leaf: [1,2,3..] ↔ [..999] ↔ [1000..] ↔ ...           ← আসল ডেটা/PK,
+                                                            পাশাপাশি লিংকড!
+কেন এটা জাদু:
+• ১০ কোটি সারিতেও গভীরতা মাত্র ৩-৪ স্তর → যেকোনো খোঁজ = ৩-৪টা page-পড়া
+• leaf-গুলো সাজানো ও লিংকড → BETWEEN/ORDER BY/keyset-pagination মানে
+  "প্রথমটা খুঁজে তারপর পাশে হাঁটা" — এজন্যই range scan সস্তা
+• "সাজানো থাকে" মানেই: মাঝখানে ঢোকালে page ভাঙে (page split) —
+  random UUID PK প্রতি insert-এ এলোমেলো জায়গায় ঢোকে → স্প্লিটের ঝড় +
+  আধখালি পাতা + ক্যাশ-অদক্ষতা। ক্রমবর্ধমান ID সবসময় ডানে যোগ হয় — শান্ত।
+• InnoDB সব পড়ে buffer pool হয়ে (মেমোরিতে page-ক্যাশ) — "গরম" index
+  পুরোটা RAM-এ থাকলে কোয়েরি ডিস্কই ছোঁয় না; সার্ভারের RAM-এর
+  ৭০-৮০% buffer pool-এ দেওয়া হয় এ কারণেই</code></pre></figure>
+
+  <h3>৩৩.৮ ওয়াকথ্রু: একটা ধীর কোয়েরি, আগাগোড়া</h3>
+  <p>বাস্তব দৃশ্য যেমন হয় — ৫০ লাখ সারির <span class="inline-code">orders</span>, রিপোর্ট-পেজ ৪ সেকেন্ড:</p>
+  <figure class="code"><figcaption>ধাপ ১-২: কোয়েরি ও তার স্বীকারোক্তি<span class="lang">sql</span></figcaption><pre><code class="lang-sql">SELECT o.id, o.total_amount, c.name
+FROM orders o JOIN customers c ON c.id = o.customer_id
+WHERE o.status = 3                      -- delivered
+  AND o.created_at &gt;= '2026-06-01'
+ORDER BY o.created_at DESC LIMIT 50;
+
+EXPLAIN ANALYZE ...same query...;
+-- -&gt; Limit: 50 row(s)  (actual time=3890..3891)
+-- -&gt; Sort: o.created_at DESC  (actual time=3890..3890)      ← 🔴 filesort!
+--   -&gt; Filter: ((o.status = 3) and (o.created_at &gt;= ...))
+--     -&gt; Table scan on o  (rows=4,981,220) (actual time=0.1..3100)  ← 🔴 full scan
+--
+-- পড়ার নিয়ম: ভেতর থেকে বাইরে; "actual time=শুরু..শেষ" ms-এ;
+-- rows= কত সারি ছুঁয়েছে। এখানে: ৫০ লাখ পড়ে, ছেঁকে, সাজিয়ে — ৫০টার জন্য!</code></pre></figure>
+  <figure class="code"><figcaption>ধাপ ৩-৪: index-সিদ্ধান্ত ও ফলাফল<span class="lang">sql</span></figcaption><pre><code class="lang-sql">-- চিন্তা প্রক্রিয়া (এটাই ইন্টারভিউয়ার শুনতে চায়):
+-- WHERE-এ সমতা: status  → index-এর প্রথমে (equality আগে)
+-- WHERE-এ রেঞ্জ + ORDER BY: created_at → দ্বিতীয়তে; DESC-ও index মেটায়
+ALTER TABLE orders ADD INDEX idx_status_created (status, created_at DESC);
+
+EXPLAIN ANALYZE ...same query...;
+-- -&gt; Limit: 50  (actual time=0.4..0.6)
+--   -&gt; Index range scan on o using idx_status_created
+--        (rows=50) (actual time=0.3..0.5)          ← 🟢 sort নেই, ৫০ সারিই
+-- 3890ms → 0.6ms — ছয় হাজার গুণ।
+--
+-- কেন (created_at, status) নয়? রেঞ্জ-কলাম আগে বসালে তার পরের কলাম
+-- আর ছাঁকতে কাজে লাগে না (leftmost + রেঞ্জে থেমে যায়) — "equality
+-- first, range last" — composite index-ডিজাইনের এক নম্বর সূত্র।</code></pre></figure>
+
+  <h3>৩৩.৯ Query-rewrite playbook — index থাকতেও ধীর?</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>রোগী</th><th>সমস্যা</th><th>চিকিৎসা</th></tr></thead>
+    <tbody>
+      <tr><td><code>WHERE YEAR(created_at)=2026</code></td><td>কলামে ফাংশন = index অন্ধ</td><td><code>WHERE created_at &gt;= '2026-01-01' AND created_at &lt; '2027-01-01'</code></td></tr>
+      <tr><td><code>WHERE phone = 8801712345678</code></td><td>VARCHAR কলামে সংখ্যা → implicit cast → প্রতি সারিতে রূপান্তর</td><td>quote দিন: <code>= '8801712...'</code> — নীরব ঘাতক, লগেও ধরা পড়ে না</td></tr>
+      <tr><td><code>WHERE a=1 OR b=2</code></td><td>দুই কলামের OR প্রায়ই দুটো index-ই বাদ দেয়</td><td>দুটো কোয়েরি <code>UNION ALL</code> করুন — যে যার index পাবে</td></tr>
+      <tr><td><code>WHERE id NOT IN (SELECT...)</code></td><td>subquery-তে NULL থাকলে ভুল ফলও দেয়, ধীরও</td><td><code>LEFT JOIN ... WHERE x.id IS NULL</code> বা <code>NOT EXISTS</code></td></tr>
+      <tr><td><code>LIKE '%rahim%'</code></td><td>শুরুতে % = B+ tree-তে হাঁটার শুরুই নেই</td><td>prefix-সার্চে বদলান (<code>'rahim%'</code>) বা FULLTEXT index / বাইরে Elasticsearch</td></tr>
+      <tr><td><code>SELECT *</code> + JOIN-এর পাহাড়</td><td>দরকারের দশগুণ ডেটা তার-এ</td><td>কলাম ধরে ধরে; EF-এ <code>Select()</code> projection (১৪.৫)</td></tr>
+      <tr><td>গরম টেবিলে <code>COUNT(*)</code> প্রতি পেজলোডে</td><td>বড় টেবিলে COUNT সস্তা নয়</td><td>আনুমানিক দেখান, ক্যাশ করুন, বা counter-টেবিল রাখুন</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>৩৩.১০ বিশাল টেবিলে বদল — production migration</h3>
+  <figure class="code"><figcaption>৫ কোটি সারির টেবিলে নিরাপদে কলাম/ব্যাকফিল<span class="lang">sql</span></figcaption><pre><code class="lang-sql">-- ভালো খবর: MySQL 8-এ অনেক DDL online (INSTANT/INPLACE) —
+ALTER TABLE orders ADD COLUMN source VARCHAR(20) NULL, ALGORITHM=INSTANT;
+-- INSTANT সম্ভব না হলে টেবিল-rebuild = lock/replication lag —
+-- বড় দোকানে টুল: gh-ost বা pt-online-schema-change
+-- (ছায়া-টেবিল বানিয়ে triggers/binlog-এ sync করে শেষে অদলবদল)
+
+-- ব্যাকফিল কখনোই এক UPDATE-এ নয় (এক দৈত্য-transaction, undo-পাহাড়):
+-- ব্যাচে, PK-রেঞ্জ ধরে, ফাঁকে ফাঁকে ঘুমিয়ে:
+UPDATE orders SET source='web'
+WHERE source IS NULL AND id BETWEEN 1 AND 100000;
+-- ...লুপে পরের রেঞ্জ (অ্যাপ/স্ক্রিপ্ট থেকে), প্রতি ব্যাচ আলাদা commit
+
+-- আর অধ্যায় ২৭.৪-এর সোনার নিয়ম এখানে পূর্ণ রূপে:
+-- expand → migrate → contract (আগে নতুন কলাম+দুই-লেখা, পরে সুইচ, শেষে পুরনো ড্রপ)</code></pre></figure>
+
+  <h3>৩৩.১১ এই টপিকে সম্ভাব্য ইন্টারভিউ প্রশ্ন</h3>
   <ul>
     <li>Index কীভাবে কাজ করে? Composite index-এ কলামের ক্রম কেন গুরুত্বপূর্ণ? <em>(৩৩.৩)</em></li>
     <li>Clustered আর secondary index-এর পার্থক্য? PK হিসেবে random UUID খারাপ কেন? <em>(৩৩.৬)</em></li>
@@ -3410,7 +3620,130 @@ export default function () {
 
   <div class="callout warn"><div><span class="co-label">তিনটার টানাটানি</span><p>Performance, scalability, maintainability প্রায়ই একে অপরের বিরুদ্ধে টানে — micro-optimized কোড পড়া কঠিন, denormalized স্কিমা বদলানো কঠিন। সিনিয়র উত্তর কখনোই "সবসময় X" নয় — <em>"মেপে দেখব কোনটা এই সিস্টেমের আসল সীমাবদ্ধতা, সেটার জন্যই দাম দেব"</em>। এই বাক্যটা মনে রাখুন।</p></div></div>
 
-  <h3>৩৪.৭ এই টপিকে সম্ভাব্য ইন্টারভিউ প্রশ্ন</h3>
+  <h3>৩৪.৭ কেস স্টাডি: এক endpoint, ধাপে ধাপে ৯০০ms → ৪৫ms</h3>
+  <p>ইন্টারভিউতে "কখনো কিছু অপ্টিমাইজ করেছেন?" প্রশ্নের আদর্শ উত্তরের আকৃতি এটা — <em>প্রতি ধাপে সংখ্যা</em>:</p>
+  <figure class="code"><figcaption>GET /api/dashboard — তদন্ত-নথি<span class="lang">text</span></figcaption><pre><code>শুরু: p95 = 900ms @ 50 RPS (k6 baseline)। trace ভাঙলে:
+  DB: 780ms │ serialization: 60ms │ বাকি: 60ms   ← সন্দেহভাজন: DB
+
+ধাপ ১ — লগে দেখি একই রিকোয়েস্টে ৩১টা SQL (N+1!):
+  লুপে প্রতি order-এর customer আলাদা কোয়েরি
+  ফিক্স: .Include() → এক JOIN                     p95: 900 → 320ms
+
+ধাপ ২ — এখনো ভারী কোয়েরি: SELECT * + ৯টা কলামের মাত্র ৩টা দরকার;
+  আর tracking অকারণে চালু
+  ফিক্স: .Select(projection) + AsNoTracking()      p95: 320 → 180ms
+
+ধাপ ৩ — EXPLAIN: filesort ধরা পড়ল
+  ফিক্স: composite index (status, created_at)      p95: 180 → 90ms
+
+ধাপ ৪ — ড্যাশবোর্ডের সারাংশ-অংশ সব ইউজারে একই, প্রতি মিনিটে বদলায়
+  ফিক্স: সারাংশ ক্যাশ TTL 60s (cache-aside)        p95: 90 → 45ms
+
+থামলাম কেন? SLO ছিল p95&lt;100ms — লক্ষ্য পেরিয়েছি; পরের ধাপের
+(রেসপন্স-ক্যাশ পুরোটা) জটিলতার দাম এখন অর্থহীন। "কোথায় থামব
+জানা"-ও অপ্টিমাইজেশনের অংশ — এই বাক্যে ইন্টারভিউ শেষ করুন।</code></pre></figure>
+
+  <h3>৩৪.৮ ASP.NET Core পারফরম্যান্স-চেকলিস্ট — কোডসহ</h3>
+  <figure class="code"><figcaption>Program.cs — প্রায় সব প্রজেক্টে লাগে এমন টিউনিং<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// ১) Response compression (JSON ৭০-৯০% ছোট হয়; CPU-র বিনিময়ে ব্যান্ডউইথ)
+builder.Services.AddResponseCompression(o =>
+{
+    o.EnableForHttps = true;
+    o.Providers.Add&lt;BrotliCompressionProvider&gt;();
+});
+app.UseResponseCompression();
+
+// ২) DbContext pooling — high-RPS-এ context-তৈরির খরচ বাঁচায়
+builder.Services.AddDbContextPool&lt;ShopDbContext&gt;(opt => opt.UseMySql(...));
+
+// ৩) JSON source generation — reflection-মুক্ত serialize (AOT-বান্ধবও)
+[JsonSerializable(typeof(List&lt;ProductDto&gt;))]
+[JsonSerializable(typeof(PagedResult&lt;ProductDto&gt;))]
+public partial class AppJsonContext : JsonSerializerContext { }
+
+builder.Services.ConfigureHttpJsonOptions(o =>
+    o.SerializerOptions.TypeInfoResolverChain.Insert(0,
+        AppJsonContext.Default));
+
+// ৪) Output cache (১৮.৩) + rate limiter (১৮.৪) — আগেই শিখেছেন
+// ৫) Kestrel সীমা — অপব্যবহার-রোধ
+builder.WebHost.ConfigureKestrel(k =>
+{
+    k.Limits.MaxRequestBodySize = 5 * 1024 * 1024;
+    k.Limits.MaxConcurrentConnections = 5000;
+});
+
+// ৬) csproj-এ: &lt;ServerGarbageCollection&gt;true (ডিফল্টই), .NET 8+ এ
+// DATAS (adaptive GC) কনটেইনারে মেমোরি-বন্ধু — নামগুলো জানুন
+// ৭) মাপার অভ্যাস: প্রতি রিলিজে k6-থ্রেশহোল্ড CI-তে (৩৪.১) —
+// regression ঢোকা মাত্র pipeline লাল</code></pre></figure>
+
+  <h3>৩৪.৯ Caching গভীরে — stampede, নকশা, invalidation</h3>
+  <figure class="code"><figcaption>Cache stampede — সমস্যা ও single-flight সমাধান<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// দৃশ্য: জনপ্রিয় key-র TTL শেষ → এক মুহূর্তে ২০০ রিকোয়েস্ট ক্যাশ-মিস →
+// ২০০টাই DB-তে একই ভারী কোয়েরি → DB ডুবল। নাম: cache stampede.
+
+public class DashboardCache
+{
+    private readonly IMemoryCache _cache;
+    private static readonly SemaphoreSlim _gate = new(1, 1);
+
+    public async Task&lt;Summary&gt; GetSummaryAsync(Func&lt;Task&lt;Summary&gt;&gt; load)
+    {
+        if (_cache.TryGetValue("summary", out Summary? hit)) return hit!;
+
+        await _gate.WaitAsync();               // এক থ্রেডই রান্না করবে
+        try
+        {
+            // double-check: লাইনে দাঁড়ানোর ফাঁকে কেউ রেঁধে ফেলেছে?
+            if (_cache.TryGetValue("summary", out hit)) return hit!;
+
+            var fresh = await load();          // একটাই DB-কল
+            _cache.Set("summary", fresh, TimeSpan.FromSeconds(60));
+            return fresh;
+        }
+        finally { _gate.Release(); }
+    }
+}
+// .NET 9+ HybridCache-এ এই stampede-রক্ষা বিল্ট-ইন — দুটোই বলুন।
+// বহু-সার্ভারে: Redis-lock বা "stale-while-revalidate" (মেয়াদোত্তীর্ণ
+// মান দেখাতে থাকো, পেছনে একজন refresh করুক)</code></pre></figure>
+  <ul>
+    <li><strong>Key-নকশা:</strong> নাম:সত্তা:ভার্সন — <span class="inline-code">shop:product:42:v2</span>; স্কিমা বদলালে ভার্সন বাড়ান — পুরনো ক্যাশ নিজে থেকেই "অদৃশ্য"।</li>
+    <li><strong>Invalidation-এর তিন পথ:</strong> TTL (সবসময় থাকুক — শেষ রক্ষা), লেখার সময় explicit <span class="inline-code">Remove</span> (নিজের অ্যাপে), pub/sub-ইভেন্টে দূরের ক্যাশ ওড়ানো (অন্য সার্ভিস লিখলে — Redis pub/sub বা ২৮.১-এর ইভেন্ট)।</li>
+    <li><strong>লেখা-ধরন:</strong> cache-aside (পড়ার সময় ভরে — ৯০% ক্ষেত্রে এটাই), write-through (লেখার পথেই ক্যাশও — সবসময় গরম, লেখা ধীর), write-behind (আগে ক্যাশে, পরে DB — দ্রুততম, হারানোর ঝুঁকি) — তিনটার নাম-দাম মুখস্থ রাখুন।</li>
+  </ul>
+
+  <h3>৩৪.১০ Capacity planning — সংখ্যা দিয়ে সিদ্ধান্ত</h3>
+  <figure class="code"><figcaption>ইন্টারভিউ-ধাঁচের হিসাব: কয়টা instance লাগবে?<span class="lang">text</span></figcaption><pre><code>দেওয়া: দৈনিক ২০ লাখ রিকোয়েস্ট, পিক-ঘণ্টায় দিনের ২০% ট্রাফিক
+পিক RPS      = 2,000,000 × 0.20 ÷ 3600           ≈ 111 RPS
+লোড-টেস্টে   1 instance (2 vCPU) p95 ঠিক রেখে টানে  ≈ 60 RPS
+দরকার        111 ÷ 60 ≈ 2 → +headroom(×1.5) +১টা রিডানডেন্সি
+             ⇒ 4 instance, autoscale 3→8 (CPU 70% টার্গেটে)
+
+সাথে বলুন: DB connection-হিসাবও — 4 instance × pool 100 = 400
+কানেকশন; MySQL default max_connections=151! → pool প্রতি-instance
+ছোট করুন (25-30) নয়তো proxy/pooler — এই ক্রস-চেকটাই অভিজ্ঞতা।</code></pre></figure>
+  <figure class="code"><figcaption>Distributed lock — Redis-এ, ভুলগুলোসহ<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// দৃশ্য: রাত ২টার settlement-job ৪ instance-এ ৪ বার চলা ঠেকান (৩৪.৫)
+var lockKey = "lock:settlement:2026-07-15";
+var token = Guid.NewGuid().ToString();          // "তালাটা আমারই" প্রমাণ
+
+// SET key value NX EX 900 — না-থাকলে-বসাও + মেয়াদ (অমরত্ব নিষেধ!)
+bool acquired = await redis.StringSetAsync(lockKey, token,
+    TimeSpan.FromMinutes(15), When.NotExists);
+if (!acquired) return;                          // অন্য instance করছে
+
+try { await RunSettlementAsync(); }
+finally
+{
+    // শুধু নিজের তালাই খুলুন — মেয়াদ পেরিয়ে অন্যেরটা বসে থাকতে পারে
+    var script = @"if redis.call('GET', KEYS[1]) == ARGV[1]
+                   then return redis.call('DEL', KEYS[1]) else return 0 end";
+    await redis.ScriptEvaluateAsync(script,
+        new RedisKey[] { lockKey }, new RedisValue[] { token });
+}
+// সৎ সীমাবদ্ধতাও বলুন: single-Redis lock ফেইলওভারে ফসকাতে পারে;
+// টাকা-গোনা কাজে DB unique constraint/leader election বেশি নির্ভরযোগ্য</code></pre></figure>
+
+  <h3>৩৪.১১ এই টপিকে সম্ভাব্য ইন্টারভিউ প্রশ্ন</h3>
   <ul>
     <li>API ধীর — আপনার debug করার ধাপগুলো বলুন <em>(মাপা → trace → DB → ক্যাশ — ৩৪.১)</em></li>
     <li>কীভাবে বুঝবেন সমস্যা CPU-bound না I/O-bound? <em>(৩৪.৪)</em></li>
@@ -3420,7 +3753,7 @@ export default function () {
     <li>১০ গুণ ট্রাফিক এলে প্রথমে কী ভাঙবে, কী করবেন? <em>(DB → pool/replica/cache/queue — ৩৪.২)</em></li>
     <li>Load testing করেছেন কখনো? কী মাপতেন? <em>(k6, p95, error rate — ৩৪.১)</em></li>
     <li>টেস্টবিহীন legacy কোডে ফিচার যোগ করতে বললে? <em>(characterization → seam → strangler — ৩৪.৬)</em></li>
-    <li>কোড maintainable রাখতে টিমে কী কী চর্চা চান? <em>(analyzer, ছোট PR, ADR, debt-ticket — ৩৪.৩, ৩৫.৪)</em></li>
+    <li>কোড maintainable রাখতে টিমে কী কী চর্চা চান? <em>(analyzer, ছোট PR, ADR, debt-ticket — ৩৪.৩, ৩৫.৬)</em></li>
   </ul>
 </section>
 
@@ -3485,7 +3818,80 @@ dotnet-gcdump collect -p 1     # → dump_2.gcdump
   <p><strong>Liveness বনাম readiness probe</strong>-ও এখানেই জানুন: <em>liveness</em> = "প্রসেসটা বেঁচে আছে?" — fail করলে Kubernetes <em>restart</em> করে; <em>readiness</em> = "ট্রাফিক নেওয়ার অবস্থায় আছে?" (DB-তে পৌঁছাতে পারছে?) — fail করলে শুধু LB থেকে <em>বাদ</em>, restart নয়। দুটো গুলিয়ে ফেললে DB-র সাময়িক সমস্যায় পুরো ক্লাস্টার restart-ঝড়ে পড়ে — সূক্ষ্ম কিন্তু সিনিয়র-চেনানো পয়েন্ট (health checks — ২২.২)।</p>
   <p>আর incident মেটার পরে <strong>blameless post-mortem</strong> (২৯.৩) — কাঠামো: টাইমলাইন (কখন শুরু/ধরা/সারানো) → impact (কত ইউজার, কত মিনিট) → root cause (৫-বার-"কেন" পদ্ধতি) → কী ভালো কাজ করেছে → action item মালিক-সহ। "দোষী কে" প্রশ্নটাই নিষিদ্ধ — সিস্টেম সারাই, মানুষ নয়।</p>
 
-  <h3>৩৫.৪ Technical documentation — যে লেখা ইঞ্জিনিয়ারকে সিনিয়র বানায়</h3>
+  <h3>৩৫.৪ পূর্ণ ওয়াকথ্রু: একটা incident, শুরু থেকে post-mortem</h3>
+  <p>এই গল্পটা মন দিয়ে পড়ুন — "Tell me about a time you debugged production" প্রশ্নে এই <em>আকৃতিতে</em> নিজের গল্প বলবেন:</p>
+  <figure class="code"><figcaption>Incident timeline — checkout ডুবেছে<span class="lang">text</span></figcaption><pre><code>14:02  Alert: checkout p95 &gt; 5s (SLO 500ms)। error rate এখনো ~০ —
+       মানে "মরেনি, শ্বাস নিতে পারছে না"। ড্যাশবোর্ড: CPU 25% মাত্র। 🤔
+
+14:05  "কী বদলেছে?" — 13:50-এ deploy হয়েছে v2.14.0। diff ছোট:
+       নতুন fraud-check কল যোগ হয়েছে checkout-পথে।
+
+14:08  সিদ্ধান্ত: আগে থামাই। rollback v2.13.9 → ৪ মিনিটে p95 স্বাভাবিক।
+       (তদন্তের আগে mitigation — ইউজার আগে, কৌতূহল পরে।)
+
+14:30  শান্ত মাথায় তদন্ত, staging-এ লোড দিয়ে reproduce:
+       $ dotnet-counters monitor -p 1 --counters System.Runtime
+         threadpool-queue-length:  0 → 87 → 340 → বাড়ছেই   ← 🔴 চিনেছেন?
+         threadpool-thread-count:  ধীরে ধীরে +1/সেকেন্ড
+       ক্লাসিক thread pool starvation (৩৫.৩-এর ১ নম্বর সারি)।
+
+14:40  অপরাধী লাইন, নতুন কোডে:
+         var risk = _fraudClient.CheckAsync(order).Result;   // ← 💀
+       sync-over-async: প্রতি checkout একটা থ্রেড জিম্মি করে বসে থাকে;
+       লোডে থ্রেডপুল শেষ → সব রিকোয়েস্ট queue-তে — CPU অলস, সবাই অপেক্ষায়।
+
+14:55  ফিক্স: await + CancellationToken + timeout 2s + fallback
+       (fraud-সার্ভিস না পেলে অর্ডার "review" কিউতে) → PR → CI →
+       canary 10% → 100%। p95 320ms-এ স্থির।
+
+পরদিন  Blameless post-mortem-এর action item:
+       ১) analyzer রুল CA2007/VSTHRD002 error-এ তোলা (.Result ধরা পড়বে CI-তে)
+       ২) নতুন বাইরের-কলের PR-চেকলিস্টে "timeout+fallback আছে?"
+       ৩) থ্রেডপুল queue-length-এ alert (symptom ধরা পড়ত ৫ মিনিট আগে)</code></pre></figure>
+  <p>লক্ষ করুন গল্পের গঠন: <strong>লক্ষণ → কী বদলেছে → mitigate → reproduce → টুল দিয়ে প্রমাণ → root cause → স্থায়ী প্রতিরোধ</strong>। শেষ ধাপটাই (প্রক্রিয়া-বদল) আপনাকে সিনিয়র দেখায় — ব্যক্তি নয়, সিস্টেম সারানো।</p>
+
+  <h3>৩৫.৫ dotnet-dump সেশন ও correlation ID — হাতের ময়লা</h3>
+  <figure class="code"><figcaption>Dump ব্যবচ্ছেদ — কোন কমান্ডে কী দেখবেন<span class="lang">shell</span></figcaption><pre><code class="lang-sh">dotnet-dump collect -p 1                 # প্রোডাকশনে ~সেকেন্ডখানেক freeze
+dotnet-dump analyze core_20260715_140501
+
+&gt; threads                                # সব থ্রেডের তালিকা
+&gt; clrstack -all                          # প্রতিটার C# call stack
+#   ৯৪টা থ্রেড একই জায়গায়:
+#   System.Threading.Tasks.Task.Wait()
+#   FraudClient.Check(...)               ← ৩৫.৪-এর প্রমাণ এখানেই
+#   ...অথবা সবাই lock(obj)-এ? → contention; কে ধরে আছে: syncblk
+
+&gt; dumpheap -stat                         # টাইপ-ভিত্তিক মেমোরি সারণি
+#   ...সবচেয়ে নিচে (সবচেয়ে বেশি):
+#   7ff8a12  1,240,332   99,226,560  Shop.Api.AuditEntry   ← ১২ লাখ?!
+&gt; dumpheap -mt 7ff8a12 -min 80           # নমুনা অবজেক্টের ঠিকানা নিন
+&gt; gcroot 0x7f3c44a8                      # কে একে বাঁচিয়ে রেখেছে?
+#   → static AuditLogger._buffer (List)  ← flush-না-হওয়া static তালিকা!
+# তিন কমান্ডে leak-এর নাম-ঠিকানা — এই ক্রমটা (stat → নমুনা → gcroot)
+# মুখস্থ রাখুন, ইন্টারভিউতে বলার মতো সবচেয়ে "হাতে-কলমে" জিনিস।</code></pre></figure>
+  <figure class="code"><figcaption>Correlation ID — যে ৩০ লাইন সব তদন্ত সহজ করে<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// লক্ষ্য: এক রিকোয়েস্টের সব লগ-লাইন (এমনকি সার্ভিস পেরিয়েও) এক সুতোয়
+app.Use(async (ctx, next) =>
+{
+    // এসেছে? রাখো। আসেনি? বানাও। — gateway থেকে সব সার্ভিসে বয়ে চলে
+    var cid = ctx.Request.Headers["X-Correlation-Id"].FirstOrDefault()
+              ?? Guid.NewGuid().ToString("N")[..12];
+    ctx.Response.Headers["X-Correlation-Id"] = cid;   // ক্লায়েন্টকেও ফেরত
+
+    // এই scope-এর ভেতরের প্রতিটি লগে CorrelationId ফিল্ড অটো যুক্ত হবে
+    using (ctx.RequestServices.GetRequiredService&lt;ILogger&lt;Program&gt;&gt;()
+           .BeginScope(new Dictionary&lt;string, object&gt;
+               { ["CorrelationId"] = cid }))
+    {
+        await next();
+    }
+});
+// HttpClient-এ সামনে পাঠানো: DelegatingHandler-এ header কপি করুন।
+// ব্যবহারিক ফল: ইউজার টিকিটে বললো "দুপুর ১২টায় error" → রেসপন্স
+// header-এর cid → লগ-সিস্টেমে CorrelationId=সেটা → পুরো গল্প এক পর্দায়।
+// (OpenTelemetry-র traceparent একই কাজ আরও বড় পরিসরে করে — ২৯.২;
+// দুটোর সম্পর্ক বলতে পারা = পরিণত উত্তর)</code></pre></figure>
+
+  <h3>৩৫.৬ Technical documentation — যে লেখা ইঞ্জিনিয়ারকে সিনিয়র বানায়</h3>
   <ul>
     <li><strong>README (প্রতি রিপোতে):</strong> এক প্যারায় কী এই সার্ভিস → লোকালে চালানোর ৩ কমান্ড → env var তালিকা → কোথায় deploy হয়। নতুন সদস্যের প্রথম দিন = আপনার README-র পরীক্ষা।</li>
     <li><strong>ADR (Architecture Decision Record):</strong> বড় সিদ্ধান্তের ছোট দলিল — ইউরোপের টিমে খুব প্রচলিত, নিচে টেমপ্লেট।</li>
@@ -3511,12 +3917,38 @@ Public API-তে cursor-ভিত্তিক pagination (after=id প্যা
 + p95 4s → 60ms (লোড টেস্টে যাচাই)
 - ক্লায়েন্টদের v2 endpoint-এ যেতে হবে (৬ মাস deprecation window)
 - মোট পৃষ্ঠা-সংখ্যা আর দেখানো যাবে না — প্রোডাক্ট টিম রাজি</code></pre></figure>
+  <figure class="code"><figcaption>docs/runbooks/high-checkout-latency.md — runbook-এর পূর্ণ নমুনা<span class="lang">markdown</span></figcaption><pre><code># Runbook: Checkout p95 &gt; 500ms (alert: checkout-latency-high)
+
+## দ্রুত-যাচাই (২ মিনিট)
+1. Grafana → "Checkout" ড্যাশবোর্ড: error rate-ও বেড়েছে?
+   - শুধু latency ↑, error ~0  → ধীরতা: নিচের ধাপে যান
+   - error-ও ↑               → runbook: checkout-errors.md
+2. গত ৩০ মিনিটে deploy? → #deployments চ্যানেল / ArgoCD
+   - হ্যাঁ → সন্দেহ সেটাই; নিচের "Rollback" দেখুন
+
+## Mitigation (অনুমতি লাগবে না)
+- Rollback:   argocd app rollback shop-api
+- Fraud-check ঝামেলা করলে flag বন্ধ:
+              FeatureFlags__FraudCheck=false (restart লাগে না)
+- এক instance অসুস্থ: kubectl delete pod &lt;pod&gt; (নতুন উঠবে)
+
+## গভীর তদন্ত
+- trace: Grafana → Tempo → service=shop-api, span=Checkout, p99 ধরে
+- থ্রেডপুল: dotnet-counters monitor -p 1 (queue-length বাড়ে? → ৩৫.৪)
+- DB: SHOW PROCESSLIST — ৫ সেকেন্ডের বেশি ঝুলে-থাকা কোয়েরি?
+
+## Escalation
+- ২০ মিনিটে অগ্রগতি নেই → @backend-oncall-secondary
+- পেমেন্ট-প্রোভাইডার সন্দেহ → status.provider.com + #vendor-payments
+
+শেষ আপডেট: 2026-07-15 · মালিক: checkout-টিম</code></pre></figure>
+  <p>লক্ষ করুন runbook-এর চরিত্র: <strong>সিদ্ধান্ত-গাছ, প্রবন্ধ নয়</strong> — রাত ৩টার মানুষটা শুধু কপি-পেস্ট করবে। প্রতিটি recurring alert-এর একটা runbook — এটাই on-call সংস্কৃতির মেরুদণ্ড।</p>
   <div class="callout tip"><div><span class="co-label">ক্যারিয়ার-সত্য</span><p>একই মানের দুই ইঞ্জিনিয়ারের মধ্যে যে <em>লিখে বোঝাতে পারে</em> — incident-এর post-mortem, ডিজাইনের ADR, পরিষ্কার PR বর্ণনা — promotion আর ভিসা-স্পনসর দুটোই তার দিকে ঝোঁকে। রিমোট/আন্তর্জাতিক টিমে লেখাই আপনার উপস্থিতি। আপনার GitHub প্রজেক্টে আজই একটা ADR ফোল্ডার খুলুন — ইন্টারভিউয়ারের চোখে এটা বিরল ও উজ্জ্বল সংকেত।</p></div></div>
 
-  <h3>৩৫.৫ রিমোট আন্তর্জাতিক টিমের স্ট্যান্ডার্ড — যা দিয়ে আপনাকে মাপা হবে</h3>
+  <h3>৩৫.৭ রিমোট আন্তর্জাতিক টিমের স্ট্যান্ডার্ড — যা দিয়ে আপনাকে মাপা হবে</h3>
   <p>রিমোট রোলে কোম্পানি আসলে দুটো জিনিস কিনছে: <strong>লিখে যোগাযোগ করার ক্ষমতা</strong> আর <strong>তদারকি ছাড়া দায়িত্ব নেওয়ার ক্ষমতা (ownership)</strong>। টেকনিক্যাল রাউন্ডের পাশাপাশি এগুলোই যাচাই হয়:</p>
   <ul>
-    <li><strong>Async-first communication:</strong> "একটু কল করি?" নয় — প্রশ্নটা এমনভাবে লিখুন যেন উত্তরদাতা এক পাসেই দিতে পারে: কনটেক্সট + কী চেষ্টা করেছি + নির্দিষ্ট প্রশ্ন + স্ক্রিনশট/লিংক। এই দক্ষতার প্রদর্শনী হলো আপনার PR description, ticket comment, আর এই কোর্সের ৩৫.৪-এর সব দলিল।</li>
+    <li><strong>Async-first communication:</strong> "একটু কল করি?" নয় — প্রশ্নটা এমনভাবে লিখুন যেন উত্তরদাতা এক পাসেই দিতে পারে: কনটেক্সট + কী চেষ্টা করেছি + নির্দিষ্ট প্রশ্ন + স্ক্রিনশট/লিংক। এই দক্ষতার প্রদর্শনী হলো আপনার PR description, ticket comment, আর এই কোর্সের ৩৫.৬-এর সব দলিল।</li>
     <li><strong>Ownership-এর ভাষা:</strong> "ব্লকড ছিলাম, বসে ছিলাম" — নিষিদ্ধ বাক্য। বদলে: "X-এ ব্লকড, তাই Y অনুমান নিয়ে এগিয়েছি / Z-কে জিজ্ঞেস করে ততক্ষণে অন্য টাস্ক ধরেছি — কাল সকালের মধ্যে unblock না হলে escalate করব।" স্ট্যাটাস আপডেট <em>চাওয়ার আগেই</em> দিন — daily standup-এ কাজ + বাধা + পরের ধাপ, তিন লাইনে।</li>
     <li><strong>Timezone-সৌজন্য:</strong> overlap-ঘণ্টাগুলো (ইউরোপের সাথে বাংলাদেশের সুবিধা: দিনের বড় অংশ মেলে) মিটিং/pairing-এর জন্য রাখুন; বাকি সময়ের সিদ্ধান্ত লিখিত থাকুক যেন ঘুমন্ত সহকর্মী সকালে পড়ে নিতে পারে। "await async, block never" — টিমের ক্ষেত্রেও সত্য।</li>
     <li><strong>Behavioral প্রশ্নে রিমোট-সংস্করণ আসবে:</strong> "ভিন্ন timezone-এর সহকর্মীর সাথে দ্বিমত কীভাবে মেটাবেন?" (লিখিত proposal/ADR-এ যুক্তি, synchronous ঝগড়া নয়), "কীভাবে নিজেকে productive রাখেন?", "কখনো ভুল বুঝে ভুল জিনিস বানিয়েছেন?" (উত্তরের মোরাল: আগে লিখিত spec নিশ্চিত করি) — প্রতিটার STAR গল্প তৈরি রাখুন (২৪.৪)।</li>
@@ -3525,7 +3957,7 @@ Public API-তে cursor-ভিত্তিক pagination (after=id প্যা
   </ul>
   <div class="callout tip"><div><span class="co-label">এক লাইনে</span><p>রিমোট ইন্টারভিউয়ের প্রতিটি ধাপে নিজেকে জিজ্ঞেস করুন: <em>"আমার এই উত্তর/PR/মেসেজ কি এমন, যে ৮ ঘণ্টা পরে ঘুম থেকে উঠে পড়া সহকর্মীর আর কোনো প্রশ্ন করতে হবে না?"</em> — হ্যাঁ হলে আপনি আন্তর্জাতিক স্ট্যান্ডার্ডে আছেন।</p></div></div>
 
-  <h3>৩৫.৬ এই টপিকে সম্ভাব্য ইন্টারভিউ প্রশ্ন</h3>
+  <h3>৩৫.৮ এই টপিকে সম্ভাব্য ইন্টারভিউ প্রশ্ন</h3>
   <ul>
     <li>প্রোডাকশনে API হঠাৎ ধীর — প্রথম ৫ মিনিটে কী করবেন? <em>(blast radius → কী বদলেছে → mitigate — ৩৫.১)</em></li>
     <li>CPU কম তবু সব টাইমআউট — কী সন্দেহ করবেন? <em>(thread pool starvation — ৩৫.৩)</em></li>
@@ -3533,9 +3965,9 @@ Public API-তে cursor-ভিত্তিক pagination (after=id প্যা
     <li>Liveness আর readiness probe-এর পার্থক্য, গুলালে কী হয়? <em>(৩৫.৩)</em></li>
     <li>রাত ৩টায় alert — কোড দেখবেন আগে না rollback? <em>(mitigate first — ৩৫.১)</em></li>
     <li>"Tell me about a production incident you handled" <em>(STAR + blameless post-mortem — ২৯.৩, ৩৫.৩)</em></li>
-    <li>নতুন সার্ভিসের কী কী ডকুমেন্ট রাখেন? ADR কী? <em>(৩৫.৪)</em></li>
+    <li>নতুন সার্ভিসের কী কী ডকুমেন্ট রাখেন? ADR কী? <em>(৩৫.৬)</em></li>
     <li>Reproduce-না-হওয়া বাগ কীভাবে ধরবেন? <em>(correlation ID + structured log + race সন্দেহ — ৩৫.৩)</em></li>
-    <li>ভিন্ন timezone-এর টিমমেটকে ব্লকার জানানোর আদর্শ উপায়? <em>(async-first লিখিত এসকালেশন — ৩৫.৫)</em></li>
+    <li>ভিন্ন timezone-এর টিমমেটকে ব্লকার জানানোর আদর্শ উপায়? <em>(async-first লিখিত এসকালেশন — ৩৫.৭)</em></li>
   </ul>
 </section>
 <footer class="footer">

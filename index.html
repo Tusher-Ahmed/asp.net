@@ -687,15 +687,44 @@ public class InsufficientBalanceException : Exception
   <div class="callout danger"><div><span class="co-label">ইন্টারভিউ ফাঁদ</span><p><span class="inline-code">catch (Exception ex) { throw ex; }</span> লিখলে <strong>stack trace মুছে যায়</strong> — আসল দোষী লাইন আর খুঁজে পাবেন না। আবার ছুড়তে হলে শুধু <span class="inline-code">throw;</span> লিখুন। আর খালি <span class="inline-code">catch {}</span> (exception গিলে ফেলা) প্রোডাকশন কোডের সবচেয়ে ঘৃণিত অভ্যাস — অন্তত লগ করুন।</p></div></div>
 
   <h3>৩.১১ মডার্ন C# — সর্বশেষ ভার্সনের ফিচার (C# 12–14)</h3>
-  <p>C# প্রতি বছর নতুন ভার্সন পায় (.NET-এর সাথে জোড়ায়: .NET 8→C# 12, 9→13, 10→14)। আধুনিক কোডবেসে এই ফিচারগুলো সর্বত্র — ইন্টারভিউতে "মডার্ন C# জানেন?" প্রশ্নের উত্তর এই সেকশন:</p>
-  <figure class="code"><figcaption>ফাইল-জুড়ে বদলে যাওয়া বেসিক (C# 10-12)<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// File-scoped namespace — পুরো ফাইলে এক লাইনে, বাড়তি ইন্ডেন্টেশন নেই
+  <p>C# প্রতি বছর নতুন ভার্সন পায়, .NET-এর সাথে জোড়ায়: .NET 8 → C# 12, .NET 9 → C# 13, .NET 10 → C# 14। আধুনিক কোডবেসে এই ফিচারগুলো সর্বত্র — নিচে প্রতিটার <strong>সমস্যা → সমাধান → উদাহরণ</strong>:</p>
+
+  <h4>ক) File-scoped namespace ও global usings (C# 10)</h4>
+  <p><strong>সমস্যা:</strong> আগে namespace লিখতে হতো curly brace দিয়ে — ফলে ফাইলের <em>প্রতিটা</em> লাইন এক ধাপ ডানে সরে থাকত। আর প্রতিটা ফাইলের মাথায় একই <span class="inline-code">using</span>-এর স্তূপ জমত। <strong>সমাধান:</strong> namespace-এর পরে <span class="inline-code">;</span> দিলে সেটা পুরো ফাইলে প্রযোজ্য; আর <span class="inline-code">global using</span> একবার লিখলে পুরো প্রজেক্টে প্রযোজ্য:</p>
+  <figure class="code"><figcaption>আগে বনাম এখন<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// ❌ পুরনো ধরন — সবকিছু brace-এর ভেতরে, এক ধাপ বাড়তি ইন্ডেন্ট
+namespace Shop.Api.Services
+{
+    public class OrderService { /* ... */ }
+}
+
+// ✅ নতুন ধরন — এক লাইন, বাকি ফাইল সমতলে
 namespace Shop.Api.Services;
 
-// Global usings (সাধারণত GlobalUsings.cs ফাইলে) — বারবার using লেখা শেষ
-global using System.Text.Json;
+public class OrderService { /* ... */ }
 
-// Primary constructor (C# 12) — DI-র boilerplate অর্ধেক!
-// আগের ৭ লাইনের constructor+field এখন এক লাইনে:
+// GlobalUsings.cs নামে একটা ফাইলে একবার লিখুন:
+global using System.Text.Json;
+global using Microsoft.EntityFrameworkCore;
+// → প্রজেক্টের আর কোনো ফাইলে এই using দুটো লিখতে হবে না</code></pre></figure>
+
+  <h4>খ) Primary constructor (C# 12) — DI-র boilerplate অর্ধেক</h4>
+  <p><strong>সমস্যা:</strong> অধ্যায় ৭-এ দেখবেন, প্রতিটা সার্ভিস ক্লাসে dependency নিতে একই তিন-ধাপ নাচ: private field ঘোষণা → constructor লেখা → প্যারামিটার field-এ কপি। ক্লাসপ্রতি ৫-৭ লাইন শুধু আনুষ্ঠানিকতা। <strong>সমাধান:</strong> ক্লাসের নামের পাশেই constructor-প্যারামিটার লিখুন — পুরো ক্লাস-বডিতে সেগুলো সরাসরি ব্যবহারযোগ্য:</p>
+  <figure class="code"><figcaption>একই ক্লাস — আগে ও পরে<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// ❌ আগে: ৭ লাইনের আনুষ্ঠানিকতা
+public class OrderService
+{
+    private readonly IEmailService _email;
+    private readonly ILogger&lt;OrderService&gt; _logger;
+
+    public OrderService(IEmailService email, ILogger&lt;OrderService&gt; logger)
+    {
+        _email = email;
+        _logger = logger;
+    }
+
+    public void PlaceOrder(string to) => _email.Send(to, "কনফার্ম", "ধন্যবাদ!");
+}
+
+// ✅ এখন: প্যারামিটার ক্লাস-হেডারেই; বডিতে সরাসরি নাম ধরে ব্যবহার
 public class OrderService(IEmailService email, ILogger&lt;OrderService&gt; logger)
 {
     public void PlaceOrder(string to)
@@ -703,67 +732,125 @@ public class OrderService(IEmailService email, ILogger&lt;OrderService&gt; logge
         logger.LogInformation("অর্ডার হচ্ছে");
         email.Send(to, "কনফার্ম", "ধন্যবাদ!");
     }
-}
+}</code></pre></figure>
+  <p>একটা সূক্ষ্মতা জেনে রাখুন (ইন্টারভিউ-মানের): primary constructor-এর প্যারামিটার <span class="inline-code">readonly</span> নয় — চাইলে বডিতে বদলানো যায়। কেউ কেউ তাই গুরুত্বপূর্ণ dependency-তে এখনো পুরনো ধরনের readonly field রাখে — দুটোই বৈধ, টিমের কনভেনশন মানুন।</p>
 
-// Collection expressions (C# 12) — সব collection এক চেহারায়
-int[] nums = [1, 2, 3];
-List&lt;string&gt; cities = ["Berlin", "Dhaka"];
-int[] merged = [..nums, 4, 5];        // spread — JS-এর মতো
+  <h4>গ) Collection expressions ও spread (C# 12)</h4>
+  <p><strong>সমস্যা:</strong> array বানাতে <span class="inline-code">new int[] {...}</span>, List বানাতে <span class="inline-code">new List&lt;int&gt; {...}</span>, Span বানাতে আরেক রকম — একই কাজের তিন সিনট্যাক্স। <strong>সমাধান:</strong> সব জায়গায় এক চেহারা — চারকোনা বন্ধনী; আর <span class="inline-code">..</span> (spread) দিয়ে এক collection আরেকটার ভেতরে ঢেলে দেওয়া যায়:</p>
+  <figure class="code"><figcaption>এক সিনট্যাক্সে সব<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">int[] nums = [1, 2, 3];                  // array
+List&lt;string&gt; cities = ["Berlin", "Dhaka"];  // List — টাইপ দেখে কম্পাইলার বোঝে
+Span&lt;int&gt; span = [7, 8];                 // Span-ও একই চেহারা
 
-// Required members (C# 11) — object initializer-কে বাধ্যতামূলক করা
-public class CreateOrderDto
+// spread: nums-এর সব সদস্য + নতুন দুটো → নতুন array
+int[] merged = [..nums, 4, 5];           // [1, 2, 3, 4, 5]
+
+// বাস্তব ব্যবহার: ডিফল্ট কনফিগের সাথে ইউজারের কনফিগ জোড়া
+string[] allowedHosts = [..defaultHosts, ..customHosts, "localhost"];</code></pre></figure>
+
+  <h4>ঘ) required member (C# 11) — "ভুলে যাওয়া" অসম্ভব করা</h4>
+  <p><strong>সমস্যা:</strong> object initializer (<span class="inline-code">new Dto { ... }</span>) সুবিধাজনক, কিন্তু কেউ জরুরি property দিতে ভুলে গেলে কম্পাইলার কিছু বলত না — রানটাইমে গিয়ে null-বিস্ফোরণ। <strong>সমাধান:</strong> <span class="inline-code">required</span> লাগালে সেই property না দিয়ে অবজেক্টই বানানো যায় না — ভুলটা রানটাইম থেকে কম্পাইল-টাইমে চলে আসে (আর কম্পাইল-টাইমের ভুল সবসময় সস্তা):</p>
+  <figure class="code"><figcaption>required + init<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public class CreateOrderDto
 {
-    public required string CustomerEmail { get; init; }   // না দিলে compile error
-    public string? Note { get; init; }
+    public required string CustomerEmail { get; init; }  // দিতেই হবে
+    public string? Note { get; init; }                   // ঐচ্ছিক
 }
 
-// Raw string literals (C# 11) — escape-নরক থেকে মুক্তি (JSON/SQL/regex-এ দারুণ)
+var ok  = new CreateOrderDto { CustomerEmail = "a@b.com" };  // ✅
+var bad = new CreateOrderDto { Note = "দ্রুত পাঠান" };
+// ❌ কম্পাইল error: Required member 'CustomerEmail' must be set
+
+// init মানে: তৈরি-মুহূর্তে বসানো যায়, পরে আর বদলানো যায় না —
+// ok.CustomerEmail = "x@y.com";   ❌ error — DTO অপরিবর্তনীয় থাকে</code></pre></figure>
+
+  <h4>ঙ) Raw string literal (C# 11) — escape-এর যন্ত্রণা শেষ</h4>
+  <p><strong>সমস্যা:</strong> string-এর ভেতরে JSON/SQL/regex লিখতে গেলে প্রতিটা <span class="inline-code">"</span>-কে <span class="inline-code">\"</span> আর <span class="inline-code">\</span>-কে <span class="inline-code">\\</span> লিখতে হতো — পড়াই যেত না। <strong>সমাধান:</strong> তিনটা quote (<span class="inline-code">"""</span>) দিয়ে শুরু-শেষ করলে ভেতরে যা খুশি তাই — কোনো escape লাগে না:</p>
+  <figure class="code"><figcaption>টেস্ট আর SQL-এ প্রতিদিন লাগবে<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// ❌ আগে: string json = "{ \"name\": \"Tusher\", \"role\": \"engineer\" }";
+
+// ✅ এখন — ভেতরের quote গুলো স্বাভাবিক:
 string json = """
     { "name": "Tusher", "role": "engineer" }
-    """;</code></pre></figure>
-  <figure class="code"><figcaption>Pattern matching — আধুনিক C#-এর সুপারপাওয়ার<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// Switch expression + property pattern — if-else-এর জঙ্গল সাফ
-decimal ShippingFee(Order o) => o switch
-{
-    { Total: &gt;= 100 }                    => 0m,           // ১০০+ হলে ফ্রি
-    { Destination.Country: "DE" }        => 4.99m,
-    { Items.Count: &gt; 10 }                => 12.50m,
-    _                                    => 8.99m          // ডিফল্ট
-};
+    """;
 
-// List pattern (C# 11)
-string Describe(int[] arr) => arr switch
+// $$""" দিলে interpolation-ও চলে ({{ }} দিয়ে):
+string greeting = $$"""
+    { "message": "হ্যালো {{name}}", "at": "{{DateTime.UtcNow}}" }
+    """;
+// integration test-এ expected-JSON লেখার সময় (অধ্যায় ২০) এটা আশীর্বাদ</code></pre></figure>
+  <h4>চ) Pattern matching — আধুনিক C#-এর সুপারপাওয়ার</h4>
+  <p><strong>সমস্যা:</strong> "টোটাল ১০০+ হলে ফ্রি, জার্মানি হলে ৪.৯৯, আইটেম ১০-এর বেশি হলে ১২.৫০…" — এমন ব্যবসায়িক নিয়ম if-else দিয়ে লিখলে জঙ্গল হয়ে যায়, আর কোন শর্তটা আগে তা ভুল হলে বাগ। <strong>সমাধান:</strong> <span class="inline-code">switch</span> <em>expression</em> — প্রতিটা নিয়ম এক লাইনে, ওপর থেকে নিচে প্রথম যেটা মেলে সেটাই জেতে, আর পুরোটা একটা মান <em>ফেরত দেয়</em> (পুরনো switch-এর মতো শুধু কাজ করে না):</p>
+  <figure class="code"><figcaption>Switch expression + property pattern<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">decimal ShippingFee(Order o) => o switch
 {
-    []            => "খালি",
-    [var one]     => $"একটাই: {one}",
-    [var f, .., var l] => $"প্রথম {f}, শেষ {l}",
-};
+    { Total: &gt;= 100 }             => 0m,      // property pattern: o.Total &gt;= 100 হলে
+    { Destination.Country: "DE" } => 4.99m,   // নেস্টেড property-তেও ঢোকা যায়
+    { Items.Count: &gt; 10 }         => 12.50m,  // collection-এর Count-ও property
+    _                             => 8.99m    // _ = "বাকি সব" — এটা না দিলে
+};                                            //   compiler সতর্ক করে (সব কেস ঢাকা?)
 
-// is + declaration pattern — cast ও null-চেক একসাথে
-if (payment is CardPayment { Fee: &gt; 0 } card)
-    Console.WriteLine(card.Fee(100));</code></pre></figure>
-  <figure class="code"><figcaption>একদম নতুন — C# 13/14 (.NET 9/10)<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// field keyword (C# 14) — backing field হাতে না লিখেই property-লজিক
+// পড়ার নিয়ম: { Total: &gt;= 100 } মানে "যে অবজেক্টের Total ১০০ বা বেশি"।
+// ক্রম গুরুত্বপূর্ণ: ১৫০ টাকার জার্মান অর্ডার প্রথম লাইনেই মিলবে → ফ্রি।</code></pre></figure>
+  <p><strong>List pattern</strong> (C# 11) একই ধারণা collection-এর ওপর — array/list-এর <em>আকৃতি</em> দেখে মেলানো। <span class="inline-code">[]</span> মানে খালি, <span class="inline-code">[var one]</span> মানে ঠিক একটা সদস্য (সেটা <span class="inline-code">one</span> নামে ধরা হলো), <span class="inline-code">..</span> মানে "মাঝে যা-ই থাকুক":</p>
+  <figure class="code"><figcaption>List pattern<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">string Describe(int[] arr) => arr switch
+{
+    []                 => "খালি",
+    [var one]          => $"একটাই: {one}",           // [5] → "একটাই: 5"
+    [var f, .., var l] => $"প্রথম {f}, শেষ {l}",     // [1,9,9,7] → "প্রথম 1, শেষ 7"
+};</code></pre></figure>
+  <p>আর <strong><span class="inline-code">is</span> + declaration pattern</strong> তিনটা কাজ এক লাইনে করে: টাইপ-চেক + null-চেক + cast। আগে লিখতে হতো <span class="inline-code">if (x != null &amp;&amp; x is CardPayment) { var card = (CardPayment)x; ... }</span> — এখন:</p>
+  <figure class="code"><figcaption>is pattern — চেক + cast একসাথে<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// পড়ুন: "payment কি এমন একটা CardPayment যার CardLimit &gt; 0?
+//         হলে তাকে card নামে দাও"
+if (payment is CardPayment { CardLimit: &gt; 0 } card)
+    Console.WriteLine($"কার্ডে চার্জ হবে, লিমিট: {card.CardLimit}");
+
+// not/and/or-ও pattern: null-চেকের আধুনিক রূপ আগেই দেখেছেন (৩.২)
+if (nickname is not null and { Length: &gt; 2 })
+    Console.WriteLine("বৈধ ডাকনাম");</code></pre></figure>
+  <h4>ছ) field keyword (C# 14) — property-র লুকানো বাক্সে সরাসরি হাত</h4>
+  <p><strong>পটভূমি:</strong> <span class="inline-code">public string Name { get; set; }</span> লিখলে কম্পাইলার পেছনে একটা লুকানো ভ্যারিয়েবল (backing field) বানিয়ে নেয়। <strong>সমস্যা:</strong> setter-এ সামান্য লজিক (যেমন trim করা) যোগ করতে চাইলেই আগে পুরো লুকানো ব্যবস্থাটা নিজ হাতে লিখতে হতো — একটা property-র জন্য ৫ লাইন। <strong>সমাধান:</strong> <span class="inline-code">field</span> শব্দটা দিয়ে সেই লুকানো বাক্সটাকেই সরাসরি ধরা যায়:</p>
+  <figure class="code"><figcaption>field — আগে বনাম এখন<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// ❌ আগে: লজিক লাগলেই পুরো কাঠামো হাতে লেখো
+private string _name = string.Empty;
+public string Name
+{
+    get => _name;
+    set => _name = value?.Trim() ?? throw new ArgumentNullException(nameof(value));
+}
+
+// ✅ এখন: get স্বয়ংক্রিয়ই থাক, শুধু set-এ লজিক — field মানেই লুকানো বাক্সটা
 public string Name
 {
     get;
     set => field = value?.Trim()
         ?? throw new ArgumentNullException(nameof(value));
-}
+}</code></pre></figure>
 
-// Extension members (C# 14) — extension method-এর নতুন, গোছানো রূপ
-public static class OrderExtensions
+  <h4>জ) Extension members (C# 14) — অন্যের ক্লাসে "নিজের" property</h4>
+  <p><strong>পটভূমি:</strong> extension method পুরনো জিনিস — যে ক্লাসের কোড আপনার হাতে নেই (যেমন লাইব্রেরির <span class="inline-code">Order</span>), তাতে বাইরে থেকে method "জুড়ে" দেওয়া; LINQ-এর <span class="inline-code">Where/Select</span> আসলে এভাবেই বানানো। <strong>নতুনত্ব:</strong> C# 14-এর <span class="inline-code">extension</span> ব্লকে এখন method-এর পাশাপাশি <em>property</em>-ও জুড়ে দেওয়া যায়, আর সব extension এক জায়গায় গোছানো থাকে:</p>
+  <figure class="code"><figcaption>Extension block<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">public static class OrderExtensions
 {
-    extension(Order order)
+    extension(Order order)                    // "Order-এর গায়ে যা যা জুড়ছি:"
     {
-        public bool IsFree => order.Total == 0;          // extension property!
+        public bool IsFree => order.Total == 0;              // property!
         public string Summary() => $"{order.Id}: €{order.Total}";
     }
 }
 
-// Null-conditional assignment (C# 14) — null না হলে তবেই বসাও
-customer?.Address = newAddress;
+// ব্যবহার — যেন Order-এর নিজেরই সদস্য:
+if (myOrder.IsFree) Console.WriteLine(myOrder.Summary());
+// পুরনো স্টাইল (static মেথডে this Order o) এখনো চলে —
+// লিগ্যাসি কোডে সেটাই দেখবেন, দুটোই চেনা থাকা দরকার</code></pre></figure>
 
-// params collections (C# 13) — params এখন শুধু array নয়
-static int Sum(params ReadOnlySpan&lt;int&gt; values) { /* allocation-free! */ }</code></pre></figure>
+  <h4>ঝ) Null-conditional assignment (C# 13/14) ও params collections (C# 13)</h4>
+  <p>দুটো ছোট কিন্তু মিষ্টি উন্নতি। <strong>প্রথমটা:</strong> <span class="inline-code">?.</span> এতদিন শুধু <em>পড়ার</em> সময় চলত (৩.২), এখন <em>বসানোর</em> সময়ও — "অবজেক্টটা null না হলে তবেই মান বসাও"। <strong>দ্বিতীয়টা:</strong> <span class="inline-code">params</span> (যত খুশি আর্গুমেন্ট নেওয়া) আগে বাধ্যতামূলকভাবে array বানাত — প্রতি কলে heap allocation; এখন <span class="inline-code">Span</span>-ও নেওয়া যায়, ফলে allocation শূন্য (কেন সেটা দামি — অধ্যায় ২৬.৪):</p>
+  <figure class="code"><figcaption>দুই লাইনের দুই উপহার<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// ❌ আগে: if (customer != null) customer.Address = newAddress;
+customer?.Address = newAddress;        // ✅ null হলে চুপচাপ কিছুই হয় না
+
+// params collections:
+static int Sum(params ReadOnlySpan&lt;int&gt; values)
+{
+    int total = 0;
+    foreach (var v in values) total += v;
+    return total;
+}
+Sum(1, 2, 3);        // আগে: প্রতি কলে new int[3] হতো; এখন stack-এই — ফ্রি</code></pre></figure>
   <div class="callout note"><div><span class="co-label">সর্বশেষ .NET প্রযুক্তি — নামগুলো চিনে রাখুন</span><p>ভাষার বাইরে ইকোসিস্টেমের নতুন যা জব পোস্টিং/ইন্টারভিউতে উঁকি দিচ্ছে: <strong>.NET Aspire</strong> (multi-service অ্যাপ লোকালে চালানো+observability — অধ্যায় ২৮), <strong>Native AOT</strong> (JIT ছাড়া সরাসরি মেশিন-কোডে কম্পাইল — তাৎক্ষণিক স্টার্টআপ, ছোট কনটেইনার; serverless-এ দারুণ), <strong>source generators</strong> (কম্পাইলের সময় কোড-জেনারেশন — ৩৪.৮-এর JSON source-gen এরই উদাহরণ), আর <strong>Microsoft.Extensions.AI / Semantic Kernel</strong> — .NET অ্যাপে LLM/AI জোড়ার অফিসিয়াল পথ; "C# দিয়ে AI feature বানিয়েছি" ২০২৬-এর CV-তে উজ্জ্বল লাইন। গভীরে যাওয়ার দরকার নেই — প্রতিটার এক-বাক্য পরিচয় দিতে পারলেই আপনি হালনাগাদ প্রার্থী।</p></div></div>
   <div class="callout warn"><div><span class="co-label">ইন্টারভিউ টিপ</span><p>নতুন ফিচার মানেই ভালো নয় — বলুন: "টিমের কোডবেসের কনভেনশন আগে; primary constructor/collection expression পড়া সহজ করে তাই ব্যবহার করি, কিন্তু নতুনত্বের জন্য নতুনত্ব নয়।" ভারসাম্যের এই সুরটাই সিনিয়র শোনায়।</p></div></div>
 

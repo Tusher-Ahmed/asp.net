@@ -232,6 +232,15 @@ td{font-variant-numeric:tabular-nums}
   .hero{padding:44px 0 30px}
 }
 
+/* ---------- video resources ---------- */
+.videos{margin:28px 0 8px; padding:14px 18px 12px; border:1px dashed var(--line); border-radius:12px; background:var(--surface2)}
+.videos .v-title{font-weight:800; font-size:13px; letter-spacing:.05em; text-transform:uppercase; color:var(--accent-ink); margin-bottom:8px}
+.videos ul{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:5px; max-width:none}
+.videos li{margin:0; font-size:14.5px}
+.videos a{text-decoration:none}
+.videos a:hover{text-decoration:underline}
+.videos .v-note{font-size:12px; color:var(--muted); margin:8px 0 0}
+
 /* ---------- chapter progress tracking ---------- */
 .side-progress{margin:6px 0 4px; padding:11px 13px; border:1px solid var(--line); border-radius:12px; background:var(--surface2)}
 .side-progress .sp-label{display:flex; justify-content:space-between; align-items:baseline; font-size:12px; color:var(--muted); margin-bottom:7px; letter-spacing:.05em}
@@ -4059,6 +4068,100 @@ Public API-তে cursor-ভিত্তিক pagination (after=id প্যা
       }
     });
     cap.appendChild(b);
+  });
+
+  /* ---------- video resources per chapter ---------- */
+  function yt(q){ return "https://www.youtube.com/results?search_query=" + encodeURIComponent(q); }
+  var VIDEOS = {
+    ch01: [["▶ ASP.NET Core Full Course for Beginners (.NET 10)", "https://www.youtube.com/watch?v=YbRe4iIVYJk"],
+           ["🔎 What is ASP.NET Core — IAmTimCorey", yt("what is asp.net core explained tim corey")]],
+    ch02: [["🔎 VS Code + .NET SDK সেটআপ", yt("asp.net core vs code c# dev kit setup tutorial")],
+           ["🔎 Git & GitHub ক্র্যাশ কোর্স — freeCodeCamp", yt("git and github for beginners freecodecamp")]],
+    ch03: [["▶ C# Tutorial — Full Course for Beginners (freeCodeCamp, 4.5h)", "https://www.youtube.com/watch?v=GhQdlIFylQ8"],
+           ["▶ Learn C# with Mini-Projects (freeCodeCamp, 8h)", "https://www.youtube.com/watch?v=YrtFtdTTfv0"],
+           ["🔎 async/await ঠিকমতো বুঝুন — Nick Chapsas", yt("nick chapsas async await explained c#")]],
+    ch04: [["▶ ASP.NET Core Full Course (.NET 10)", "https://www.youtube.com/watch?v=YbRe4iIVYJk"],
+           ["🔎 Program.cs / minimal hosting ব্যাখ্যা", yt("asp.net core program.cs minimal hosting model explained")]],
+    ch05: [["🔎 Middleware pipeline explained", yt("asp.net core middleware pipeline explained")],
+           ["🔎 Custom middleware বানানো", yt("custom middleware asp.net core tutorial")]],
+    ch06: [["🔎 Routing in ASP.NET Core", yt("asp.net core routing explained minimal api")],
+           ["🔎 REST URL design best practices", yt("rest api url design best practices")]],
+    ch07: [["🔎 Dependency Injection — IAmTimCorey", yt("dependency injection c# explained tim corey")],
+           ["🔎 Singleton vs Scoped vs Transient", yt("singleton scoped transient asp.net core service lifetimes")]],
+    ch08: [["🔎 Configuration ও Options pattern", yt("asp.net core configuration appsettings options pattern tutorial")],
+           ["🔎 User Secrets ঠিকভাবে", yt("asp.net core user secrets environment variables")]],
+    ch09: [["🔎 Serilog structured logging", yt("serilog asp.net core structured logging tutorial")]],
+    ch10: [["🔎 Minimal API CRUD টিউটোরিয়াল", yt("minimal api crud tutorial .net 8")],
+           ["🔎 Postman বেসিক", yt("postman tutorial for beginners api testing")]],
+    ch11: [["🔎 ASP.NET Core MVC কোর্স — freeCodeCamp", yt("learn asp.net core mvc freecodecamp")],
+           ["🔎 Razor syntax ও Tag Helpers", yt("razor syntax tag helpers asp.net core")]],
+    ch12: [["🔎 Razor Pages বনাম MVC", yt("razor pages vs mvc asp.net core when to use")],
+           ["🔎 Blazor render modes (.NET 8+)", yt("blazor .net 8 render modes explained")]],
+    ch13: [["🔎 Model binding ও validation", yt("model binding validation asp.net core tutorial")],
+           ["🔎 FluentValidation", yt("fluentvalidation asp.net core tutorial")]],
+    ch14: [["🔎 EF Core Full Course", yt("entity framework core full course for beginners")],
+           ["🔎 EF Core পারফরম্যান্স টিপস — Nick Chapsas", yt("ef core performance tips nick chapsas")]],
+    ch15: [["🔎 REST API best practices in .NET", yt("rest api best practices .net web api")],
+           ["🔎 Swagger/OpenAPI সেটআপ", yt("swagger openapi asp.net core tutorial")],
+           ["🔎 HttpClientFactory ঠিকভাবে", yt("ihttpclientfactory explained .net")]],
+    ch16: [["🔎 JWT authentication পূর্ণ ফ্লো", yt("jwt authentication asp.net core tutorial")],
+           ["🔎 Refresh token বাস্তবায়ন", yt("refresh token asp.net core implementation")],
+           ["🔎 ASP.NET Core Identity", yt("asp.net core identity tutorial")]],
+    ch17: [["🔎 Global exception handling + ProblemDetails", yt("global exception handling asp.net core iexceptionhandler problemdetails")]],
+    ch18: [["🔎 Redis caching in .NET", yt("redis caching asp.net core tutorial")],
+           ["🔎 Output caching ও rate limiting", yt("output caching rate limiting asp.net core")]],
+    ch19: [["🔎 BackgroundService / Worker", yt("background service .net worker tutorial channel")],
+           ["🔎 SignalR চ্যাট টিউটোরিয়াল", yt("signalr asp.net core chat tutorial")]],
+    ch20: [["🔎 xUnit unit testing কোর্স", yt("unit testing c# xunit full course")],
+           ["🔎 Integration testing (WebApplicationFactory)", yt("integration testing asp.net core webapplicationfactory")]],
+    ch21: [["🔎 OWASP Top 10 explained", yt("owasp top 10 explained web security")],
+           ["🔎 ASP.NET Core security best practices", yt("asp.net core security best practices")]],
+    ch22: [["🔎 Docker কোর্স — freeCodeCamp", yt("docker tutorial for beginners freecodecamp")],
+           ["🔎 GitHub Actions CI/CD for .NET", yt("github actions .net ci cd pipeline docker")]],
+    ch23: [["🔎 Clean Architecture — Milan Jovanović", yt("clean architecture .net milan jovanovic")],
+           ["🔎 SOLID উদাহরণসহ", yt("solid principles c# examples explained")]],
+    ch24: [["🔎 বিদেশি ইঞ্জিনিয়ারদের জার্মানি/ইউরোপ অভিজ্ঞতা", yt("software engineer germany visa sponsorship experience")],
+           ["🔎 ইউরোপে টেক জব মার্কেট", yt("europe tech job market software engineer foreigners")]],
+    ch25: [["🔎 .NET Developer Roadmap", yt(".net developer roadmap 2026")]],
+    ch26: [["🔎 .NET GC deep dive", yt(".net garbage collection explained deep dive")],
+           ["🔎 Span&lt;T&gt; ও মেমোরি — Nick Chapsas", yt("span t c# performance nick chapsas")],
+           ["🔎 Threading ও async internals", yt("c# async await internals how it works deep dive")]],
+    ch27: [["🔎 EF Core optimistic concurrency", yt("ef core optimistic concurrency conflict tutorial")],
+           ["🔎 Outbox pattern — Milan Jovanović", yt("outbox pattern .net milan jovanovic")]],
+    ch28: [["🔎 MassTransit + RabbitMQ", yt("masstransit rabbitmq .net tutorial")],
+           ["🔎 gRPC in .NET", yt("grpc .net core tutorial")],
+           ["🔎 DDD ব্যাখ্যা — CodeOpinion", yt("domain driven design explained codeopinion")]],
+    ch29: [["🔎 OpenTelemetry .NET সেটআপ", yt("opentelemetry .net tutorial traces metrics")],
+           ["🔎 Observability: logs/metrics/traces", yt("observability logs metrics traces explained")]],
+    ch30: [["🔎 System Design Full Course — freeCodeCamp", yt("system design full course freecodecamp")],
+           ["▶ ByteByteGo চ্যানেল (প্রতিটা ভিডিওই সোনা)", "https://www.youtube.com/@ByteByteGo"]],
+    ch31: [["🔎 Behavioral interview (STAR) উত্তর", yt("senior software engineer behavioral interview questions star method")],
+           ["🔎 Salary negotiation কৌশল", yt("salary negotiation software engineer job offer")]],
+    ch32: [["▶ Hussein Nasser চ্যানেল — backend engineering", "https://www.youtube.com/@hnasr"],
+           ["🔎 API design deep dive", yt("rest api design best practices hussein nasser")],
+           ["🔎 Webhooks কীভাবে কাজ করে", yt("webhooks explained how they work")]],
+    ch33: [["🔎 Database indexing — Hussein Nasser", yt("database indexing explained hussein nasser b-tree")],
+           ["🔎 MySQL EXPLAIN ও query optimization", yt("mysql explain query optimization tutorial")],
+           ["🔎 Schema design best practices", yt("database schema design best practices")]],
+    ch34: [["▶ ByteByteGo — caching/scaling ভিডিওগুলো", "https://www.youtube.com/@ByteByteGo"],
+           ["🔎 k6 load testing", yt("k6 load testing tutorial api")],
+           ["🔎 Horizontal scaling explained", yt("horizontal scaling backend stateless explained")]],
+    ch35: [["🔎 dotnet-dump দিয়ে memory leak", yt("dotnet dump analyze memory leak tutorial")],
+           ["🔎 Thread pool starvation .NET", yt("thread pool starvation .net async")],
+           ["🔎 Blameless postmortem / incident process", yt("incident management blameless postmortem engineering")]]
+  };
+
+  document.querySelectorAll(".chapter").forEach(function(s){
+    var vids = VIDEOS[s.id];
+    if (!vids) return;
+    var box = document.createElement("div");
+    box.className = "videos";
+    var items = vids.map(function(v){
+      return '<li><a href="' + v[1] + '" target="_blank" rel="noopener">' + v[0] + "</a></li>";
+    }).join("");
+    box.innerHTML = '<div class="v-title">🎥 এই অধ্যায়ের ভিডিও</div><ul>' + items +
+      '</ul><p class="v-note">▶ = সরাসরি ভিডিও/চ্যানেল · 🔎 = বাছাই করা ইউটিউব সার্চ — শীর্ষ ফলাফলের ভিডিওটাই দেখুন (লিংক কখনো মরে না, সবসময় হালনাগাদ থাকে)</p>';
+    s.appendChild(box);
   });
 
   /* ---------- chapter progress (localStorage) ---------- */

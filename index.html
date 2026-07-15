@@ -414,16 +414,18 @@ nav a.done::after{content:"✓"; margin-left:auto; color:var(--teal-c); font-wei
   <figure class="code"><figcaption>টার্মিনাল<span class="lang">shell</span></figcaption><pre><code class="lang-sh">dotnet --version
 # আউটপুট এরকম কিছু: 10.0.100</code></pre></figure>
 
-  <h3>২.২ এডিটর</h3>
+  <h3>২.২ এডিটর — Visual Studio-কে প্রধান ধরে</h3>
   <div class="tbl-wrap"><table>
-    <thead><tr><th>এডিটর</th><th>কার জন্য</th><th>দাম</th></tr></thead>
+    <thead><tr><th>এডিটর</th><th>কার জন্য</th><th>OS</th><th>দাম</th></tr></thead>
     <tbody>
-      <tr><td><strong>VS Code + C# Dev Kit এক্সটেনশন</strong></td><td>শুরুর জন্য সেরা — হালকা, সব OS-এ চলে</td><td>ফ্রি</td></tr>
-      <tr><td>Visual Studio 2022+ (Community)</td><td>Windows-এ পূর্ণাঙ্গ IDE, ডিবাগিং সবচেয়ে সহজ</td><td>ফ্রি (Community)</td></tr>
-      <tr><td>JetBrains Rider</td><td>ইউরোপের অনেক কোম্পানিতে জনপ্রিয়</td><td>পেইড (নন-কমার্শিয়াল ফ্রি)</td></tr>
+      <tr><td><strong>Visual Studio 2022+ (Community)</strong></td><td>পূর্ণাঙ্গ IDE — সেরা debugging, designer, profiler; এই কোর্সের মূল এডিটর</td><td>শুধু Windows</td><td>ফ্রি (Community)</td></tr>
+      <tr><td>JetBrains Rider</td><td>Visual Studio-র নিকটতম বিকল্প; ইউরোপের বহু কোম্পানিতে স্ট্যান্ডার্ড</td><td>Windows/Mac/Linux</td><td>নন-কমার্শিয়াল ফ্রি</td></tr>
+      <tr><td>VS Code + C# Dev Kit</td><td>হালকা এডিটর — দ্রুত খোলা, ছোট এডিট, সার্ভারে কাজ</td><td>সব OS</td><td>ফ্রি</td></tr>
     </tbody>
   </table></div>
-  <p>এই কোর্সের জন্য <strong>VS Code + C# Dev Kit</strong> যথেষ্ট। VS Code-এর Extensions ট্যাবে গিয়ে "C# Dev Kit" সার্চ করে ইনস্টল করুন।</p>
+  <p><strong>Visual Studio ইনস্টল:</strong> <a href="https://visualstudio.microsoft.com/downloads/" rel="noopener">visualstudio.microsoft.com</a> থেকে Community edition নামান। Installer-এ workload বাছার সময় টিক দিন: <strong>"ASP.NET and web development"</strong> (এতে .NET SDK-ও চলে আসে — আলাদা করে SDK নামানো লাগে না)। ডাটাবেস-অধ্যায়ের জন্য পরে চাইলে ".NET desktop development"ও যোগ করা যায় — Installer আবার চালালেই workload বদলানো যায়।</p>
+  <p>Visual Studio-তে এই কোর্সের কাজের ধারা: <span class="inline-code">File → New → Project</span> দিয়ে টেমপ্লেট বাছা যায়, তবে টার্মিনালের <span class="inline-code">dotnet</span> কমান্ডগুলোও শিখে রাখুন (নিচের সেকশন) — CI/CD, সার্ভার আর ইন্টারভিউ লাইভ-কোডিংয়ে ওটাই চলে। ভেতরের টার্মিনাল: <span class="inline-code">View → Terminal</span>। দরকারি শর্টকাট: <span class="inline-code">F5</span> (debug চালু), <span class="inline-code">F9</span> (breakpoint), <span class="inline-code">F10/F11</span> (step over/into), <span class="inline-code">Ctrl+.</span> (quick fix)।</p>
+  <div class="callout note"><div><span class="co-label">Mac ব্যবহারকারী?</span><p><strong>Visual Studio for Mac ২০২৪-এর আগস্টে অবসরপ্রাপ্ত</strong> — Mac-এ এখন Visual Studio নেই। Mac-এ .NET পুরোপুরি চলে; IDE হিসেবে নিন <strong>JetBrains Rider</strong> (Visual Studio-র সবচেয়ে কাছের অনুভূতি, নন-কমার্শিয়াল ফ্রি) বা VS Code + C# Dev Kit। এই কোর্সের সব কোড ও <span class="inline-code">dotnet</span> কমান্ড Mac/Linux-এ অবিকল একই — শুধু এডিটরের শর্টকাট আলাদা।</p></div></div>
 
   <h3>২.৩ dotnet CLI — আপনার প্রধান হাতিয়ার</h3>
   <p>.NET-এর সব কাজ টার্মিনাল থেকে <span class="inline-code">dotnet</span> কমান্ড দিয়ে হয়। সবচেয়ে দরকারিগুলো:</p>
@@ -4075,7 +4077,8 @@ Public API-তে cursor-ভিত্তিক pagination (after=id প্যা
   var VIDEOS = {
     ch01: [["▶ ASP.NET Core Full Course for Beginners (.NET 10)", "https://www.youtube.com/watch?v=YbRe4iIVYJk"],
            ["🔎 What is ASP.NET Core — IAmTimCorey", yt("what is asp.net core explained tim corey")]],
-    ch02: [["🔎 VS Code + .NET SDK সেটআপ", yt("asp.net core vs code c# dev kit setup tutorial")],
+    ch02: [["🔎 Visual Studio 2022 ইনস্টল ও ট্যুর", yt("visual studio 2022 install asp.net web development workload tutorial")],
+           ["🔎 Visual Studio debugging শর্টকাট", yt("visual studio debugging tutorial breakpoints tips")],
            ["🔎 Git & GitHub ক্র্যাশ কোর্স — freeCodeCamp", yt("git and github for beginners freecodecamp")]],
     ch03: [["▶ C# Tutorial — Full Course for Beginners (freeCodeCamp, 4.5h)", "https://www.youtube.com/watch?v=GhQdlIFylQ8"],
            ["▶ Learn C# with Mini-Projects (freeCodeCamp, 8h)", "https://www.youtube.com/watch?v=YrtFtdTTfv0"],

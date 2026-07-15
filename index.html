@@ -686,6 +686,87 @@ public class InsufficientBalanceException : Exception
 }</code></pre></figure>
   <div class="callout danger"><div><span class="co-label">ইন্টারভিউ ফাঁদ</span><p><span class="inline-code">catch (Exception ex) { throw ex; }</span> লিখলে <strong>stack trace মুছে যায়</strong> — আসল দোষী লাইন আর খুঁজে পাবেন না। আবার ছুড়তে হলে শুধু <span class="inline-code">throw;</span> লিখুন। আর খালি <span class="inline-code">catch {}</span> (exception গিলে ফেলা) প্রোডাকশন কোডের সবচেয়ে ঘৃণিত অভ্যাস — অন্তত লগ করুন।</p></div></div>
 
+  <h3>৩.১১ মডার্ন C# — সর্বশেষ ভার্সনের ফিচার (C# 12–14)</h3>
+  <p>C# প্রতি বছর নতুন ভার্সন পায় (.NET-এর সাথে জোড়ায়: .NET 8→C# 12, 9→13, 10→14)। আধুনিক কোডবেসে এই ফিচারগুলো সর্বত্র — ইন্টারভিউতে "মডার্ন C# জানেন?" প্রশ্নের উত্তর এই সেকশন:</p>
+  <figure class="code"><figcaption>ফাইল-জুড়ে বদলে যাওয়া বেসিক (C# 10-12)<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// File-scoped namespace — পুরো ফাইলে এক লাইনে, বাড়তি ইন্ডেন্টেশন নেই
+namespace Shop.Api.Services;
+
+// Global usings (সাধারণত GlobalUsings.cs ফাইলে) — বারবার using লেখা শেষ
+global using System.Text.Json;
+
+// Primary constructor (C# 12) — DI-র boilerplate অর্ধেক!
+// আগের ৭ লাইনের constructor+field এখন এক লাইনে:
+public class OrderService(IEmailService email, ILogger&lt;OrderService&gt; logger)
+{
+    public void PlaceOrder(string to)
+    {
+        logger.LogInformation("অর্ডার হচ্ছে");
+        email.Send(to, "কনফার্ম", "ধন্যবাদ!");
+    }
+}
+
+// Collection expressions (C# 12) — সব collection এক চেহারায়
+int[] nums = [1, 2, 3];
+List&lt;string&gt; cities = ["Berlin", "Dhaka"];
+int[] merged = [..nums, 4, 5];        // spread — JS-এর মতো
+
+// Required members (C# 11) — object initializer-কে বাধ্যতামূলক করা
+public class CreateOrderDto
+{
+    public required string CustomerEmail { get; init; }   // না দিলে compile error
+    public string? Note { get; init; }
+}
+
+// Raw string literals (C# 11) — escape-নরক থেকে মুক্তি (JSON/SQL/regex-এ দারুণ)
+string json = """
+    { "name": "Tusher", "role": "engineer" }
+    """;</code></pre></figure>
+  <figure class="code"><figcaption>Pattern matching — আধুনিক C#-এর সুপারপাওয়ার<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// Switch expression + property pattern — if-else-এর জঙ্গল সাফ
+decimal ShippingFee(Order o) => o switch
+{
+    { Total: &gt;= 100 }                    => 0m,           // ১০০+ হলে ফ্রি
+    { Destination.Country: "DE" }        => 4.99m,
+    { Items.Count: &gt; 10 }                => 12.50m,
+    _                                    => 8.99m          // ডিফল্ট
+};
+
+// List pattern (C# 11)
+string Describe(int[] arr) => arr switch
+{
+    []            => "খালি",
+    [var one]     => $"একটাই: {one}",
+    [var f, .., var l] => $"প্রথম {f}, শেষ {l}",
+};
+
+// is + declaration pattern — cast ও null-চেক একসাথে
+if (payment is CardPayment { Fee: &gt; 0 } card)
+    Console.WriteLine(card.Fee(100));</code></pre></figure>
+  <figure class="code"><figcaption>একদম নতুন — C# 13/14 (.NET 9/10)<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// field keyword (C# 14) — backing field হাতে না লিখেই property-লজিক
+public string Name
+{
+    get;
+    set => field = value?.Trim()
+        ?? throw new ArgumentNullException(nameof(value));
+}
+
+// Extension members (C# 14) — extension method-এর নতুন, গোছানো রূপ
+public static class OrderExtensions
+{
+    extension(Order order)
+    {
+        public bool IsFree => order.Total == 0;          // extension property!
+        public string Summary() => $"{order.Id}: €{order.Total}";
+    }
+}
+
+// Null-conditional assignment (C# 14) — null না হলে তবেই বসাও
+customer?.Address = newAddress;
+
+// params collections (C# 13) — params এখন শুধু array নয়
+static int Sum(params ReadOnlySpan&lt;int&gt; values) { /* allocation-free! */ }</code></pre></figure>
+  <div class="callout note"><div><span class="co-label">সর্বশেষ .NET প্রযুক্তি — নামগুলো চিনে রাখুন</span><p>ভাষার বাইরে ইকোসিস্টেমের নতুন যা জব পোস্টিং/ইন্টারভিউতে উঁকি দিচ্ছে: <strong>.NET Aspire</strong> (multi-service অ্যাপ লোকালে চালানো+observability — অধ্যায় ২৮), <strong>Native AOT</strong> (JIT ছাড়া সরাসরি মেশিন-কোডে কম্পাইল — তাৎক্ষণিক স্টার্টআপ, ছোট কনটেইনার; serverless-এ দারুণ), <strong>source generators</strong> (কম্পাইলের সময় কোড-জেনারেশন — ৩৪.৮-এর JSON source-gen এরই উদাহরণ), আর <strong>Microsoft.Extensions.AI / Semantic Kernel</strong> — .NET অ্যাপে LLM/AI জোড়ার অফিসিয়াল পথ; "C# দিয়ে AI feature বানিয়েছি" ২০২৬-এর CV-তে উজ্জ্বল লাইন। গভীরে যাওয়ার দরকার নেই — প্রতিটার এক-বাক্য পরিচয় দিতে পারলেই আপনি হালনাগাদ প্রার্থী।</p></div></div>
+  <div class="callout warn"><div><span class="co-label">ইন্টারভিউ টিপ</span><p>নতুন ফিচার মানেই ভালো নয় — বলুন: "টিমের কোডবেসের কনভেনশন আগে; primary constructor/collection expression পড়া সহজ করে তাই ব্যবহার করি, কিন্তু নতুনত্বের জন্য নতুনত্ব নয়।" ভারসাম্যের এই সুরটাই সিনিয়র শোনায়।</p></div></div>
+
   <div class="callout tip"><div><span class="co-label">প্র্যাকটিস</span><p>এই অধ্যায়ের প্রতিটি কোড একটি কনসোল প্রজেক্টে চালিয়ে দেখুন। তারপর নিজে বানান: একটি <span class="inline-code">Student</span> ক্লাস, ১০ জনের List, LINQ দিয়ে GPA অনুযায়ী সর্ট করে টপ ৩ জন বের করুন।</p></div></div>
 </section>
 <!-- ================= CH 04 ================= -->
@@ -4084,7 +4165,8 @@ Public API-তে cursor-ভিত্তিক pagination (after=id প্যা
            ["🔎 Git & GitHub ক্র্যাশ কোর্স — freeCodeCamp", yt("git and github for beginners freecodecamp")]],
     ch03: [["▶ C# Tutorial — Full Course for Beginners (freeCodeCamp, 4.5h)", "https://www.youtube.com/watch?v=GhQdlIFylQ8"],
            ["▶ Learn C# with Mini-Projects (freeCodeCamp, 8h)", "https://www.youtube.com/watch?v=YrtFtdTTfv0"],
-           ["🔎 async/await ঠিকমতো বুঝুন — Nick Chapsas", yt("nick chapsas async await explained c#")]],
+           ["🔎 async/await ঠিকমতো বুঝুন — Nick Chapsas", yt("nick chapsas async await explained c#")],
+           ["🔎 মডার্ন C# ফিচার (C# 12/13/14)", yt("c# 14 new features primary constructors collection expressions")]],
     ch04: [["▶ ASP.NET Core Full Course (.NET 10)", "https://www.youtube.com/watch?v=YbRe4iIVYJk"],
            ["🔎 Program.cs / minimal hosting ব্যাখ্যা", yt("asp.net core program.cs minimal hosting model explained")]],
     ch05: [["🔎 Middleware pipeline explained", yt("asp.net core middleware pipeline explained")],

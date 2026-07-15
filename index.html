@@ -2854,6 +2854,121 @@ public class SplitBenchmarks
 // Program.cs: BenchmarkRunner.Run&lt;SplitBenchmarks&gt;();
 // রিলিজ মোডে চালান: dotnet run -c Release</code></pre></figure>
   <div class="callout tip"><div><span class="co-label">সিনিয়র মাইন্ডসেট</span><p>ইন্টারভিউতে পারফরম্যান্স প্রশ্নের সেরা উত্তর শুরু হয়: <em>"আগে profile করব"</em> — dotnet-trace, dotnet-counters, Visual Studio profiler। অনুমাননির্ভর micro-optimization নয়, মাপা bottleneck ঠিক করা — এটাই জুনিয়র আর সিনিয়রের পার্থক্য।</p></div></div>
+
+  <h3>২৬.৬ Advanced C# — ইন্টারভিউ প্রশ্নের ধাঁচে</h3>
+  <p>নিচের প্রতিটা প্রশ্ন C# ইন্টারভিউতে বছরের পর বছর ঘুরেফিরে আসে। প্রশ্ন → মডেল-উত্তর → যেখানে দরকার, কোড:</p>
+
+  <h4>প্র: IEnumerable আর IQueryable-এর পার্থক্য কী?</h4>
+  <p><strong>মডেল-উত্তর:</strong> দুটোই "জিনিসের ধারা", পার্থক্য <em>কোথায়</em> ফিল্টার চলে। <span class="inline-code">IEnumerable</span>-এর <span class="inline-code">Where</span> চলে <strong>মেমোরিতে, C# কোডে</strong>; <span class="inline-code">IQueryable</span>-এর <span class="inline-code">Where</span> জমা হয় <strong>expression tree</strong> হিসেবে — EF Core সেটাকে <strong>SQL-এ অনুবাদ</strong> করে ডাটাবেসে পাঠায়। ভুল টাইপ নিলে ফলাফল ভয়াবহ:</p>
+  <figure class="code"><figcaption>একটা টাইপের ভুল = পুরো টেবিল ডাউনলোড<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// ❌ IEnumerable বানিয়ে ফেললে: আগে *সব* প্রোডাক্ট DB থেকে মেমোরিতে আসে,
+//    তারপর C#-এ ফিল্টার হয় — ১০ লাখ সারি টেনে ৫টা রাখা!
+IEnumerable&lt;Product&gt; all = db.Products;
+var cheap = all.Where(p => p.Price &lt; 10).ToList();
+// SQL: SELECT * FROM products          ← WHERE নেই!
+
+// ✅ IQueryable থাকলে: ফিল্টারটা SQL-এর অংশ হয়ে DB-তে যায়
+IQueryable&lt;Product&gt; query = db.Products;
+var cheap2 = query.Where(p => p.Price &lt; 10).ToList();
+// SQL: SELECT * FROM products WHERE price &lt; 10   ← ৫টা সারিই আসে</code></pre></figure>
+  <p>সাথে বলুন <strong>deferred execution</strong>: LINQ কোয়েরি লেখা মাত্র চলে না — <span class="inline-code">ToList/First/Count</span>-এর মতো কিছু ডাকলে তবেই চলে। তাই <span class="inline-code">ToList()</span> কোথায় বসাচ্ছেন সেটাই ঠিক করে ফিল্টার DB-তে হবে না মেমোরিতে।</p>
+
+  <h4>প্র: yield return কী করে?</h4>
+  <p><strong>মডেল-উত্তর:</strong> পুরো তালিকা বানিয়ে ফেরত না দিয়ে <strong>একটা করে আইটেম, চাওয়া মাত্র</strong> তৈরি করে দেয় (lazy) — কম্পাইলার পেছনে একটা state machine বানায় যেটা মনে রাখে শেষবার কোথায় থেমেছিল:</p>
+  <figure class="code"><figcaption>yield — অসীম ধারাও সম্ভব<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">static IEnumerable&lt;int&gt; Fibonacci()
+{
+    int a = 0, b = 1;
+    while (true)                    // অসীম! কিন্তু সমস্যা নেই —
+    {
+        yield return a;             // যতটা চাওয়া হবে ততটাই হিসাব হবে
+        (a, b) = (b, a + b);
+    }
+}
+
+var firstTen = Fibonacci().Take(10).ToList();   // মাত্র ১০ বারই লুপ চলে
+// বাস্তব ব্যবহার: বিশাল ফাইল লাইন-বাই-লাইন পড়া, page-by-page API টানা —
+// পুরোটা মেমোরিতে না এনে stream করা</code></pre></figure>
+
+  <h4>প্র: delegate, Action/Func আর event-এর সম্পর্ক কী?</h4>
+  <p><strong>মডেল-উত্তর:</strong> delegate = "মেথড রাখার ভ্যারিয়েবল" (মেথডের রেফারেন্স)। <span class="inline-code">Action</span> (কিছু ফেরত দেয় না) ও <span class="inline-code">Func</span> (শেষ টাইপটা রিটার্ন) হলো রেডিমেড delegate — নিজে declare করা প্রায় লাগেই না। <span class="inline-code">event</span> হলো delegate-এর <em>নিরাপদ মোড়ক</em>: বাইরের কেউ শুধু সাবস্ক্রাইব/আনসাবস্ক্রাইব (+=/-=) করতে পারে, ইচ্ছেমতো fire বা পুরো তালিকা মুছে দিতে পারে না:</p>
+  <figure class="code"><figcaption>delegate → Func → event<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">Func&lt;int, int, int&gt; add = (a, b) => a + b;     // ২টা int নেয়, int দেয়
+Action&lt;string&gt; log = msg => Console.WriteLine(msg);
+Console.WriteLine(add(2, 3));                   // 5
+
+public class OrderProcessor
+{
+    public event Action&lt;int&gt;? OrderShipped;     // ঘোষণা
+
+    public void Ship(int orderId)
+    {
+        // ...শিপিং লজিক...
+        OrderShipped?.Invoke(orderId);          // যারা শুনছে সবাইকে খবর
+    }
+}
+// ব্যবহার: processor.OrderShipped += id => SendSms(id);
+// ⚠ ইন্টারভিউ-বোনাস: সাবস্ক্রাইব করে আনসাবস্ক্রাইব না করা =
+// memory leak-এর ক্লাসিক উৎস (publisher বেঁচে থাকলে subscriber-ও আটকে থাকে)</code></pre></figure>
+
+  <h4>প্র: generic constraint আর covariance/contravariance?</h4>
+  <p><strong>মডেল-উত্তর:</strong> constraint (<span class="inline-code">where</span>) দিয়ে বলে দেওয়া হয় T-কে কেমন হতে হবে — তবেই T-এর ওপর সেই কাজগুলো করা যায়। আর variance: <span class="inline-code">out T</span> মানে T শুধু <em>বেরোয়</em> — তাই <span class="inline-code">IEnumerable&lt;string&gt;</span>-কে <span class="inline-code">IEnumerable&lt;object&gt;</span> হিসেবে ধরা নিরাপদ (covariance); <span class="inline-code">in T</span> মানে T শুধু <em>ঢোকে</em> — উল্টো দিকটা নিরাপদ (contravariance):</p>
+  <figure class="code"><figcaption>where, out, in<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">// constraint: T-কে entity হতে হবে, আর new() করা যেতে হবে
+public class Repository&lt;T&gt; where T : class, IEntity, new()
+{
+    public T CreateNew() => new T();          // new() constraint বলেই সম্ভব
+}
+
+// covariance (out): string → object দিকে নিরাপদ
+IEnumerable&lt;string&gt; names = ["Rahim", "Karim"];
+IEnumerable&lt;object&gt; objects = names;          // ✅ কম্পাইল হয়
+
+// contravariance (in): তুলনাকারী উল্টো দিকে চলে
+IComparer&lt;object&gt; anyComparer = GetObjectComparer();
+IComparer&lt;string&gt; stringComparer = anyComparer;   // ✅ object তুলনা করতে
+                                                  // পারলে string তো পারবেই
+// List&lt;T&gt; কোনোটাই নয় (invariant) — T ঢোকেও, বেরোয়ও</code></pre></figure>
+
+  <h4>প্র: == , Equals আর GetHashCode-এর সম্পর্ক?</h4>
+  <p><strong>মডেল-উত্তর:</strong> reference type-এ <span class="inline-code">==</span> ডিফল্টে "একই অবজেক্ট কি না" দেখে, <span class="inline-code">Equals</span> override করে "মান সমান কি না" বানানো যায় (record-এ ফ্রি — ৩.৫)। লোহার নিয়ম: <strong>Equals override করলে GetHashCode-ও করতেই হবে</strong>, আর সমান দুটো অবজেক্টের hash অবশ্যই সমান হতে হবে — নইলে Dictionary/HashSet-এ রেখে আর খুঁজে পাবেন না (hash দিয়ে বালতি ঠিক হয়, Equals দিয়ে নিশ্চিত হয়):</p>
+  <figure class="code"><figcaption>ভাঙা hash-এর ভূত<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">var p1 = new Point(2, 3);      // ধরুন Equals override করা, GetHashCode নয়
+var set = new HashSet&lt;Point&gt; { p1 };
+Console.WriteLine(set.Contains(new Point(2, 3)));
+// False!! — Equals বলছে সমান, কিন্তু hash আলাদা বালতিতে খুঁজেছে
+// সমাধান: public override int GetHashCode() => HashCode.Combine(X, Y);
+// (record ব্যবহার করলে দুটোই কম্পাইলার লিখে দেয় — সেটাই বলুন)</code></pre></figure>
+
+  <h4>প্র: এই লুপের আউটপুট কী হবে? (closure-ফাঁদ)</h4>
+  <figure class="code"><figcaption>ক্লাসিক whiteboard প্রশ্ন<span class="lang">C#</span></figcaption><pre><code class="lang-csharp">var actions = new List&lt;Action&gt;();
+for (int i = 0; i &lt; 3; i++)
+    actions.Add(() => Console.Write(i + " "));
+foreach (var a in actions) a();
+// আধুনিক C#: "0 1 2" — for-এর ভ্যারিয়েবল প্রতি iteration-এ ধরা হয়... না!
+// আসল উত্তর: "3 3 3" — তিনটা lambda-ই *একই* i-কে ধরে (capture) রেখেছে,
+// লুপ শেষে i=3। lambda মান কপি করে না, ভ্যারিয়েবলটাকেই ধরে।
+// ফিক্স: লুপের ভেতরে int copy = i; actions.Add(() => Console.Write(copy));
+// (foreach-এ কিন্তু C# 5 থেকে প্রতি iteration নতুন ভ্যারিয়েবল — "0 1 2" হতো;
+//  এই সূক্ষ্মতা বললে ইন্টারভিউয়ার নড়েচড়ে বসবে)</code></pre></figure>
+
+  <h4>এক নজরে রিভিশন — সব প্রশ্ন এক টেবিলে</h4>
+  <p>ইন্টারভিউর আগের রাতে শুধু এই টেবিলটা পড়লেই পুরো ২৬.৬-এর রিভিশন হয়ে যায় — উপরের কোডসহ প্রশ্নগুলোর এক-লাইন সারাংশও এখানে আছে:</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>প্রশ্ন</th><th>মডেল-উত্তরের মূল কথা</th></tr></thead>
+    <tbody>
+      <tr><td>IEnumerable বনাম IQueryable?</td><td>IEnumerable = ফিল্টার মেমোরিতে C#-এ; IQueryable = expression tree → SQL-এ অনুবাদ, ফিল্টার DB-তে। ভুল টাইপ = পুরো টেবিল ডাউনলোড। Deferred execution: ToList/First ডাকলেই তবে চলে।</td></tr>
+      <tr><td>yield return কী?</td><td>পুরো তালিকা না বানিয়ে চাওয়া-মাত্র একটা করে আইটেম (lazy, state machine)। বড় ফাইল/অসীম ধারা stream করতে; Take(10) দিলে ১০ বারই চলে।</td></tr>
+      <tr><td>delegate / Action / Func / event?</td><td>delegate = মেথড রাখার ভ্যারিয়েবল; Action = void, Func = রিটার্নসহ রেডিমেড রূপ; event = delegate-এর নিরাপদ মোড়ক (বাইরে শুধু +=/-=)। আনসাবস্ক্রাইব ভুলে যাওয়া = memory leak।</td></tr>
+      <tr><td>Generic constraint ও variance?</td><td>where T : class, new() = T-র ওপর শর্ত। out T = শুধু বেরোয় → covariant (IEnumerable&lt;string&gt;→&lt;object&gt; ✅); in T = শুধু ঢোকে → contravariant (Comparer উল্টো দিকে); List&lt;T&gt; invariant।</td></tr>
+      <tr><td>== / Equals / GetHashCode?</td><td>== ডিফল্টে reference-তুলনা; Equals override = মান-তুলনা। Equals বদলালে GetHashCode-ও বদলাতেই হবে (সমান বস্তু = সমান hash), নইলে HashSet/Dictionary-তে হারিয়ে যায়। record হলে দুটোই ফ্রি।</td></tr>
+      <tr><td>Closure-ফাঁদ (for-লুপে lambda)?</td><td>lambda ভ্যারিয়েবলটাকেই ধরে, মান কপি করে না — for-এ "3 3 3"; ভেতরে লোকাল কপি নিলে ঠিক; foreach-এ C# 5 থেকে প্রতি iteration নতুন ভ্যারিয়েবল।</td></tr>
+      <tr><td>abstract class বনাম interface?</td><td>abstract-এ অবস্থা (field) ও আংশিক বাস্তবায়ন থাকে, একটাই inherit হয়; interface = শুধু চুক্তি, অনেকগুলো নেওয়া যায়। "is-a + শেয়ার্ড কোড" হলে abstract, "পারে" (capability) হলে interface। (C# 8+ interface-এ default method-ও সম্ভব — জেনে রাখুন)</td></tr>
+      <tr><td>const বনাম readonly বনাম static readonly?</td><td><code>const</code> = কম্পাইল-টাইমে বসে যায়, এমনকি <em>ব্যবহারকারী</em> assembly-তে কপি হয় (লাইব্রেরির const বদলালে consumer রি-কম্পাইল লাগে!); <code>readonly</code> = রানটাইমে constructor-এ একবার; <code>static readonly</code> = অ্যাপে একবার। পাবলিক লাইব্রেরিতে const সাবধানে।</td></tr>
+      <tr><td>struct বনাম class কখন?</td><td>ছোট (~১৬ বাইট), অপরিবর্তনীয়, "মান" অর্থ বহন করে (টাকা, স্থানাঙ্ক) — struct; নইলে class। <code>readonly record struct</code> = আধুনিক সেরা সংস্করণ। বড় struct প্যারামিটারে কপি-খরচ — <code>in</code> দিয়ে পাঠানো যায়।</td></tr>
+      <tr><td>ref, out, in-এর পার্থক্য?</td><td>তিনটাই reference-এ পাঠায়: <code>ref</code> = আগে মান থাকতে হবে, বদলাতে পারে; <code>out</code> = মেথডকে ভরতেই হবে (<code>int.TryParse</code>-এর ধরন); <code>in</code> = শুধু পড়া যাবে (বড় struct-এর কপি বাঁচাতে)।</td></tr>
+      <tr><td>string immutable কেন? StringBuilder কখন?</td><td>string বদলানো যায় না — প্রতিটা "বদল" আসলে নতুন string (নিরাপত্তা, hash-স্থিরতা, thread-safety)। লুপে জোড়া দিলে প্রতি ধাপে নতুন অবজেক্ট — O(n²); তখন <code>StringBuilder</code>।</td></tr>
+      <tr><td>Task বনাম Thread?</td><td>Thread = OS-এর কাঁচা সুতো (দামি, ~1MB stack); Task = "একটা কাজ ও তার ভবিষ্যৎ ফল" — থ্রেডপুলের ওপর চড়ে, await-যোগ্য, composable। আধুনিক কোডে হাতে Thread প্রায় কখনোই নয়।</td></tr>
+      <tr><td>reflection কী, দাম কত?</td><td>রানটাইমে টাইপের গঠন পড়া/ডাকা (<code>typeof(T).GetProperties()</code>) — serializer/DI/ORM ভেতরে এটাই করে। ধীর ও AOT-অবান্ধব — তাই আধুনিক .NET ঝুঁকছে source generator-এ (৩.১১)।</td></tr>
+      <tr><td>Lazy&lt;T&gt; কী?</td><td>দামি অবজেক্ট প্রথম ব্যবহারের মুহূর্তে তৈরি, thread-safe ভাবে: <code>new Lazy&lt;ExpensiveThing&gt;(() => ...)</code> — <code>.Value</code> ছোঁয়ার আগে কিছুই হয় না।</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout tip"><div><span class="co-label">উত্তর দেওয়ার কৌশল</span><p>প্রতিটা উত্তরের কাঠামো রাখুন: <strong>এক লাইনে সংজ্ঞা → কবে কোনটা → একটা বাস্তব পরিণতি</strong> (যেমন IQueryable ভুলে পুরো টেবিল ডাউনলোড, GetHashCode ভুলে HashSet-এ হারানো)। পরিণতি বলতে পারা-ই মুখস্থ আর বোঝার পার্থক্য — ইন্টারভিউয়ার ওটাই খোঁজে।</p></div></div>
 </section>
 
 <!-- ================= CH 27 ================= -->
@@ -4299,7 +4414,8 @@ Public API-তে cursor-ভিত্তিক pagination (after=id প্যা
     ch25: [["🔎 .NET Developer Roadmap", yt(".net developer roadmap 2026")]],
     ch26: [["🔎 .NET GC deep dive", yt(".net garbage collection explained deep dive")],
            ["🔎 Span&lt;T&gt; ও মেমোরি — Nick Chapsas", yt("span t c# performance nick chapsas")],
-           ["🔎 Threading ও async internals", yt("c# async await internals how it works deep dive")]],
+           ["🔎 Threading ও async internals", yt("c# async await internals how it works deep dive")],
+           ["🔎 Advanced C# interview প্রশ্নোত্তর", yt("c# advanced interview questions and answers ienumerable iqueryable delegates")]],
     ch27: [["🔎 EF Core optimistic concurrency", yt("ef core optimistic concurrency conflict tutorial")],
            ["🔎 Outbox pattern — Milan Jovanović", yt("outbox pattern .net milan jovanovic")]],
     ch28: [["🔎 MassTransit + RabbitMQ", yt("masstransit rabbitmq .net tutorial")],
